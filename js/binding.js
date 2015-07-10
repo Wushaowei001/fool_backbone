@@ -150,7 +150,7 @@ $(function () {
         $(this).addClass('activeSelector');
         App.setMode('default');
         client.setMode('default');
-        if (App.game_with_comp)
+        if (App.get('game_with_comp'))
             App.start(true);
     });
     $('#mode_52_cards').on('click', function () {
@@ -158,7 +158,7 @@ $(function () {
         $(this).addClass('activeSelector');
         App.setMode('deck_52');
         client.setMode('deck_52');
-        if (App.game_with_comp)
+        if (App.get('game_with_comp'))
             App.start(true);
     });
 

@@ -1,5 +1,5 @@
 var GameWithComputer = function () {
-    var count = App.mode_cards_count;
+    var count = App.get('mode_cards_count');
 
     var deck = new Deck(count);
 
@@ -53,9 +53,9 @@ var GameWithComputer = function () {
                 this.disableNext();
             }
             this.list.push({
-                human_cards: cloner.clone(App.human.getCards()),
-                opponent_cards: cloner.clone(App.opponent.getCards()),
-                table_state: cloner.clone(App.table.getState()),
+                human_cards: cloner.clone(App.get('human').getCards()),
+                opponent_cards: cloner.clone(App.get('opponent').getCards()),
+                table_state: cloner.clone(App.get('table').getState()),
                 trump_value: App.getTrumpValue(),
                 deck: cloner.clone(self.getDeck())
             });
@@ -91,7 +91,7 @@ var GameWithComputer = function () {
             }
         },
         temporaryDisableMoves: function (time) {
-            var timestamp = App.new_game_started;
+            var timestamp = App.get('new_game_started');
             if (!time)
                 time = 1000;
             this.disableMoves();
@@ -146,32 +146,32 @@ var GameWithComputer = function () {
     };
 
     this.addCards = function (computer_first, callback) {
-        var h_need_cards = App.human.needCards();
-        var c_need_cards = App.opponent.needCards();
+        var h_need_cards = App.get('human').needCards();
+        var c_need_cards = App.get('opponent').needCards();
         var cards = [];
         if (computer_first) {
             if (c_need_cards > 0) {
                 cards = self.getCards(c_need_cards);
-                App.opponent.addCards(cards);
+                App.get('opponent').addCards(cards);
             }
             if (h_need_cards > 0) {
                 cards = self.getCards(h_need_cards);
-                App.human.addCards(cards, true);
+                App.get('human').addCards(cards, true);
             }
         }
         else {
             if (h_need_cards > 0) {
                 cards = self.getCards(h_need_cards);
-                App.human.addCards(cards, true);
+                App.get('human').addCards(cards, true);
             }
             if (c_need_cards > 0) {
                 cards = self.getCards(c_need_cards);
-                App.opponent.addCards(cards)
+                App.get('opponent').addCards(cards)
             }
         }
-        if (!App.without_animation && h_need_cards <= 0) {
-            App.human.renderCards();
-            App.opponent.renderCards();
+        if (!App.get('without_animation') && h_need_cards <= 0) {
+            App.get('human').renderCards();
+            App.get('opponent').renderCards();
         }
         //TODO: trigger
         if (typeof callback == 'function') {
@@ -188,8 +188,8 @@ var GameWithComputer = function () {
     };
 
     this.ifComputerStepFirst = function () {
-        var h_min_trump = App.human.getMinTrump();
-        var c_min_trump = App.opponent.getMinTrump();
+        var h_min_trump = App.get('human').getMinTrump();
+        var c_min_trump = App.get('opponent').getMinTrump();
 
         return c_min_trump > h_min_trump;
     };

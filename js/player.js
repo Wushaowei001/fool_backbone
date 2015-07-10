@@ -25,7 +25,7 @@ var Player = Backbone.Model.extend({
         for (var i in this.getCards()) {
             if (this.getCards()[i] == id) {
                 this.getCards().splice(i, 1);
-                var card = App.stage.findOne('#' + id);
+                var card = App.get('stage').findOne('#' + id);
                 card.off('click');
             }
         }
@@ -35,12 +35,12 @@ var Player = Backbone.Model.extend({
         var result = [];
         var temp = [];
         var trumps = [];
-        for (var index in App.sequence) {
+        for (var index in App.get('sequence')) {
             temp = [];
-            var suit = App.sequence[index];
+            var suit = App.get('sequence')[index];
             for (var card in cards) {
                 if (suit === cards[card][0]) {
-                    if (suit == App.trump)
+                    if (suit == App.getTrump())
                         trumps.push(cards[card]);
                     else
                         temp.push(cards[card]);
@@ -66,10 +66,10 @@ var Player = Backbone.Model.extend({
         var min_value = App.getMinCardValue();
 
         for (var i = min_value; i < 15; i++) {
-            for (var index in App.sequence) {
-                var suit = App.sequence[index];
+            for (var index in App.get('sequence')) {
+                var suit = App.get('sequence')[index];
                 if (cards.indexOf(suit + i) !== -1) {
-                    if (suit === App.trump) {
+                    if (suit === App.getTrump()) {
                         trumps.push(suit + i);
                     }
                     else
@@ -89,10 +89,10 @@ var Player = Backbone.Model.extend({
         var min_value = App.getMinCardValue();
 
         for (var i = min_value; i < 15; i++) {
-            for (var index in App.sequence) {
-                var suit = App.sequence[index];
+            for (var index in App.get('sequence')) {
+                var suit = App.get('sequence')[index];
                 if (cards.indexOf(suit + i) !== -1) {
-                    if (suit === App.trump) {
+                    if (suit === App.getTrump()) {
                         trumps.push(suit + i);
                     }
                     else
@@ -103,7 +103,7 @@ var Player = Backbone.Model.extend({
         return result.concat(trumps);
     },
     _renderCards: function (opponent, without_animation, from_deck) {
-        var timestamp = App.new_game_started;
+        var timestamp = App.get('new_game_started');
         var default_y = App.getMyCardsCoords().y;
         if (opponent)
             default_y = App.getOpponentCoords().y;

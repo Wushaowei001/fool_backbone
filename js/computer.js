@@ -11,6 +11,9 @@ var Computer = Player.extend({
         this.on('opponent:cards_added opponent:take_cards', function (without_animation, from_deck) {
             this.renderCards(without_animation, from_deck);
         }.bind(this));
+        this.on('change:_cards', function () {
+            console.log(this.get('_cards'));
+        }.bind(this));
     },
     addCards: function (cards) {
 
@@ -18,7 +21,7 @@ var Computer = Player.extend({
 
         this._super('_addCards', cards);
 
-        this.trigger('opponent:cards_added', true, App.without_animation, false);
+        this.trigger('opponent:cards_added', true, App.get('without_animation'), false);
     },
     getCards: function () {
         return this.get('_cards');
@@ -29,7 +32,7 @@ var Computer = Player.extend({
 
     takeCardsFromTable: function (cards) {
         this._super('_destroyLastTakedCards');
-        this.set('lastTakedcards', App.table.getLastState());
+        this.set('lastTakedcards', App.get('table').getLastState());
         this.setCards(this.getCards().concat(cards));
 //        for (var i in cards) {
 //            this._cards.push(cards[i]);
@@ -66,61 +69,62 @@ var Computer = Player.extend({
     },
 
     noCards: function () {
-        return !this.getCards().length && App.game_with_comp.deckIsEmpty();
+        return !this.getCards().length && App.get('game_with_comp').deckIsEmpty();
     },
 
     step: function (id) {
-        var timestamp = App.new_game_started;
-        if (!App.human.noCards() && this.noCards()) {
+        var timestamp = App.get('new_game_started');
+        if (!App.get('human').noCards() && this.noCards()) {
             // computer win
             this.trigger('win');
             return false;
         }
-        if (App.human.noCards() && this.noCards()) {
+        if (App.get('human').noCards() && this.noCards()) {
             this.trigger('draw');
             return false;
         }
-        if (App.human.noCards() && !this.noCards()) {
+        if (App.get('human').noCards() && !this.noCards()) {
             // human win
             App.get('human').trigger('win');
             return false;
         }
         if (!id) {
-            var card_on_table = App.table.getCardForBeatID();
+            var card_on_table = App.get('table').getCardForBeatID();
             var id = '';
             if (card_on_table) {
                 id = this.getMinCard(card_on_table);
                 if (!id) {
-                    var cards = App.table.getCards(true);
+                    this.trigger('take_cards');
+                    var cards = App.get('table').getCards(true);
                     this.takeCardsFromTable(cards);
-                    App.onTakeCards();
-                    if (App.human.noCards()) {
+//                    App.onTakeCards();
+                    if (App.get('human').noCards()) {
                         // human wins
                         App.get('human').trigger('win');
                         return false;
                     }
                     setTimeout(function () {
                         App.safeTimeOutAction(timestamp, function () {
-                            App.game_with_comp.addCards(false, function () {
+                            App.get('game_with_comp').addCards(false, function () {
                                 App.trigger('update_deck_remain');
                             });
-                            App.human.setCanStep(true);
+                            App.get('human').setCanStep(true);
                         });
                     }, 1000);
                 }
             }
             else {
-                if (App.table.getCards()) {
-                    var count_cards_on_table = App.table.getCountCards();
+                if (App.get('table').getCards()) {
+                    var count_cards_on_table = App.get('table').getCountCards();
                     if (count_cards_on_table < 6) {
                         id = this._super('_getCardForThrow');
                     }
                     if (!id) {
-                        App.table.addToPile();
-                        App.game_with_comp.addCards(true, function () {
+                        App.get('table').addToPile();
+                        App.get('game_with_comp').addCards(true, function () {
                             App.trigger('update_deck_remain');
                         });
-                        App.human.setCanStep(true);
+                        App.get('human').setCanStep(true);
                     }
                 }
                 else {
@@ -132,17 +136,17 @@ var Computer = Player.extend({
                     App.safeTimeOutAction(timestamp, function () {
                         this.removeCard(id);
                         App.turnSound();
-                        App.table.addCard(id, true);
-                        if (App.human.noCards() && this.noCards()) {
+                        App.get('table').addCard(id, true);
+                        if (App.get('human').noCards() && this.noCards()) {
                             this.trigger('draw');
                             return false;
                         }
-                        if (App.human.noCards() && !this.noCards()) {
+                        if (App.get('human').noCards() && !this.noCards()) {
                             // human win
                             App.get('human').trigger('win');
                             return false;
                         }
-                        App.human.setCanStep(true);
+                        App.get('human').setCanStep(true);
                     }.bind(this));
                 }.bind(this), 800);
             }
@@ -150,7 +154,7 @@ var Computer = Player.extend({
         else {
             App.turnSound();
             this.removeCard(id);
-            App.table.addCard(id, true);
+            App.get('table').addCard(id, true);
         }
 
     }

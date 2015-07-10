@@ -28,6 +28,8 @@ var SettingObj = Backbone.Model.extend({
             }
         });
         this.on('change:trump_mapping', function (self) {
+            if (!App.getTrump())
+                return;
             var value = self.changed.trump_mapping;
             if (value == '') return false;
 
@@ -75,7 +77,7 @@ var AppModel = Backbone.Model.extend({
         sequence: ['d', 'c', 'h', 's'],
         wait_when_can_throw: 3000,
         onStart: null,
-        onTakeCards: null,
+//        onTakeCards: null,
         history: null,
         view_only: false,
         without_animation: false,
@@ -130,79 +132,10 @@ var AppModel = Backbone.Model.extend({
             trump_mapping: settings.trump_mapping
         });
     },
-    beforeHumanStep: function () {
-        var timestamp = this.get('new_game_started');
-        if (!this.get('view_only') && this.get('human').noCards()) {
-            return;
-        }
-        if (this.get('table').getCardForBeat() && !this.get('view_only') && !this.get('table').human_attack)
-            this.trigger('can_take_cards');
-        else {
-            if (this.get('table').getCards() && !this.get('view_only'))
-                this.trigger('can_put_to_pile');
-        }
-        if (this.get('table').getCards() && !this.get('view_only') && !this.get('without_animation')) {
-            if (!this.get('table').getCardForBeat() && !this.get('table').getCardsForThrow() && !this.get('human').isHaveCardForPut()) {
-                this.get('human').setCanStep(false);
-                this.trigger('beaten');
-//                $('#beaten').fadeIn(300);
-                setTimeout(function () {
-                    this.safeTimeOutAction(timestamp, function () {
-                        this.get('table').addToPile();
-                        setTimeout(function () {
-                            this.safeTimeOutAction(timestamp, function () {
-                                if (!this.get('game_with_comp')) {
-                                    this.trigger('addToPile');
-//                                    client.gameManager.sendTurn({type: 'addToPile'});
-//                                    client.gameManager.sendEvent('event', {data: 'getCards'});
-                                }
-                                else {
-                                    this.get('game_with_comp').addCards(true, function () {
-                                        this.trigger('update_deck_remain');
-                                    }.bind(this));
-                                    if (!this.get('view_only')) {
-                                        setTimeout(function () {
-                                            this.safeTimeOutAction(timestamp, function () {
-                                                this.get('opponent').step();
-                                            });
-                                        }.bind(this), 800);
-                                    }
-                                }
-//                                $('#beaten').fadeOut(1500);
-                            }.bind(this));
-                        }.bind(this), 1000);
-                    }.bind(this));
-                }.bind(this), 800);
-                return;
-            }
-            else {
-                if (this.get('table').getCardForBeat() && !this.get('table').human_attack && !this.get('human').getMinCard(this.get('table').getCardForBeatID())) {
-                    this.get('human').unBindCards();
-                    this.trigger('nothing_to_beat');
-//                App.temporaryBlockUI(1000);
-//                    $('#take_cards').hide();
-//                    $('#my_step_text').hide();
-//                    $('#nothing_to_beat').fadeIn(300);
-//                    $('#nothing_to_beat').fadeOut(4000);
-                    if (!App.get('view_only'))
-                        setTimeout(function () {
-                            App.safeTimeOutAction(timestamp, function () {
-                                this.humanTakeCards();
-                            }.bind(this));
-                        }.bind(this), 1000);
-                    return;
-                }
-            }
-        }
-        if (this.get('game_with_comp') && !this.get('without_update_history')) {
-            console.log('UPDATE HISTORY!!!');
-            this.get('game_with_comp').history.update_history();
-        }
-        this.get('human').bindCards();
-    },
+
     end: function () {
         this.trigger('end_game');
-        App.human.unBindCards();
+        App.get('human').unBindCards();
     },
     humanTakeCards: function (threw, allow_throw) {
         this.trigger('human_take_cards');
@@ -244,8 +177,6 @@ var AppModel = Backbone.Model.extend({
                 }
             }
         }.bind(this));
-    },
-    blockUI: function () {
     },
     changeProperty: function (setting, apply) {
         var settingObj = this.get('settings');
@@ -516,14 +447,6 @@ var AppModel = Backbone.Model.extend({
                 onload(id, CurrentCard);
         };
     },
-    myStepText: function () {
-    },
-    opponentStepText: function () {
-    },
-    onStartCall: function (callback) {
-        this.set('onStart', callback);
-//        this.onStart = callback;
-    },
     putToPile: function () {
         if (!this.get('human').canStep())
             return false;
@@ -777,7 +700,7 @@ var AppModel = Backbone.Model.extend({
 //        this.trump_val = trump;
     },
     safeTimeOutAction: function (timestamp, fn) {
-        if (timestamp != this.new_game_started) {
+        if (timestamp != this.get('new_game_started')) {
             return;
         }
         else
@@ -803,6 +726,7 @@ var AppModel = Backbone.Model.extend({
 //    },
     start: function (with_comp, onStart) {
 //        var self = this;
+        this.trigger('before_start');
         this.reset();
         this.applyClientSettings();
         this.loadImages(
@@ -837,16 +761,17 @@ var AppModel = Backbone.Model.extend({
                     this.get('game_with_comp').addCards(true, function () {
                         this.trigger('update_deck_remain');
                         var comp_step_first = this.get('game_with_comp').ifComputerStepFirst();
+                        this.trigger('comp_step_first', comp_step_first);
                         this.get('human').setCanStep(!comp_step_first);
                         if (comp_step_first) {
                             setTimeout(function () {
                                 this.safeTimeOutAction(timestamp, function () {
+                                    console.log('comp step');
                                     this.get('opponent').step();
                                 }.bind(this));
                             }.bind(this), 1500);
                         }
                     }.bind(this));
-                    return false;
                 }
                 else {
                     this.applyClientSettings();
@@ -863,17 +788,11 @@ var AppModel = Backbone.Model.extend({
                 if (onStart) {
                     onStart();
                 }
-                this.trigger('start');
+                this.trigger('after_start');
             }.bind(this)
         );
     },
-    temporaryBlockUI: function (time) {
-        this.blockUI();
-        setTimeout(this.unBlockUI, time);
-    },
     turnSound: function () {
-    },
-    unBlockUI: function () {
     },
     updateCardImages: function (cards, onload) {
         this.loadImages(

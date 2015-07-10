@@ -6,9 +6,9 @@ var Table = function () {
     this.POS_FOR_CARDS = App.getDeckCoords().y - 40;
     this.POS_FOR_CARDS_OVER = App.getDeckCoords().y + 90;
     this.LEFT_POSITION_START = 160;
-    this.LAST_PILE_LEFT_POSITION = App.getPileCoords().x - App.card_width / 1.5;
-    this.SMALL_CARD_WIDTH = App.card_width / 1.5;
-    this.SMALL_CARD_HEIGHT = App.card_height / 1.5;
+    this.LAST_PILE_LEFT_POSITION = App.getPileCoords().x - App.get('card_width') / 1.5;
+    this.SMALL_CARD_WIDTH = App.get('card_width') / 1.5;
+    this.SMALL_CARD_HEIGHT = App.get('card_height') / 1.5;
     this.LAST_PILE_POS_FOR_CARDS = App.getPileCoords().y + 30;
     this.SMALL_CARD_VERTICAL_INTERVAL = 40;
     this.last_pile = {
@@ -98,23 +98,24 @@ var Table = function () {
                 y = that.human_attack ? that.POS_FOR_CARDS_OVER_OPPONENT : that.POS_FOR_CARDS_OVER;
                 renderCard_(all_cards[i].over, x, y, zIndex + 1);
             }
-            x = x + App.card_width + that.INTERVAL_BETWEEN_CARDS;
+            x = x + App.get('card_width') + that.INTERVAL_BETWEEN_CARDS;
         }
         var cards_for_throw = that.all_cards.cards_for_throw;
         for (var i in cards_for_throw) {
             renderCard_(cards_for_throw[i], x, that.POS_FOR_CARDS);
-            x = x + App.card_width + that.INTERVAL_BETWEEN_CARDS;
+            x = x + App.get('card_width') + that.INTERVAL_BETWEEN_CARDS;
         }
     };
 
     this.renderLastPile = function () {
         if (!that.last_pile.cards)
             return false;
-        if (App.lastPileLayer)
-            App.lastPileLayer.destroy();
+        if (App.get('lastPileLayer'))
+            App.get('lastPileLayer').destroy();
         var lastPileLayer = new Konva.Layer();
-        App.lastPileLayer = lastPileLayer;
-        App.stage.add(lastPileLayer);
+        App.set('lastPileLayer', lastPileLayer);
+//        App.lastPileLayer = lastPileLayer;
+        App.get('stage').add(lastPileLayer);
 
         var x = that.LAST_PILE_LEFT_POSITION -
             (that.SMALL_CARD_WIDTH + that.INTERVAL_BETWEEN_CARDS)
@@ -126,17 +127,18 @@ var Table = function () {
     this.renderLastTakedCards = function (cards_object, x, y) {
         if (!cards_object)
             return false;
-        if (App.TackedCardsLayer)
-            App.TackedCardsLayer.destroy();
+        if (App.get('TackedCardsLayer'))
+            App.get('TackedCardsLayer').destroy();
         var TackedCardsLayer = new Konva.Layer();
-        App.TackedCardsLayer = TackedCardsLayer;
-        App.stage.add(TackedCardsLayer);
+        App.set('lastPileLayer', lastPileLayer);
+//        App.TackedCardsLayer = TackedCardsLayer;
+        App.get('stage').add(TackedCardsLayer);
         that.renderSmallCards(cards_object, x, y, TackedCardsLayer);
     };
 
     this.renderLastPileIfVisible = function () {
-        if (App.lastPileLayer && App.lastPileLayer.isVisible()) {
-            App.table.renderLastPile();
+        if (App.get('lastPileLayer') && App.get('lastPileLayer').isVisible()) {
+            App.get('table').renderLastPile();
         }
     };
 
@@ -161,12 +163,12 @@ var Table = function () {
     };
 
     this.toggleLastPile = function () {
-        if (App.lastPileLayer) {
-            if (App.lastPileLayer.isVisible())
-                App.lastPileLayer.hide();
+        if (App.get('lastPileLayer')) {
+            if (App.get('lastPileLayer').isVisible())
+                App.get('lastPileLayer').hide();
             else
-                App.lastPileLayer.show();
-            App.stage.draw();
+                App.get('lastPileLayer').show();
+            App.get('stage').draw();
         }
         else {
             that.renderLastPile();
@@ -174,14 +176,15 @@ var Table = function () {
     };
 
     this.destroyLastPile = function () {
-        if (App.lastPileLayer) {
-            App.lastPileLayer.destroy();
-            App.lastPileLayer = null;
+        if (App.get('lastPileLayer')) {
+            App.get('lastPileLayer').destroy();
+            App.set('lastPileLayer', null);
+//            App.lastPileLayer = null;
         }
     };
 
     var renderSmallCard = function (id, x, y, layer) {
-        var card_from_pile = App.stage.findOne('#' + id);
+        var card_from_pile = App.get('stage').findOne('#' + id);
         var zIndex = card_from_pile ? card_from_pile.getZIndex() : 1;
 
         var card = new Konva.Image({
@@ -194,11 +197,11 @@ var Table = function () {
             name: 'smallCard'
         });
         layer.add(card);
-        App.stage.draw();
+        App.get('stage').draw();
     };
 
     var renderCard_ = function (id, x, y, zIndex) {
-        var card = App.stage.findOne('#' + id);
+        var card = App.get('stage').findOne('#' + id);
         if (!card) {
             card = App.addCardToLayer(id);
         }
@@ -208,8 +211,8 @@ var Table = function () {
             card.setZIndex(zIndex);
         var render = function () {
             card.setImage(App.getImageById(id));
-            App.stage.draw();
-            if (App.without_animation) {
+            App.get('stage').draw();
+            if (App.get('without_animation')) {
                 card.setX(x);
                 card.setY(y);
                 card.setRotation(0);
@@ -229,7 +232,7 @@ var Table = function () {
             card.removeName('inverted');
         }
         render();
-        App.stage.draw();
+        App.get('stage').draw();
         return zIndex;
 
     };
@@ -312,13 +315,13 @@ var Table = function () {
         var cards = that.getCards();
         that.last_pile = that.getState();
 
-        if (!App.without_animation) {
+        if (!App.get('without_animation')) {
             App.addToPileSound();
         }
         for (var i in cards) {
 
             var id = cards[i];
-            var card = App.stage.findOne('#' + id).setImage(App.backImage);
+            var card = App.get('stage').findOne('#' + id).setImage(App.get('backImage'));
 
             card.on('click', function () {
                 that.toggleLastPile();
@@ -329,7 +332,7 @@ var Table = function () {
             var rotation = -Math.floor(Math.random() * 30);
 //            rotation = rotation % 2 == 0 ? rotation + 90: rotation;
 
-            if (App.without_animation) {
+            if (App.get('without_animation')) {
                 card.setX(App.getPileCoords().x);
                 card.setY(App.getPileCoords().y);
                 card.rotation(rotation);
@@ -345,7 +348,7 @@ var Table = function () {
                 tween.play();
             }
 
-            App.MyCards.draw();
+            App.get('MyCards').draw();
         }
         that.clearTable();
     };

@@ -33,6 +33,11 @@ var AppView = Backbone.View.extend({
         this.$load_text = this.$('#load_text');
 
         this.listenTo(App, 'start', this.onStart);
+        this.listenTo(App, 'comp_step_first', function (first) {
+            this.onCompStepFirst(first)
+        });
+        this.listenTo(App, 'before_start', this.onBeforeStart);
+        this.listenTo(App, 'after_start', this.onAfterStart);
 //        this.listenTo(App.get('human'), 'before_my_step', this.beforeMyStep);
 //        this.listenTo(App.get('human'), 'before_opponent_step', this.beforeOpponentStep);
 //        this.listenTo(App.get('human'), 'win', this.onWinHuman);
@@ -61,11 +66,13 @@ var AppView = Backbone.View.extend({
         );
     },
     beforeMyStep: function () {
+        console.log('beforeMyStep');
         this.$myStepText.show();
         this.$opponentStepText.hide();
-        hide_action_buttons();
+        this.hideActionButtons();
     },
     beforeOpponentStep: function () {
+        console.log('beforeOpponentStep');
         this.$opponentStepText.show();
         this.$myStepText.hide();
         this.$takeCards.hide();
@@ -118,11 +125,9 @@ var AppView = Backbone.View.extend({
         };
     },
     onStart: function () {
-        this.listenTo(App.get('human'), 'before_my_step', this.beforeMyStep);
-        this.listenTo(App.get('human'), 'before_opponent_step', this.beforeOpponentStep);
-        this.listenTo(App.get('human'), 'win', this.onWinHuman);
-        this.listenTo(App.get('opponent'), 'win', this.onWinComputer);
-        this.listenTo(App.get('opponent'), 'draw', this.onDraw);
+    },
+    onBeforeStart: function () {
+        console.log('onBeforeStart');
         this.$myStepText.hide();
         this.$opponentStepText.hide();
 
@@ -160,6 +165,31 @@ var AppView = Backbone.View.extend({
                 $('#mode_52_cards').addClass('activeSelector');
                 break;
         }
+
+    },
+    onAfterStart: function () {
+        console.log('onAfterStart');
+        this.listenTo(App.get('human'), 'before_my_step', this.beforeMyStep);
+//        this.listenTo(App.get('human'), 'before_my_step', function () {
+//            this.beforeMyStep();
+//        });
+        this.listenTo(App.get('human'), 'before_opponent_step', function () {
+            this.beforeOpponentStep()
+        });
+        this.listenTo(App.get('human'), 'before_opponent_step', this.beforeOpponentStep);
+        this.listenTo(App.get('human'), 'win', this.onWinHuman);
+        this.listenTo(App.get('opponent'), 'win', this.onWinComputer);
+        this.listenTo(App.get('opponent'), 'draw', this.onDraw);
+        this.listenTo(App.get('opponent'), 'take_cards', this.onOpponentTakeCards);
+
+        this.initializeHistoryStepButtons();
+    },
+    onCompStepFirst: function (first) {
+        if (first) {
+            this.beforeOpponentStep();
+        }
+        else
+            this.beforeMyStep();
     },
     onPlayWithComp: function () {
         this.$score.hide();
@@ -168,7 +198,7 @@ var AppView = Backbone.View.extend({
         this.$opponentName.text('Компьютер');
         this.$opponentRating.text('');
         this.$switchGame.hide();
-        this.initializeHistoryStepButtons();
+//        this.initializeHistoryStepButtons();
     },
     onWinComputer: function () {
         this.$looseMessage.show();
@@ -185,8 +215,11 @@ var AppView = Backbone.View.extend({
         this.$takeCards.show();
     },
     onTakeCards: function () {
-        this.$opponentTakeCards.fadeIn(300);
-        this.$opponentTakeCards.fadeOut(4000);
+//        this.$opponentTakeCards.fadeIn(300);
+//        this.$opponentTakeCards.fadeOut(4000);
+    },
+    onOpponentTakeCards: function () {
+
     },
     onCanPutToPile: function () {
         this.$putToPile.show();
@@ -251,12 +284,13 @@ var AppView = Backbone.View.extend({
         $('#tbNext').addClass('disable').show();
     },
     takeCards: function () {
-        if (!App.human.canStep())
-            return false;
-        if (App.table.getCardForBeat()) {
-            App.humanTakeCards();
-        }
-        return false;
+        App.humanTakeCards();
+//        if (!App.human.canStep())
+//            return false;
+//        if (App.table.getCardForBeat()) {
+//            App.humanTakeCards();
+//        }
+//        return false;
     },
     temporaryBlockUI: function (time) {
         this.blockUI();
