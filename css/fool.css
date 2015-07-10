@@ -1,0 +1,410 @@
+body {
+    background-color: gray;
+    font-family: Verdana;
+    font-size: 9pt;
+}
+
+.center {
+    margin: 0 auto;
+    padding-top: 15px;
+    width: 1020px;
+    position: relative;
+}
+
+.center_in_field {
+    /*position: absolute;*/
+    /*margin: auto;*/
+    /*display: block;*/
+    /*bottom: 0;*/
+    /*right: 0;*/
+    /*left: 0;*/
+    width: 50%;
+    height: 24px;
+    overflow: hidden;
+    margin: auto;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+
+}
+
+#profileCloseImg {
+    position: relative !important;
+}
+
+#field {
+    height: 690px;
+    width: 100%;
+    position: relative;
+    background-image: url("/fool/img/bg_large1.jpg");
+    background-size: 100% 100%;
+    padding-bottom: 0;
+    font-size: 12pt;
+    color: #ffffff;
+}
+
+#gameArea {
+    width: 730px;
+    margin-left: auto;
+    margin-right: auto;
+    /*margin-bottom: 30px;*/
+    float: left;
+    background: none;
+}
+
+.gameZona {
+    float: left;
+    width: 740px;
+    margin-left: 10px;
+}
+
+.bottomArea {
+    width: 730px;
+    position: relative;
+    display: inline-block;
+}
+
+#buttons {
+    position: absolute;
+    top: 462px;
+    right: 200px;
+}
+
+#buttons > button {
+    display: block;
+    float: left;
+    height: 45px;
+    width: 92px;
+    line-height: 1;
+    margin: 2px;
+    font-size: 11pt;
+}
+
+#buttons > #cancel_throw {
+    width: 111px;
+}
+
+#opponent-cards {
+    top: 10px;
+    left: 50px;
+    width: 500px;
+    height: 96px;
+    position: relative;
+}
+
+#player-cards {
+    top: 500px;
+    left: 50px;
+    width: 300px;
+    height: 96px;
+    position: absolute;
+}
+
+#player-cards .card {
+    position: absolute;
+    float: left;
+}
+
+#opponent-cards .card {
+    float: left;
+    margin-left: -40px;
+}
+
+#deck {
+    position: absolute;
+    right: 20px;
+    top: 115px;
+}
+
+#deck .card {
+    position: absolute;
+}
+
+#pile {
+    position: absolute;
+    top: 250px;
+    left: 10px;
+    min-width: 100px;
+    height: 100px;
+    border: 1px solid;
+    border-radius: 5px;
+}
+
+#pile .card {
+    float: left;
+    margin-left: -69px;
+}
+
+#pile .card:first-child {
+    right: -71px;
+    position: relative;
+    padding-left: 70px;
+    z-index: -1;
+}
+
+.pile_text {
+    position: absolute;
+    top: 292px;
+    left: 44px;
+}
+
+#game_field {
+    position: absolute;
+    top: 250px;
+    left: 180px;
+    height: 100px;
+    width: 570px;
+}
+
+#game_field .card {
+    float: left;
+}
+
+#game_field .over {
+    position: absolute;
+    float: none;
+    top: 39px;
+    box-shadow: 0 0 10px;
+}
+
+#trump {
+    position: absolute;
+    top: 332px;
+    left: 22px;
+    color: white;
+    width: 103px;
+    float: left;
+    line-height: 2;
+}
+
+#trump_icon {
+    background-image: url("/fool/img/suits.png");
+    width: 30px;
+    height: 30px;
+    display: block;
+    float: right;
+}
+
+#trump_icon.c {
+    background-position: -90px;
+}
+
+#trump_icon.s {
+    background-position: -60px;
+}
+
+#trump_icon.h {
+    background-position: -30px;
+
+}
+
+#trump_icon.d {
+    background-position: -0px;
+}
+
+.card {
+    width: 71px;
+    height: 96px;
+}
+
+#my_step_text{
+    width: 100px;
+    top: 281px;
+}
+
+#my_step_text, #opponent_step_text {
+    float: left;
+}
+
+#my_timer, #opponent_timer {
+    display: inline-block;
+}
+
+#v6Chat {
+    min-height: 400px;
+}
+
+#v6Chat .messagesWrap {
+    height: 270px;
+    max-height: 270px;
+}
+
+#win_message, #loose_message, #draw_message, #switch_game, #load_text {
+    color: #EEEEEE;
+    font-family: Trebuchet MS;
+    font-size: 20pt;
+    font-weight: bold;
+    left: 0;
+    margin: 0;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    top: 200px;
+}
+
+#switch_game a {
+    cursor: pointer;
+    color: #ffffff;
+}
+
+.cpDisabled {
+    opacity: 0.35;
+}
+
+#my_name, #opponent_name {
+    color: #FFF;
+    float: left;
+    display: inline-block;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#my_rating, #opponent_rating {
+    color: #CCC;
+    width: 49px;
+    display: inline-block;
+    font-size: 11pt;
+}
+
+#beaten, #opponent_take_cards, #threw, #nothing_to_beat {
+    position: absolute;
+    top: 211px;
+    color: #EEEEEE;
+    font-family: Trebuchet MS;
+    font-size: 15pt;
+    font-weight: bold;
+    width: 219px;
+}
+
+#can_throw {
+    position: absolute;
+    top: 480px;
+    left: 239px;
+}
+
+#timer {
+    color: #FFF;
+    width: 49px;
+    display: inline-block;
+}
+
+/*#nothing_to_beat{*/
+/*color: #EEEEEE;*/
+/*font-family: Trebuchet MS;*/
+/*font-size: 15pt;*/
+/*font-weight: bold;*/
+/*position: absolute;*/
+/*bottom: 310px;*/
+/*left: 205px;*/
+/*width: 167px;*/
+/*float: left;*/
+/*}*/
+
+#repControls {
+    position: absolute;
+    left: 444px;
+    top: 150px;
+    z-index: 10;
+    opacity: 0.9;
+}
+
+#pause_spectate_game.playing {
+    background-color: rgb(247, 247, 145);
+}
+
+.cpButton.disable {
+    opacity: 0.35;
+}
+
+.activeSelector {
+    background-color: #FFFFCA;
+    cursor: default !important;
+}
+
+.activeSelector:hover {
+    background-color: #FFFFCA !important;
+}
+
+/*.modes {*/
+/*width: 7%;*/
+/*}*/
+
+.modes.blocked {
+    cursor: default;
+}
+
+.modes.blocked:hover {
+    background: #F0F0F0;
+}
+
+#userList .tableWrap {
+    height: 235px;
+    max-height: 235px;
+}
+
+.closeBottomSubPanelImg {
+    position: inherit;
+}
+
+.settingsContainer label {
+    display: block;
+}
+
+#Description {
+    width: 680px;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 8px;
+    position: absolute;
+    top: 10px;
+    z-index: 10;
+    border: 1px solid rgb(181, 181, 181);
+    border-radius: 2px;
+    font-size: 8pt;
+    color: #444;
+    background: white;
+    display: none;
+}
+
+.description_close_icon {
+    float: right;
+    cursor: pointer;
+}
+
+.name_and_rating {
+    width: 202px;
+}
+
+.name_and_rating.opponent {
+    bottom: 614px;
+    /*width: 208px;*/
+}
+
+.name_and_rating.my {
+    top: 615px;
+    /*width: 202px;*/
+}
+
+#deck_remain {
+    position: absolute;
+    bottom: 273px;
+    left: 34px;
+    float: left;
+}
+
+#score {
+    position: absolute;
+    top: 315px;
+    right: 25px;
+    width: 80px;
+    float: left;
+    display: block;
+}
+
+#opponent_step_text{
+    width: 160px;
+    /*float: left;*/
+    bottom: 320px;
+}

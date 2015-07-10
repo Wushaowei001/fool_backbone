@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>StepByStep</title>
+    <link rel="stylesheet" href="https://logic-games.spb.ru/v6-game-client/build/v6-game-client.css"/>
+    <link rel="stylesheet" href="http://logic-games.spb.ru/example/css/game-layout.css"/>
+    <link rel="stylesheet" href="http://logic-games.spb.ru/css/build/shared.css?v=510"/>
+    <script src="https://logic-games.spb.ru/v6-game-client/app/lib/jquery-2.1.1.min.js"></script>
+    <script src="https://logic-games.spb.ru/v6-game-client/app/lib/jquery-ui.js"></script>
+    <script src="js/jquery-2.1.1.min.js" type="javascript"></script>
+    <script src="js/underscore-min.js"></script>
+    <script src="js/backbone-min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="https://logic-games.spb.ru/v6-game-client/app/lib/underscore-min.js"></script>
+    <script src="https://logic-games.spb.ru/v6-game-client/app/lib/backbone-min.js"></script>
+    <script src="https://logic-games.spb.ru/v6-game-client/build/v6-game-client.js"></script>
+    <link type="text/css" rel="stylesheet" href="css/fool.css">
+
+    <script src="js/konva.min.js"></script>
+    <script src="js/deck.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/opponent.js"></script>
+    <script src="js/human.js"></script>
+    <script src="js/computer.js"></script>
+    <script src="js/history.js"></script>
+    <script src="js/functions.js"></script>
+    <script src="js/binding.js"></script>
+    <script src="js/table.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/client_local.js"></script>
+    <script src="js/client.js"></script>
+    <script src="js/AppView.js"></script>
+    <script src="js/WebManager.js"></script>
+</head>
+<body>
+
+<div class="center">
+<div style="float: left;">
+    <div id="userListDiv"></div>
+    <div id="chatDiv"></div>
+
+
+</div>
+
+<div class="gameZona">
+    <div class="gameArea" id="gameArea">
+
+        <!-- TOP LINKS -->
+        <div class="titleBand">
+            <div class="titleBandInner">
+                <table cellspacing="0" cellpadding="0" width="100%" border="0">
+                    <tr>
+                        <td width="1%" style="white-space: nowrap;">
+                            <span class="titleBandLink" id="title">
+                                Дурак
+                            </span>
+                        </td>
+
+                        <td>&nbsp;</td>
+
+                        <td width="1%" align="center" style="white-space: nowrap;">
+                            <span class="titleBandLink" id="showDescription">
+                                Описание
+                            </span>
+                        </td>
+
+                        <td>&nbsp;</td>
+
+                        <td width="1%" align="center" style="white-space: nowrap;">
+                            <span id="gbShow" class="titleBandLink">
+                                Вопросы и отзывы
+                            </span>
+                        </td>
+
+                        <td>&nbsp;</td>
+
+                        <td width="1%" align="right" style="white-space: nowrap;">
+                            <a href="/"
+                               class="titleBandLink" <?= (isset($isVk) && $isVk ? " target='_blank'" : "") ?>>
+                            Перейти на другие игры
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- TOP BUTTONS -->
+        <div class="controlPanel nonSelectable">
+            <table class="controlPanelLayout top" cellpadding="0">
+                <tbody>
+                <tr class="real_game" style="display: none">
+                    <td id="tbLeave" class="cpButton cpNormal nonSelectable">Покинуть игру</td>
+                    <td id="tbLetDown" class="cpButton cpNormal nonSelectable">Сдаться</td>
+                    <td id="tbDraw" class="cpButton cpNormal nonSelectable">Предложить ничью</td>
+                </tr>
+                <tr class="game_with_comp" style="display: none">
+                    <td id="tbLeaveReview" class="cpButton cpNormal nonSelectable" style="display: none;">Выйти из
+                        режима
+                        просмотра
+                    </td>
+                    <td id="tbPrev" class="cpButton" style="opacity: 0.35">Ход назад</td>
+                    <td id="tbNext" class="cpButton" style="opacity: 0.35">Ход вперед</td>
+                    <td id="mode_36_cards" class="cpButton cpNormal nonSelectable activeSelector modes">Стандарт</td>
+                    <td id="mode_52_cards" class="cpButton cpNormal nonSelectable modes">52 карты</td>
+                    <td id="tbNewGame" class="cpButton cpNormal nonSelectable">Новая игра</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- GAME FIELD !! важно чтобы был див с таким айдишников и центрированием, относительного него и будет центрироваться блок с авторизацией !!-->
+        <div id="field">
+
+            <div id="konva_container">
+
+            </div>
+            <div id="repControls" style="display: none;">
+                <img style="cursor: pointer; opacity: 0.6;" title="Предыдущий ход" src="img/icon_prev.png"
+                     id="prev_spectate_game" class="disable" onclick="graphMoviePrevStage()">
+                <img style="cursor: pointer; opacity: 1;" title="Старт/Пауза"
+                     src="img/icon_play.png" id="pause_spectate_game" onclick="graphPlayPauseMovieReplay()">
+                <img style="cursor: pointer; opacity: 1;" title="Следующий ход" src="img/icon_next.png"
+                     id="next_spectate_game" onclick="graphMovieNextStage()">
+            </div>
+            <div id="win_message" style="display: none">Вы победили!</div>
+            <div id="loose_message" style="display: none">Вы проиграли!</div>
+            <div id="draw_message" style="display: none">Ничья!</div>
+            <!--<div style="position: absolute; top: 190px; left: 25px; width: 160px; float: left;">-->
+            <div id="opponent_step_text" class="center_in_field" style="display: none">Ход соперника</div>
+            <!--<div id="opponent_timer"></div>-->
+            <!--</div>-->
+            <div id="score" style="display: none">
+                Счет:&nbsp;
+                <span style="display: inline-block; float: right;"></span>
+            </div>
+            <div id="deck_remain">
+                <div style="display: inline-block" class="count"></div>
+            </div>
+            <!--<div class="center_in_field">-->
+            <div id="my_step_text" class="center_in_field" style="display: none"><b>Ваш ход</b></div>
+            <!--<div id="my_timer"></div>-->
+            <!--</div>-->
+            <div id="nothing_to_beat" class="center_in_field" style="display: none; width: 160px;">Нечем отбиться</div>
+
+            <div id="buttons">
+                <button id="take_cards" class="cpButton" style="display: none">Взять карты</button>
+                <button id="put_tu_pile" class="cpButton" style="display: none">Отправить </br> в отбой</button>
+                <button id="end_throw" class="cpButton" style="display: none">Завершить</button>
+            </div>
+            <div class="name_and_rating opponent center_in_field">
+                <div id="opponent_name"></div>
+                &nbsp;
+                <div id="opponent_rating"></div>
+            </div>
+            <div class="name_and_rating my center_in_field">
+                <div id="my_name"></div>
+                &nbsp;
+                <div id="my_rating"></div>
+            </div>
+            <div id="beaten" style="display: none; width: 100px;" class="center_in_field">Бито!</div>
+            <div id="threw" style="display: none; width: 100px;" class="center_in_field">Подкинул</div>
+            <div id="opponent_take_cards" style="display: none; width: 211px;" class="center_in_field">Соперник взял
+                карты
+            </div>
+            <div id="trump" style="display: none">Козырь:
+                <span id="trump_icon"></span>
+            </div>
+            <div id="can_throw" style="display: none">Можно подкинуть</div>
+            <div id="switch_game">
+                Пригласите соперника </br>
+                или </br>
+                <a href="#">начните игру с компьютером</a>
+            </div>
+            <div id="load_text" style="display: none">Загрузка...</div>
+        </div>
+
+        <!-- BOTTOM BUTTONS -->
+        <div class="controlPanel nonSelectable">
+            <table class="controlPanelLayout">
+                <tr>
+                    <td id="bbParameters" class="cpButton cpNormal nonSelectable">Параметры</td>
+                    <td id="bbHistory" class="cpButton cpNormal nonSelectable">История</td>
+                    <td id="bbRatings" class="cpButton cpNormal nonSelectable">Рейтинг</td>
+                    <td id="bbLoginRegister" class="cpButton cpNormal nonSelectable"> Авторизация</td>
+                    <td id="bbProfile" class="cpButton cpNormal nonSelectable"><span
+                            id="bbProfileLabel">Личный кабинет</span>
+                        <span id="bbUnreadMsgCount"></span></td>
+                </tr>
+            </table>
+        </div>
+        <!--        <div id="ratingDiv" style="background: white; margin-bottom: 10px;"></div>-->
+        <!--        <div id="historyDiv"></div>-->
+        <!--        <div id="profileDiv"></div>-->
+
+        <!-- INCLUDE AUTHFORM  !! обязательно для включения, в блоке, с центрированием !! -->
+        <?php include '../snippets/lg-login-register.htm'; ?>
+    </div>
+    <!-- BOTTOM AREA AND PANELS !! обязательно для включения, в блоке, с центрированием !! -->
+    <div class="bottomArea" id="bottomArea">
+        <div id="ratingDiv"></div>
+        <div id="historyDiv"></div>
+        <div id="profileDiv"></div>
+        <?php
+        include '../snippets/lg-profile.htm';
+        include '../snippets/lg-guestbook.htm';
+        ?>
+    </div>
+
+    <!-- FOOTER STATS  -->
+    <div style="text-align: center; padding-bottom: 10px;">
+        <!-- !! обязательно для включения, в блоке, с центрированием !! -->
+        <?php
+        include '../snippets/lg-activity.htm';
+        ?>
+    </div>
+</div>
+<div id="settings_template" style="display: none">
+
+    <p>Лицо карт</p>
+
+    <div class="option">
+        <label>
+            <input type="radio" name="card_design" value="base">
+            Стандартное
+        </label>
+        <label>
+            <input type="radio" name="card_design" value="simple">
+            Упрощенное
+        </label>
+    </div>
+
+    <p>Рубашка карт</p>
+
+    <div class="option">
+        <label>
+            <input type="radio" name="back_image" value="checkered_1">
+            Клетчатая
+        </label>
+        <label>
+            <input type="radio" name="back_image" value="gradient_3">
+            Градиент
+        </label>
+        <label>
+            <input type="radio" name="back_image" value="back">
+            Изначальная
+        </label>
+
+    </div>
+
+    <p>Сортировка</p>
+
+    <div class="option">
+        <label>
+            <input type="radio" name="sort" value="without">
+            Без сортировки
+        </label>
+        <label>
+            <input type="radio" name="sort" value="by_suit">
+            По масти
+        </label>
+        <label>
+            <input type="radio" name="sort" value="by_value">
+            По значению
+        </label>
+        <label>
+            <input type="radio" name="sort" value="by_value_trump_to_right">
+            По значению (козырь всегда справа)
+        </label>
+    </div>
+
+    <p>Отображать козырем:</p>
+
+    <div>
+        <label style="display: inline">
+            <input type="radio" name="trump_mapping" value="without">
+            Как есть
+        </label>
+        <label style="display: inline">
+            <input type="radio" name="trump_mapping" value="s">
+            Пики
+        </label>
+        <label style="display: inline">
+            <input type="radio" name="trump_mapping" value="d">
+            Бубны
+        </label>
+        <label style="display: inline">
+            <input type="radio" name="trump_mapping" value="c">
+            Трефы
+        </label>
+        <label style="display: inline">
+            <input type="radio" name="trump_mapping" value="h">
+            Червы
+        </label>
+    </div>
+
+    <p>Настройки игры</p>
+
+    <div>
+        <label>
+            <input type="radio" name="step" value="click">
+            Ход одинарным кликом
+        </label>
+        <label>
+            <input type="radio" name="step" value="dblclick">
+            Ход двойным кликом
+        </label>
+
+        <div class="option">
+            <label><input type="checkbox" name="sounds">
+                Включить звук</label>
+        </div>
+        <div class="option">
+            <label><input type="checkbox" name="disableInvite">
+                Запретить приглашать меня в игру</label>
+        </div>
+    </div>
+</div>
+
+<div id="Description">
+    <img class="description_close_icon" src="//logic-games.spb.ru/v6-game-client/app/i/close.png"
+         onclick="$('#Description').hide();" style="padding-left:0px;">
+
+    <div style="line-height: 18px; padding: 8px;">
+
+        <div style="text-align: center;padding: 4px;">
+            <h3>Друзья!</h3>
+            <b>Представляем Вам новую реализацию популярной карточной игры «Дурак»!</b>
+        </div>
+
+        <p>
+            &nbsp;&nbsp;&nbsp;Игра «Дурак» появилась в 19-м веке в России. Поначалу игра была популярна только у
+            народно-крестьянской части населения. Высший свет больше предпочитал такие игры, как
+            покер, бридж, пасьянс, однако уже в следующем веке во времена СССР игра обрела свою
+            популярность среди всех слоёв населения и не теряет её до сих пор.
+        </p>
+
+        <div style="text-align: center;padding: 4px;">
+            <b>Правила игры</b>
+        </div>
+        &nbsp;&nbsp;&nbsp;В игре используется колода из 36 карт . Старшинство карт в колоде из 36 карт определяется от
+        меньшего значения к большему - 6, 7, 8, 9, 10, Валет, Дама, Король, Туз.
+        <br>
+        &nbsp;&nbsp;&nbsp;Каждому игроку раздаётся по 6 карт. После этого определяется козырь – произвольно достаётся
+        карта из колоды и её масть устанавливает козырь для данной игры. Оставшаяся колода кладётся
+        сверху так, чтобы козырная карта была всем видна. Козырная карта (карта с мастью козыря)
+        может бить любую другую некозырную карту, а также козырную карту меньшего достоинства.
+        Козырный туз побить в игре невозможно. Цель игры — избавиться от всех карт. Последний игрок,
+        не избавившийся от карт, остаётся в «дураках».
+        <br>
+        &nbsp;&nbsp;&nbsp;Первым ходит тот, у кого среди розданных карт находится наименьший козырь среди розданных
+        всем игрокам карт. Игрок ходит под соперника любой своей картой, в зависимости от выбранной
+        им стратегии (к примеру целью хода может быть избавление от карт наименьшего достоинства
+        или стремление сходить так, чтобы соперник взял карты и т.д.). В игре также разрешается
+        подкидывать карту сопернику, если у Вас есть карта такая же по достоинству как какая-либо карта,
+        которой соперник побился (пример – Вы походили семёркой, соперник побил её десяткой – в
+        этом случае вы имеете право подкинуть десятку, если она у Вас есть). Если все карты побиты и Вам
+        нечего подкинуть, то карты, участвовашие на этом ходу, уходят в отбой – «бито», недостающие до
+        6 карт берутся из колоды сначала тем кто ходил. Потом тем, кто отбивался, и ход переходит к
+        отбивавшемуся игроку. Если соперник не может отбить подкинутые Вами карты – он забирает их
+        себе, Вы берёте недостающие до 6 карт из колоды и снова ходите. Количество карт,
+        подкидываемых игроком до первой биты не может быть более 5. После первой биты не более 6.
+        <br>
+        &nbsp;&nbsp;&nbsp;В игре также возможна ничья— когда игрок ходит последними картами, а соперник отбивается
+        последними картами – т.е. в результате в конце игры карт не остаётся ни у одного из соперников
+        ни в колоде.
+    </div>
+</div>
+
+
+</div>
+</body>
+</html>
