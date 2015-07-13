@@ -54,7 +54,8 @@ var AppView = Backbone.View.extend({
             this.updateDeckRemains(obj);
         }.bind(this));
         this.listenTo(App, 'play_with_comp', this.onPlayWithComp);
-        this.listenTo(App, 'endThrow', this.endThrow);
+        this.listenTo(App, 'play_with_opponent', this.onPlayWithOpponent);
+        this.listenTo(App, 'endThrow', this.onEndThrow);
         this.listenTo(App, 'score_changed', function (score) {
             this.showScore(score)
         });
@@ -70,6 +71,14 @@ var AppView = Backbone.View.extend({
         });
         this.listenTo(App, 'opponent_rating_changed', function (rating) {
             this.showOpponentRating(rating);
+        });
+        this.listenTo(App, 'can_step', function (can) {
+            console.log('CAN STEP!!!!');
+            console.log(can);
+            if (can)
+                this.beforeMyStep();
+            else
+                this.beforeOpponentStep();
         });
 
         App.setGameArea(
@@ -112,9 +121,7 @@ var AppView = Backbone.View.extend({
         this.myStepTextHide();
     },
     endThrow: function () {
-        this.throwButtonHide();
-        this.canThrowMessageHide();
-        this.beforeMyStep();
+        App.endThrow();
     },
     getSettingsTemplate: function () {
         return $('#settings_template').html();
@@ -161,19 +168,11 @@ var AppView = Backbone.View.extend({
     onAfterStart: function () {
         console.log('onAfterStart');
         this.listenTo(App.get('human'), 'before_my_step', this.beforeMyStep);
-//        this.listenTo(App.get('human'), 'before_my_step', function () {
-//            this.beforeMyStep();
-//        });
-        this.listenTo(App.get('human'), 'before_opponent_step', function () {
-            this.beforeOpponentStep()
-        });
         this.listenTo(App.get('human'), 'before_opponent_step', this.beforeOpponentStep);
         this.listenTo(App.get('human'), 'win', this.onWinHuman);
         this.listenTo(App.get('opponent'), 'win', this.onWinComputer);
         this.listenTo(App.get('opponent'), 'draw', this.onDraw);
         this.listenTo(App.get('opponent'), 'take_cards', this.onOpponentTakeCards);
-
-//        this.initializeHistoryStepButtons();
     },
     onBeaten: function () {
         this.$beaten.fadeIn(300);
@@ -189,6 +188,11 @@ var AppView = Backbone.View.extend({
         $('#end_throw').hide();
         $('#can_throw').hide();
         this.hideActionButtons();
+    },
+    onEndThrow: function () {
+        this.throwButtonHide();
+        this.canThrowMessageHide();
+        this.beforeMyStep();
     },
     myStepTextHide: function () {
         this.$myStepText.hide();
@@ -237,7 +241,6 @@ var AppView = Backbone.View.extend({
         this.showMyName(App.get('my_name'));
 
     },
-
     onCompStepFirst: function (first) {
         if (first) {
             this.beforeOpponentStep();
@@ -282,7 +285,6 @@ var AppView = Backbone.View.extend({
     onCanPutToPile: function () {
         this.$putToPile.show();
     },
-
     onNothingToBeat: function () {
         this.$takeCards.hide();
         this.$myStepText.hide();
@@ -293,7 +295,6 @@ var AppView = Backbone.View.extend({
         this.$threw.fadeIn('fast');
         this.$threw.fadeOut(2000);
     },
-
     onOpponentTakeCards: function () {
         this.temporaryBlockUI(2000);
     },

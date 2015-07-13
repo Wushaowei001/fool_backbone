@@ -29,21 +29,23 @@ var Human = Player.extend({
         this._super('setCards', cards);
     },
     setCanStep: function (can) {
-        this.set('can_step', can);
+        App.set('can_step', can);
+//        this.set('can_step', can);
         console.log('setCanStep: ' + can);
         if (can) {
-            this.trigger('before_my_step');
-            this.beforeMyStep()
+//            this.trigger('before_my_step');
+            this.beforeMyStep();
         }
 //        App.myStepText();
-        else {
-            this.trigger('before_opponent_step');
-        }
+//        else {
+//            this.trigger('before_opponent_step');
+//        }
 
 //        App.opponentStepText();
     },
     canStep: function () {
-        return this.get('can_step');
+        return App.get('can_step');
+//        return this.get('can_step');
     },
     canStartStep: function (id) {
         if (!id)
@@ -209,9 +211,7 @@ var Human = Player.extend({
         }.bind(this));
     },
     bindCardForThrow: function (card, id, cards) {
-        var settings = App.getSettings();
-
-        var action_step = settings.step;
+        var action_step = App.getProperty('step');
 
         card.on(action_step + ' dbltap', function () {
             if (!this.canStartStep(id))
@@ -221,8 +221,8 @@ var Human = Player.extend({
             App.get('table').addCardForThrow(id);
             var cards_for_throw = this._getCardsForThrow(cards);
             if (!cards_for_throw || !this.bindCardForThrow.count)
-                endThrow();
-        });
+                App.endThrow();
+        }.bind(this));
     },
     updateCardImages: function (onload) {
         App.updateCardImages(this.getCards(), onload);

@@ -1,44 +1,4 @@
 $(function () {
-//    $('#take_cards').on('click', function () {
-//        if (!App.human.canStep())
-//            return false;
-//        if (App.table.getCardForBeat()) {
-//            take_cards();
-//        }
-//        return false;
-//    });
-//    $('#put_tu_pile').on('click', function () {
-//        if (!App.human.canStep())
-//            return false;
-//
-//        if (App.table.getCards()) {
-//            if (App.table.getCardForBeat())
-//                return false;
-//            App.table.addToPile();
-//
-//            if (!App.game_with_comp) {
-//                client.gameManager.sendTurn({type: 'addToPile'});
-//                client.gameManager.sendEvent('event', {data: 'getCards'});
-//            }
-//            else {
-//                App.game_with_comp.history.disableMoves();
-//                App.game_with_comp.addCards(true, function () {
-//                    App.updateDeckRemains();
-//                });
-//            }
-//            App.human.setCanStep(false);
-//            if (App.game_with_comp && !App.view_only) {
-//                var timestamp = App.new_game_started;
-//                setTimeout(function () {
-//                        App.safeTimeOutAction(timestamp, function () {
-//                            App.opponent.step();
-//                        });
-//                    }
-//                    , 800);
-//            }
-//        }
-//        return false;
-//    });
 
     $('#gameArea').on('click', '#tbHelp', function () {
         if (!App.human.canStep())
@@ -111,9 +71,9 @@ $(function () {
     $('#gameArea').on('click', '#tbLeave', function () {
         if ($(this).hasClass('disable'))
             return false;
-        AppView.showButtonsForGameWithComp();
-        $('#my_step_text').hide();
-        $('#opponent_step_text').hide();
+        appView.showButtonsForGameWithComp();
+//        $('#my_step_text').hide();
+//        $('#opponent_step_text').hide();
         client.gameManager.leaveGame();
     });
 
@@ -136,10 +96,6 @@ $(function () {
         App.get('game_with_comp').history.moveForward();
     });
 
-    $('#end_throw').on('click', function () {
-        endThrow();
-    });
-
     $('#mode_36_cards').on('click', function () {
         $('.modes').removeClass('activeSelector');
         $(this).addClass('activeSelector');
@@ -156,6 +112,4 @@ $(function () {
         if (App.get('game_with_comp'))
             App.start(true);
     });
-
-
 });

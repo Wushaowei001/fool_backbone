@@ -3,11 +3,11 @@ LogicGame.init(onInit);
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
     window.client = new Client({
-//        https: true,
-//        domain: 'logic-games.spb.ru',
-        domain: 'localhost',
-        game: 'fool',
-        port: 8028,
+        https: true,
+        domain: 'logic-games.spb.ru',
+//        domain: 'localhost',
+        game: 'fool_backbone',
+        port: 6028,
         resultDialogDelay: 1000,
         reload: true,
         autoShowProfile: true,
