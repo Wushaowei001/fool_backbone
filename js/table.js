@@ -130,7 +130,7 @@ var Table = function () {
         if (App.get('TackedCardsLayer'))
             App.get('TackedCardsLayer').destroy();
         var TackedCardsLayer = new Konva.Layer();
-        App.set('lastPileLayer', lastPileLayer);
+        App.set('TackedCardsLayer', TackedCardsLayer);
 //        App.TackedCardsLayer = TackedCardsLayer;
         App.get('stage').add(TackedCardsLayer);
         that.renderSmallCards(cards_object, x, y, TackedCardsLayer);
