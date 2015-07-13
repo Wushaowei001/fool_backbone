@@ -6,7 +6,7 @@ var Computer = Player.extend({
     },
     initialize: function (options) {
         for (var i in options) {
-            this.defaults[i] = options[i];
+            this.set(i, options[i]);
         }
         this.on('opponent:cards_added opponent:take_cards', function (without_animation, from_deck) {
             this.renderCards(without_animation, from_deck);

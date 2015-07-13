@@ -11,13 +11,12 @@ var Human = Player.extend({
     },
     initialize: function (options) {
         for (var i in options) {
-            this.defaults[i] = options[i];
+            this.set(i, options[i]);
         }
         this.on('human:cards_added human:take_cards', function (without_animation, from_deck) {
             this.renderCards(without_animation, from_deck);
         }.bind(this));
         this.on('change:_cards', function () {
-            console.log(this.get('_cards'));
         }.bind(this));
     },
     animate_cards: function () {
@@ -117,7 +116,7 @@ var Human = Player.extend({
                 App.trigger('can_put_to_pile');
         }
         if (App.get('table').getCards() && !App.get('view_only') && !App.get('without_animation')) {
-            if (!App.get('table').getCardForBeat() && !App.get('table').getCardsForThrow() && !this.isHaveCardForPut()) {
+            if (!App.get('table').getCardForBeat() && !App.get('table').getCardsForThrow() && !this.getCardsForThrow()) {
                 App.get('human').setCanStep(false);
                 App.trigger('beaten');
                 setTimeout(function () {
@@ -331,8 +330,8 @@ var Human = Player.extend({
         this.trigger('stepped', {last_card: last_card});
         this.setCanStep(false);
     },
-    isHaveCardForPut: function (cards) {
-        return this._getCardsForThrow(cards);
+    getCardsForThrow: function (cards) {
+        return this._super('_getCardsForThrow', cards);
     },
     isCardCanCoverCardOnTable: function (card) {
         var card_on_table = App.get('table').getCardForBeatID();

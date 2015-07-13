@@ -106,7 +106,6 @@ $(function () {
         if ($(this).hasClass('disable'))
             return false;
         App.start(true);
-//        play_with_comp();
     });
 
     $('#gameArea').on('click', '#tbLeave', function () {
@@ -127,19 +126,15 @@ $(function () {
 
         if ($('#tbPrev').hasClass('disable'))
             return false;
-        App.game_with_comp.history.moveBack();
+        App.get('game_with_comp').history.moveBack();
 
     });
 
     $('#gameArea').on('click', '#tbNext', function () {
         if ($('#tbNext').hasClass('disable'))
             return false;
-        App.game_with_comp.history.moveForward();
+        App.get('game_with_comp').history.moveForward();
     });
-
-//    $('#switch_game a').on('click', function () {
-//        play_with_comp();
-//    });
 
     $('#end_throw').on('click', function () {
         endThrow();

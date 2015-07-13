@@ -1,113 +1,226 @@
-var Opponent = function () {
-    this._cards = [];
-    this.tweens = [];
-    this.lastTakedcards = {};
+var Opponent = Player.extend({
+    defaults: {
+        _cards: [],
+        tweens: [],
+        lastTakedcards: []
+    },
+    initialize: function (options) {
+        for (var i in options) {
+            this.set(i, options[i]);
+//            this.defaults[i] = options[i];
+        }
+    },
+    getCards: function () {
+        return this.get('_cards');
+    },
+    addCardBeforeStep: function (id) {
 
-    var that = this;
-
-    var addCardBeforeStep = function (id) {
-
-        var card = App.stage.findOne('#' + that._cards[0]);
-        that._cards[0] = id;
+        var card = App.get('stage').findOne('#' + this.getCards()[0]);
+        var cards = this.getCards();
+        cards[0] = id;
+        this.set('_cards', cards);
         card.setAttr('id', id);
-    };
+    },
 
-    var addCard = function () {
+    addCard: function () {
         var id = 0;
-        if (that._cards.length)
-            id = that._cards[that._cards.length - 1] + 1;
+        if (this.getCards().length)
+            id = this.getCards()[this.getCards().length - 1] + 1;
         else
             id = 1;
-        that._cards.push(id);
+        var cards = this.getCards();
+        cards.push(id);
+        this.set('_cards', cards);
         return id;
-    };
+    },
 
-    var addCards = function (count) {
+    addCards: function (count) {
         var cards = [];
         for (var i = 0; i < count; i++) {
-            var id = addCard();
+            var id = this.addCard();
             cards.push(id);
         }
-        that._addCards(cards);
+        this._super('_addCards', cards);
 
-        if (!App.without_animation)
-            that._renderCards(true, true);
-    };
+        if (!App.get('without_animation'))
+            this._super('_renderCards', true, true);
+    },
 
-    var takeCardsFromTable = function (cards_from_table, through_throw) {
+    takeCardsFromTable: function (cards_from_table, through_throw) {
         if (!through_throw) {
-            that._destroyLastTakedCards();
-            that.lastTakedcards = App.table.getState();
+            this._super('_destroyLastTakedCards');
+            this.set('lastTakedcards', App.get('table').getState());
+//            this.lastTakedcards = App.table.getState();
         }
         var cards = [];
         for (var i in cards_from_table) {
-            var id = addCard();
+            var id = this.addCard();
             cards.push(id);
         }
-        App.table.clearTable();
-        if (App.without_animation)
+        App.get('table').clearTable();
+        if (App.get('without_animation'))
             return false;
 
-        that._takeCardsFromTable(cards_from_table);
+        this._super('_takeCardsFromTable', cards_from_table);
         this.trigger('take_cards');
-    };
+    },
 
-    var removeCard = function (id) {
-        that._removeCard(id);
-    };
+    removeCard: function (id) {
+        this._super('_removeCard', id);
+    },
 
-    var getMinTrump = function () {
-        return that._getMinTrump();
-    };
+    getMinTrump: function () {
+        return this._super('_getMinTrump');
+    },
 
-    this.getLastTakedCards = function () {
-        return that.lastTakedcards;
-    };
+    getLastTakedCards: function () {
+        return this.get('lastTakedcards');
+    },
 
-    var renderLastTakedCardsIfVisible = function () {
-        that._renderLastTakedCardsIfVisible();
-    };
+    renderLastTakedCardsIfVisible: function () {
+        this._super('_renderLastTakedCardsIfVisible');
+    },
 
-    var needCards = function () {
-        return that._needCards();
-    };
+    needCards: function () {
+        return this._super('_needCards');
+    },
 
-    var countCards = function () {
-        return that._cards.length;
-    };
+    countCards: function () {
+        return this.getCards().length;
+    },
 
-    var renderCards = function (without_animation) {
-        that._renderCards(true, without_animation);
-    };
+    renderCards: function (without_animation) {
+        this._super('_renderCards', true, without_animation);
+    },
 
-    var getMinCard = function (card) {
-        return that._getMinCard(card);
-    };
+    getMinCard: function (card) {
+        return this._super('_getMinCard', card);
+    },
 
-    var isHaveCardForPut = function () {
-        return that._getCardsForThrow();
-    };
+    getCardsForThrow: function () {
+        return this._super('_getCardsForThrow');
+    },
 
-    var step = function (card) {
+    step: function (card) {
         if (card) {
-            addCardBeforeStep(card);
-            App.table.addCard(card, true);
-            removeCard(card);
-            that._renderCards(true, App.without_animation);
+            this.addCardBeforeStep(card);
+            App.get('table').addCard(card, true);
+            this.removeCard(card);
+            this._super('_renderCards', true, App.get('without_animation'));
         }
-    };
+    }
+});
 
-    return {
-        removeCard: removeCard,
-        renderCards: renderCards,
-        addCards: addCards,
-        getMinTrump: getMinTrump,
-        step: step,
-        needCards: needCards,
-        countCards: countCards,
-        takeCardsFromTable: takeCardsFromTable,
-        renderLastTakedCardsIfVisible: renderLastTakedCardsIfVisible
-    };
-};
-
-Opponent.prototype = new Player();
+//var Opponent = function () {
+//    this._cards = [];
+//    this.tweens = [];
+//    this.lastTakedcards = {};
+//
+//    var this = this;
+//
+//    var addCardBeforeStep = function (id) {
+//
+//        var card = App.stage.findOne('#' + this._cards[0]);
+//        this._cards[0] = id;
+//        card.setAttr('id', id);
+//    };
+//
+//    var addCard = function () {
+//        var id = 0;
+//        if (this._cards.length)
+//            id = this._cards[this._cards.length - 1] + 1;
+//        else
+//            id = 1;
+//        this._cards.push(id);
+//        return id;
+//    };
+//
+//    var addCards = function (count) {
+//        var cards = [];
+//        for (var i = 0; i < count; i++) {
+//            var id = addCard();
+//            cards.push(id);
+//        }
+//        this._addCards(cards);
+//
+//        if (!App.without_animation)
+//            this._renderCards(true, true);
+//    };
+//
+//    var takeCardsFromTable = function (cards_from_table, through_throw) {
+//        if (!through_throw) {
+//            this._destroyLastTakedCards();
+//            this.lastTakedcards = App.table.getState();
+//        }
+//        var cards = [];
+//        for (var i in cards_from_table) {
+//            var id = addCard();
+//            cards.push(id);
+//        }
+//        App.table.clearTable();
+//        if (App.without_animation)
+//            return false;
+//
+//        this._takeCardsFromTable(cards_from_table);
+//        this.trigger('take_cards');
+//    };
+//
+//    var removeCard = function (id) {
+//        this._removeCard(id);
+//    };
+//
+//    var getMinTrump = function () {
+//        return this._getMinTrump();
+//    };
+//
+//    this.getLastTakedCards = function () {
+//        return this.lastTakedcards;
+//    };
+//
+//    var renderLastTakedCardsIfVisible = function () {
+//        this._renderLastTakedCardsIfVisible();
+//    };
+//
+//    var needCards = function () {
+//        return this._needCards();
+//    };
+//
+//    var countCards = function () {
+//        return this._cards.length;
+//    };
+//
+//    var renderCards = function (without_animation) {
+//        this._renderCards(true, without_animation);
+//    };
+//
+//    var getMinCard = function (card) {
+//        return this._getMinCard(card);
+//    };
+//
+//    var isHaveCardForPut = function () {
+//        return this._getCardsForThrow();
+//    };
+//
+//    var step = function (card) {
+//        if (card) {
+//            addCardBeforeStep(card);
+//            App.table.addCard(card, true);
+//            removeCard(card);
+//            this._renderCards(true, App.without_animation);
+//        }
+//    };
+//
+//    return {
+//        removeCard: removeCard,
+//        renderCards: renderCards,
+//        addCards: addCards,
+//        getMinTrump: getMinTrump,
+//        step: step,
+//        needCards: needCards,
+//        countCards: countCards,
+//        takeCardsFromTable: takeCardsFromTable,
+//        renderLastTakedCardsIfVisible: renderLastTakedCardsIfVisible
+//    };
+//};
+//
+//Opponent.prototype = new Player();

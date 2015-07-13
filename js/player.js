@@ -1,8 +1,8 @@
 var Player = Backbone.Model.extend({
     defaults: {
-        MAX_COUNT_CARDS: 6,
-        LAST_TAKED_CARDS_X: 100,
-        LAST_TAKED_CARDS_Y: 100
+//        MAX_COUNT_CARDS: 6,
+//        LAST_TAKED_CARDS_X: 100,
+//        LAST_TAKED_CARDS_Y: 100
     },
 
     getCards: function () {

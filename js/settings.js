@@ -1,4 +1,9 @@
 var Settings = {
+    player: {
+        MAX_COUNT_CARDS: 6,
+        LAST_TAKED_CARDS_X: 100,
+        LAST_TAKED_CARDS_Y: 100
+    },
     card_stroke_color: 'black',
     timer: {
         color: '#ffffc2',

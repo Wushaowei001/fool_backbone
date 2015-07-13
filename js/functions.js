@@ -463,9 +463,9 @@ var cloner = {
 //    };
 //};
 
-window.throwButtonHide = function () {
-    $('#end_throw').hide();
-};
+//window.throwButtonHide = function () {
+//    $('#end_throw').hide();
+//};
 
 window.throwButtonShow = function () {
     $('#end_throw').show();
@@ -475,28 +475,28 @@ window.canThrowMessageShow = function () {
     $('#can_throw').show();
 };
 
-window.canThrowMessageHide = function () {
-    $('#can_throw').hide();
-};
+//window.canThrowMessageHide = function () {
+//    $('#can_throw').hide();
+//};
 
-window.endThrow = function () {
-    throwButtonHide();
-    canThrowMessageHide();
-    App.get('human').unBindCards();
-    App.get('human').bindCards();
-    myStepTextShow();
-    var cards = App.get('table').getCardsForThrow();
-    if (cards) {
-        client.gameManager.sendTurn(
-            {
-                cards: cards,
-                type: 'throw',
-                allow_throw: false
-            }
-        );
-        App.get('table').clearCardsForThrow();
-    }
-    setTimeout(function () {
-        client.gameManager.sendEvent('event', {data: 'getCards'});
-    }, 1500);
-};
+//window.endThrow = function () {
+//    throwButtonHide();
+//    canThrowMessageHide();
+//    App.get('human').unBindCards();
+//    App.get('human').bindCards();
+//    myStepTextShow();
+//    var cards = App.get('table').getCardsForThrow();
+//    if (cards) {
+//        client.gameManager.sendTurn(
+//            {
+//                cards: cards,
+//                type: 'throw',
+//                allow_throw: false
+//            }
+//        );
+//        App.get('table').clearCardsForThrow();
+//    }
+//    setTimeout(function () {
+//        client.gameManager.sendEvent('event', {data: 'getCards'});
+//    }, 1500);
+//};

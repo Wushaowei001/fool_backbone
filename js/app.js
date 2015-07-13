@@ -28,7 +28,7 @@ var SettingObj = Backbone.Model.extend({
             }
         });
         this.on('change:trump_mapping', function (self) {
-            if (!App.getTrump())
+            if (!App.getTrump() || !App.get('opponent'))
                 return;
             var value = self.changed.trump_mapping;
             if (value == '') return false;
@@ -88,7 +88,12 @@ var AppModel = Backbone.Model.extend({
         MAX_COUNT_CARDS: 52,
         images: {},
         awaiting_opponent_cards: [],
-        view: null
+        view: null,
+        score: null,
+        my_name: null,
+        opponent_name: null,
+        my_rating: null,
+        opponent_rating: null
     },
 
     initialize: function () {
@@ -97,6 +102,22 @@ var AppModel = Backbone.Model.extend({
         this.set('imgs_cards_url', this.get('imgs_url') + '/cards/');
         this.set('imgs_simple_cards_url', this.get('imgs_url') + '/simple_cards/');
         this.set('imgs_backs_url', this.get('imgs_url') + '/deck/');
+
+        this.on('change:score', function (self) {
+            this.trigger('score_changed', self.changed.score);
+        });
+//        this.on('change:my_name', function () {
+//            this.trigger('my_name_changed');
+//        });
+        this.on('change:opponent_name', function (self) {
+            this.trigger('opponent_name_changed', self.changed.opponent_name);
+        });
+        this.on('change:my_rating', function (self) {
+            this.trigger('my_rating_changed', self.changed.my_rating);
+        });
+        this.on('change:opponent_rating', function (self) {
+            this.trigger('opponent_rating_changed', self.changed.opponent_rating);
+        });
     },
 
     addCardSound: function () {
@@ -132,7 +153,18 @@ var AppModel = Backbone.Model.extend({
             trump_mapping: settings.trump_mapping
         });
     },
-
+    endThrow: function () {
+        App.get('human').unBindCards();
+        App.get('human').bindCards();
+        var cards = App.get('table').getCardsForThrow();
+        if (cards) {
+            this.trigger('endThrow', cards);
+            App.get('table').clearCardsForThrow();
+        }
+        setTimeout(function () {
+            this.trigger('getCards');
+        }.bind(this), 1500);
+    },
     end: function () {
         this.trigger('end_game');
         App.get('human').unBindCards();
@@ -677,10 +709,10 @@ var AppModel = Backbone.Model.extend({
 //        this.human = new Human(player.defaults);
 //        this.opponent = null;
 
-        var player = new Player();
+//        var player = new Player();
         this.set({
             table: new Table(),
-            human: new Human(player.defaults),
+            human: new Human(Settings.player),
             opponent: null
         });
     },
@@ -741,15 +773,16 @@ var AppModel = Backbone.Model.extend({
                 this.initGameStartTime();
 
                 if (with_comp) {
-                    this.trigger('play_with_comp');
                     this.set('game_with_comp', new GameWithComputer());
+                    this.trigger('play_with_comp');
+
 //                    self.game_with_comp = new GameWithComputer();
 //                    this.initializeHistoryStepButtons();
                     var lastCard = this.get('game_with_comp').getLastCard();
                     this.setTrump(lastCard);
                     this.applyClientSettings();
-                    var player = new Player();
-                    this.set('opponent', new Computer(player.defaults));
+//                    var player = new Player();
+                    this.set('opponent', new Computer(Settings.player));
 //                    self.opponent = new Computer(player.defaults);
                     this.renderTrump();
 
@@ -776,6 +809,8 @@ var AppModel = Backbone.Model.extend({
                 else {
                     this.applyClientSettings();
                     this.set('game_with_comp', null);
+
+                    this.set('opponent', new Opponent(Settings.player));
 //                    this.game_with_comp = null;
 //                    var player = new Player();
 //                    this.opponent = new Opponent(player.defaults);

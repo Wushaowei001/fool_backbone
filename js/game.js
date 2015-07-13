@@ -152,21 +152,25 @@ var GameWithComputer = function () {
         if (computer_first) {
             if (c_need_cards > 0) {
                 cards = self.getCards(c_need_cards);
-                App.get('opponent').addCards(cards);
+                if (cards)
+                    App.get('opponent').addCards(cards);
             }
             if (h_need_cards > 0) {
                 cards = self.getCards(h_need_cards);
-                App.get('human').addCards(cards, true);
+                if (cards)
+                    App.get('human').addCards(cards, true);
             }
         }
         else {
             if (h_need_cards > 0) {
                 cards = self.getCards(h_need_cards);
-                App.get('human').addCards(cards, true);
+                if (cards)
+                    App.get('human').addCards(cards, true);
             }
             if (c_need_cards > 0) {
                 cards = self.getCards(c_need_cards);
-                App.get('opponent').addCards(cards)
+                if (cards)
+                    App.get('opponent').addCards(cards)
             }
         }
         if (!App.get('without_animation') && h_need_cards <= 0) {

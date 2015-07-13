@@ -84,7 +84,8 @@ function onInit() {
     client.on('login', function (data) {
         console.log('main;', 'login', data.userId, data.userName);
         var you = client.getPlayer();
-        appView.showButtonsForGameWithComp();
+        App.set('my_name', you.userName);
+//        appView.showButtonsForGameWithComp();
         var settings = client.settings;
         App.changeSettings({
             back_image: settings.back_image,
@@ -102,46 +103,56 @@ function onInit() {
     client.gameManager.on('round_start', function (data) {
 
         var round_start = function () {
-            var my_name = null;
-            var opponent_name = null;
-            var my_rating, opponent_rating, score, my_score, opponent_score;
-            var players = data.players;
-            for (var i in players) {
-                if (players[i].isPlayer) {
-                    my_name = players[i].userName;
-                    my_rating = players[i].getRank();
-                    my_score = data.score[players[i].userId];
-                }
-                else {
-                    opponent_name = players[i].userName;
-                    opponent_rating = players[i].getRank();
-                    opponent_score = data.score[players[i].userId];
-                }
-            }
-            $('#score').show();
-            $('#score span').text(my_score + ':' + opponent_score);
-            $('#my_name').text(my_name);
-            $('#opponent_name').text(opponent_name);
-            $('#my_rating').text(my_rating);
-            $('#opponent_rating').text(opponent_rating);
-            $('#my_step_text').hide();
-            $('#opponent_step_text').hide();
-            $('.name_and_rating').show();
-            AppView.showButtonsForRealGame();
+
+//            $('#my_rating').text(my_rating);
+//            $('#opponent_rating').text(opponent_rating);
+//            $('#my_step_text').hide();
+//            $('#opponent_step_text').hide();
+//            $('.name_and_rating').show();
+//            AppView.showButtonsForRealGame();
 
             App.setMode(data.inviteData.mode);
             App.setTrump(data.inviteData.trumpVal);
             App.start(false, function () {
                 App.renderTrump();
                 client.gameManager.sendEvent('event', {data: 'getCards'});
-                App.human.setCanStep(data.first == client.getPlayer());
-                $('#buttons').show();
+                App.get('human').setCanStep(data.first == client.getPlayer());
+//                $('#buttons').show();
+
+                var opponent_name = null;
+                var my_rating, opponent_rating, score, my_score, opponent_score;
+                var players = data.players;
+                for (var i in players) {
+                    if (players[i].isPlayer) {
+//                    my_name = players[i].userName;
+                        my_rating = players[i].getRank();
+                        my_score = data.score[players[i].userId];
+                    }
+                    else {
+                        opponent_name = players[i].userName;
+                        opponent_rating = players[i].getRank();
+                        opponent_score = data.score[players[i].userId];
+                    }
+                }
+//            $('#score').show();
+                App.set('score', my_score + ':' + opponent_score);
+//            $('#score span').text(my_score + ':' + opponent_score);
+//            App.set('my_name', my_name);
+//            $('#my_name').text(my_name);
+                App.set('opponent_name', opponent_name);
+                App.set('my_rating', my_rating);
+                App.set('opponent_rating', opponent_rating);
+//            $('#opponent_name').text(opponent_name);
             });
+
+//            var my_name = null;
+
+
         };
 
         if (data.loading) {
             setTimeout(function () {
-                if (!App.opponent) {
+                if (!App.get('opponent')) {
                     round_start();
                 }
             }, 800);
@@ -153,53 +164,54 @@ function onInit() {
     client.gameManager.on('turn', function (data) {
         var your_turn = data.user == client.getPlayer().userId;
 
-        App.human.setCanStep(false);
+        App.get('human').setCanStep(false);
 
         if (!your_turn) {
             if (data.turn.type == 'takeCards') {
 //                App.temporaryBlockUI(2000);
-                App.opponent.takeCardsFromTable(data.turn.cards, data.turn.through_throw);
+                App.get('opponent').takeCardsFromTable(data.turn.cards, data.turn.through_throw);
 //                App.onTakeCards();
-                if (App.human.noCards()) {
+                if (App.get('human').noCards()) {
                     App.win();
                     return false;
                 }
             }
             if (data.turn.type == 'addToPile') {
-                App.table.addToPile();
+                App.get('table').addToPile();
                 client.gameManager.sendEvent('event', {data: 'getCards'});
                 return;
             }
 
-            App.opponent.step(data.turn.card);
+            App.get('opponent').step(data.turn.card);
         }
     });
 
     client.gameManager.on('switch_player', function (user) {
         var your_turn = user.userId == client.getPlayer().userId;
         if (your_turn) {
-            App.human.setCanStep(true);
+            App.get('human').setCanStep(true);
             var cards_for_throw_on_table, cards_for_throw;
             var length = client.gameManager.currentRoom.history.length;
             var last_turn = client.gameManager.currentRoom.history[length - 1];
 
             if (last_turn && last_turn.type == 'takeCards') {
-                if (App.human.noCards()) {
+                if (App.get('human').noCards()) {
                     // win
                     client.gameManager.sendTurn({result: 1});
                     return;
                 }
                 if (last_turn.allow_throw) {
-                    cards_for_throw = App.human._getCardsForThrow(last_turn.cards);
+                    cards_for_throw = App.get('human').getCardsForThrow(last_turn.cards);
                     if (cards_for_throw) {
-                        var count = App.opponent.countCards() - last_turn.cards.length * 2;
+                        var count = App.get('opponent').countCards() - last_turn.cards.length * 2;
                         if (count > 0) {
-                            canThrowMessageShow();
-                            throwButtonShow();
+                            App.trigger('can_throw');
+//                            canThrowMessageShow();
+//                            throwButtonShow();
                             App.liftPossibleCards(true, cards_for_throw);
-                            myStepTextHide();
-                            App.human.unBindCards();
-                            App.human.bindCardsForThrow(cards_for_throw, count);
+//                            myStepTextHide();
+                            App.get('human').unBindCards();
+                            App.get('human').bindCardsForThrow(cards_for_throw, count);
                         }
                         else {
                             setTimeout(function () {
@@ -218,7 +230,7 @@ function onInit() {
                         client.gameManager.sendEvent('event', {data: 'getCards'});
                     }, 2000);
                 }
-                cards_for_throw_on_table = App.table.getCardsForThrow();
+                cards_for_throw_on_table = App.get('table').getCardsForThrow();
                 if (cards_for_throw_on_table) {
                     client.gameManager.sendTurn(
                         {
@@ -227,17 +239,17 @@ function onInit() {
                             allow_throw: true
                         }
                     );
-                    App.table.clearCardsForThrow();
+                    App.get('table').clearCardsForThrow();
                     return false;
                 }
                 return;
             }
 
             if (last_turn && last_turn.type == 'throw') {
-                App.human.unBindCards();
+                App.get('human').unBindCards();
                 var cards = last_turn.cards;
                 for (var i in cards) {
-                    App.opponent.step(cards[i]);
+                    App.get('opponent').step(cards[i]);
                 }
                 setTimeout(function () {
                     App.humanTakeCards(true, last_turn.allow_throw);
@@ -246,59 +258,60 @@ function onInit() {
                 return;
             }
 
-            cards_for_throw = App.table.getCardsForThrow();
+            cards_for_throw = App.get('table').getCardsForThrow();
 
             if (cards_for_throw) {
-                var card = App.table.shiftCardForThrow();
-                client.gameManager.sendTurn({card: card, last_card: App.human.noCards()});
+                var card = App.get('table').shiftCardForThrow();
+                client.gameManager.sendTurn({card: card, last_card: App.get('human').noCards()});
                 return;
             }
 
-            if (last_turn && last_turn.last_card && App.human.noCards()) {
+            if (last_turn && last_turn.last_card && App.get('human').noCards()) {
                 // draw
                 client.gameManager.sendTurn({result: 2});
                 return;
             }
-            if (last_turn && last_turn.last_card && !App.table.getCardForBeat()) {
+            if (last_turn && last_turn.last_card && !App.get('table').getCardForBeat()) {
                 // loose
                 client.gameManager.sendTurn({result: 0});
                 return;
             }
-            if (last_turn && !last_turn.last_card && App.human.noCards()) {
+            if (last_turn && !last_turn.last_card && App.get('human').noCards()) {
                 // win
                 client.gameManager.sendTurn({result: 1});
                 return;
             }
 
-            if (App.opponent.countCards() == 0 && !App.deckIsEmpty()) {
-                if (App.table.human_attack) {
-                    App.table.addToPile();
+            if (App.get('opponent').countCards() == 0 && !App.deckIsEmpty()) {
+                if (App.get('table').human_attack) {
+                    App.get('table').addToPile();
                     client.gameManager.sendTurn({type: 'addToPile'});
                     client.gameManager.sendEvent('event', {data: 'getCards'});
                 }
             }
         }
         else {
-            App.human.setCanStep(false);
+            App.get('human').setCanStep(false);
         }
     });
 
     client.gameManager.on('event', function (data) {
         if (data.type == 'getCards') {
             if (data.cards) {
-                App.human.addCards(data.cards, true);
+                App.get('human').addCards(data.cards, true);
             }
             if (data.opponent_cards) {
-                if (!App.opponent) {
-                    App.awaiting_opponent_cards = data.opponent_cards;
+                if (!App.get('opponent')) {
+                    App.set('awaiting_opponent_cards', data.opponent_cards);
+//                    App.awaiting_opponent_cards = data.opponent_cards;
                 }
                 else
-                    App.opponent.addCards(data.opponent_cards);
+                    App.get('opponent').addCards(data.opponent_cards);
             }
             if (data.deckIsEmpty) {
                 // TODO: trigger in change
                 App.trigger('deck_is_empty');
-                App.empty_deck = true;
+//                App.empty_deck = true;
                 App.set('empty_deck', true);
                 App.get('Deck').destroy();
                 App.get('Trump').hide();
@@ -322,13 +335,14 @@ function onInit() {
     });
 
     client.gameManager.on('round_end', function (data) {
-        $('#score span').text('');
-        AppView.hideActionButtons();
+        App.end();
+//        $('#score span').text('');
+//        AppView.hideActionButtons();
         $('#gameArea .real_game .cpButton').each(function () {
             if (this.id != 'tbLeave')
                 $(this).addClass('disable');
         });
-        App.human.unBindCards();
+        App.get('human').unBindCards();
     });
 
     client.gameManager.on('end_game', function (data) {
@@ -355,10 +369,10 @@ function onInit() {
 
     client.historyManager.on('game_load', function (game) {
         return false;
-        if (!App.game_with_comp)
+        if (!App.get('game_with_comp'))
             return false;
         App.reset();
-        App.opponent = new Opponent();
+        App.opponent = new Opponent(Settings.player);
         $('#repControls').show();
         $('#tbLeaveReview').show();
         $('#tbPrev').hide();
@@ -393,8 +407,8 @@ function onInit() {
             App.MyCards.destroy();
             App.MyCards = new Konva.Layer();
             App.stage.add(App.MyCards);
-            App.human = new Human();
-            App.opponent = new Opponent();
+            App.human = new Human(Settings.player);
+            App.opponent = new Opponent(Settings.player);
             App.table.clearTable();
             App.history.disablePrev();
         };
@@ -405,7 +419,7 @@ function onInit() {
     });
 
     client.gameManager.on('game_load', function (history) {
-        AppView.showButtonsForRealGame();
+//        AppView.showButtonsForRealGame();
         var players = client.gameManager.currentRoom.players;
         for (var i in players) {
             if (players[i].isPlayer)
@@ -414,19 +428,26 @@ function onInit() {
                 $('#opponent_name').text(players[i].userName);
         }
         var callback = function () {
-            App.opponent.renderCards(true);
-            App.table.render();
-            App.without_animation = false;
-            App.view_only = false;
+            App.get('opponent').renderCards(true);
+            App.get('table').render();
+            App.set('without_animation', false);
+//            App.without_animation = false;
+            App.set('view_only', false)
+//            App.view_only = false;
         };
         App.start();
-        App.history = new History(history);
+//        App.set('history', new History(history));
+        App.set({
+            history: new History(history),
+            without_animation: true
+        });
+//        App.history = new History(history);
 
-        App.without_animation = true;
-        App.history.without_animation = true;
-        App.history.play(callback);
+//        App.without_animation = true;
+        App.get('history').without_animation = true;
+        App.get('history').play(callback);
     });
-
+//
     client.on('settings_changed', function (data) {
         App.changeProperty(data, true);
     });
