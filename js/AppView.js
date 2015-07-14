@@ -47,7 +47,6 @@ var AppView = Backbone.View.extend({
         this.listenTo(App, 'nothing_to_beat', this.onNothingToBeat);
         this.listenTo(App, 'threw', this.onThrew);
         this.listenTo(App, 'end_game', this.onEndGame);
-        this.listenTo(App, 'deck_is_empty', this.showTrumpValueOnDeck);
         this.listenTo(App, 'deck_is_not_empty', this.hideTrumpValueOnDeck);
         this.listenTo(App, 'can_throw', this.canThrow);
         this.listenTo(App, 'update_deck_remain', function (obj) {
@@ -79,6 +78,9 @@ var AppView = Backbone.View.extend({
                 this.beforeMyStep();
             else
                 this.beforeOpponentStep();
+        });
+        this.listenTo(App, 'deck_is_empty', function (trump) {
+            this.showTrumpValueOnDeck(trump)
         });
 
         App.setGameArea(
@@ -309,14 +311,9 @@ var AppView = Backbone.View.extend({
     putToPile: function () {
         App.putToPile();
     },
-    showTrumpValueOnDeck: function () {
+    showTrumpValueOnDeck: function (trump) {
         this.$trump.show();
 
-        var trump = App.getTrump();
-        var suit_mapped = App.getProperty('trump_mapping')[trump];
-        if (suit_mapped) {
-            trump = suit_mapped;
-        }
         $('#trump #trump_icon').removeClass('h c d s');
         $('#trump #trump_icon').addClass(trump);
     },

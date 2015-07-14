@@ -123,10 +123,6 @@ var Player = Backbone.Model.extend({
             }
         }
         var interval = 30;
-        if (this.getCards().length > 15)
-            interval = 25;
-        if (this.getCards().length > 25)
-            interval = 20;
         var x = App.get('game_area').width / 2 - (interval * (this.getCards().length + 1)) / 2;
 
         var zIndex = 1;

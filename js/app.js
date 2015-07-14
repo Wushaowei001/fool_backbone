@@ -73,7 +73,8 @@ var AppModel = Backbone.Model.extend({
         opponent_name: null,
         my_rating: null,
         opponent_rating: null,
-        can_step: null
+        can_step: null,
+        deck_is_empty: null
     },
 
     initialize: function () {
@@ -101,6 +102,20 @@ var AppModel = Backbone.Model.extend({
         });
         this.on('change:can_step', function (self) {
             this.trigger('can_step', self.changed.can_step);
+        });
+
+        this.on('change:deck_is_empty', function (self) {
+            if (self.changed.deck_is_empty) {
+                var trump = this.getTrump();
+                var trump_mapping = this.getProperty('trump_mapping');
+                if (trump_mapping && trump_mapping[trump]) {
+                    trump = trump_mapping[trump];
+                }
+                this.trigger('deck_is_empty', trump);
+            }
+            else
+                this.trigger('deck_is_not_empty');
+
         });
     },
 
@@ -234,7 +249,7 @@ var AppModel = Backbone.Model.extend({
     },
 
     deckIsEmpty: function () {
-        return this.get('game_with_comp') ? this.get('game_with_comp').deckIsEmpty() : this.get('empty_deck');
+        return this.get('game_with_comp') ? this.get('game_with_comp').deckIsEmpty() : this.get('deck_is_empty');
     },
     destroyKonvaById: function (id) {
         this.get('stage').findOne('#' + id).destroy();
@@ -301,7 +316,7 @@ var AppModel = Backbone.Model.extend({
     },
     getImageById: function (id) {
         var suit = id[0];
-        var trump_mapping = this.get('settings').get('trump_mapping');
+        var trump_mapping = this.getProperty('trump_mapping');
         if (trump_mapping && trump_mapping[suit]) {
             id = trump_mapping[suit] + id.slice(1);
         }
@@ -484,11 +499,14 @@ var AppModel = Backbone.Model.extend({
                 card.remove();
                 this.get('MyCards').add(card);
             }
-            this.trigger('deck_is_empty');
+            this.set('deck_is_empty', true);
+//            this.trigger('deck_is_empty');
             return false;
         }
-        else
-            this.trigger('deck_is_not_empty');
+        else {
+            this.set('deck_is_empty', false);
+//            this.trigger('deck_is_not_empty');
+        }
 
         if (!card) {
             card = new Konva.Image({

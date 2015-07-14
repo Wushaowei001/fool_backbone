@@ -131,7 +131,7 @@ var GameWithComputer = function () {
                 cards.push(card);
             }
             if (!deck.length) {
-                App.trigger('deck_is_empty');
+                App.set('deck_is_empty', true);
                 App.get('Deck').destroy();
                 App.get('Trump').destroy();
 //                App.showTrumpValueOnDeck();

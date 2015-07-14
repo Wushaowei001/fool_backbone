@@ -3,9 +3,9 @@ LogicGame.init(onInit);
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
     window.client = new Client({
-//        https: true,
-//        domain: 'logic-games.spb.ru',
-        domain: 'localhost',
+        https: true,
+        domain: 'logic-games.spb.ru',
+//        domain: 'localhost',
         game: 'fool_backbone',
         port: 6028,
         resultDialogDelay: 1000,
@@ -309,10 +309,8 @@ function onInit() {
                     App.get('opponent').addCards(data.opponent_cards);
             }
             if (data.deckIsEmpty) {
-                // TODO: trigger in change
-                App.trigger('deck_is_empty');
+                App.set('deck_is_empty', true);
 //                App.empty_deck = true;
-                App.set('empty_deck', true);
                 App.get('Deck').destroy();
                 App.get('Trump').hide();
 
