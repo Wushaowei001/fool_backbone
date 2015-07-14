@@ -88,9 +88,11 @@ var AppView = Backbone.View.extend({
             }
         );
     },
-    beforeMyStep: function () {
+    beforeMyStep: function (phrase) {
         console.log('beforeMyStep');
-        this.$myStepText.show();
+        if (!phrase)
+            phrase = Settings.text.attack_phrase;
+        this.$myStepText.show().text(phrase);
         this.$opponentStepText.hide();
         this.hideActionButtons();
     },
@@ -192,7 +194,7 @@ var AppView = Backbone.View.extend({
     onEndThrow: function () {
         this.throwButtonHide();
         this.canThrowMessageHide();
-        this.beforeMyStep();
+        this.beforeMyStep(Settings.text.attack_phrase);
     },
     myStepTextHide: function () {
         this.$myStepText.hide();
@@ -246,7 +248,7 @@ var AppView = Backbone.View.extend({
             this.beforeOpponentStep();
         }
         else
-            this.beforeMyStep();
+            this.beforeMyStep(Settings.text.attack_phrase);
     },
     onPlayWithComp: function () {
         this.$score.hide();
@@ -273,6 +275,7 @@ var AppView = Backbone.View.extend({
         this.$drawMessage.show();
     },
     onCanTakeCards: function () {
+        this.beforeMyStep(Settings.text.protect_phrase);
         this.$takeCards.show();
     },
     onTakeCards: function () {
@@ -283,6 +286,7 @@ var AppView = Backbone.View.extend({
 
     },
     onCanPutToPile: function () {
+        this.beforeMyStep(Settings.text.attack_phrase);
         this.$putToPile.show();
     },
     onNothingToBeat: function () {

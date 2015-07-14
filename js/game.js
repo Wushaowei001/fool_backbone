@@ -91,15 +91,12 @@ var GameWithComputer = function () {
             }
         },
         temporaryDisableMoves: function (time) {
-            var timestamp = App.get('new_game_started');
             if (!time)
                 time = 1000;
             this.disableMoves();
-            setTimeout(function () {
-                App.safeTimeOutAction(timestamp, function () {
-                    self.history.enableMoves();
-                });
-            }, time);
+            App.safeTimeOutAction(time, function () {
+                self.history.enableMoves();
+            });
         },
         disableMoves: function () {
             this.disableNext();

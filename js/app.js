@@ -3,7 +3,7 @@ var SettingObj = Backbone.Model.extend({
         back_image: 'back',
         card_design: 'base',
         sort: null,
-        trump_mapping: {},
+        trump_mapping: null,
         step: null
     },
     initialize: function () {
@@ -27,28 +27,14 @@ var SettingObj = Backbone.Model.extend({
                 App.get('human').renderCards();
             }
         });
-        this.on('change:trump_mapping', function (self) {
-            if (!App.getTrump() || !App.get('opponent'))
-                return;
-            var value = self.changed.trump_mapping;
-            if (value == '') return false;
-
-            if (value == 'without' || value == App.getTrump()) {
-                this.set('trump_mapping', '');
-            }
-            else {
-                var trump_mapping = {};
-                trump_mapping[App.getTrump()] = value;
-                trump_mapping[value] = App.getTrump();
-                this.set('trump_mapping', trump_mapping, {silent: true});
-//                this.settings.trump_mapping = value;
-            }
+        this.on('change:trump_mapping', function () {
             if (App.get('human')) {
                 App.get('human').updateCardImages();
                 App.renderTrump();
                 App.get('table').updateCardImages();
                 App.get('table').renderLastPileIfVisible();
-                App.get('opponent').renderLastTakedCardsIfVisible();
+                if (App.get('opponent'))
+                    App.get('opponent').renderLastTakedCardsIfVisible();
             }
         });
         this.on('change:step', function () {
@@ -71,13 +57,11 @@ var AppModel = Backbone.Model.extend({
         game_with_comp: false,
         sequence: ['d', 'c', 'h', 's'],
         wait_when_can_throw: 3000,
-        onStart: null,
-//        onTakeCards: null,
         history: null,
         view_only: false,
         without_animation: false,
         without_update_history: false,
-        settings: new SettingObj(),
+        settings: null,
         new_game_started: false,
         mode_cards_count: 36,
         MAX_COUNT_CARDS: 52,
@@ -93,6 +77,7 @@ var AppModel = Backbone.Model.extend({
     },
 
     initialize: function () {
+        this.set('settings', new SettingObj());
         this.set('base_url', window.location.origin + '/' + this.get('app_name'));
         this.set('imgs_url', this.get('base_url') + '/img/');
         this.set('imgs_cards_url', this.get('imgs_url') + '/cards/');
@@ -131,8 +116,6 @@ var AppModel = Backbone.Model.extend({
         this.get('MyCards').add(card);
         if (inverted) {
             card.setImage(this.get('backImage'));
-//            card.strokeEnabled(true);
-//            card.stroke('white');
             card.name('inverted');
         }
         else {
@@ -175,96 +158,48 @@ var AppModel = Backbone.Model.extend({
         }
         if (threw) {
             this.trigger('threw');
-//            $('#threw').fadeIn('fast');
-//            $('#threw').fadeOut(2000);
         }
         this.get('human').setCanStep(false);
         var cards = this.get('table').getCards(true);
-        var timestamp = this.get('new_game_started');
         this.get('human').takeCardsFromTable(cards, function () {
             if (!this.get('game_with_comp')) {
-                setTimeout(function () {
-                    this.safeTimeOutAction(timestamp, function () {
-                        client.gameManager.sendTurn(
-                            {
-                                type: 'takeCards',
-                                cards: cards,
-                                through_throw: threw,
-                                allow_throw: allow_throw !== false
-                            });
-                    }.bind(this));
-                }.bind(this), 1000);
+                this.safeTimeOutAction(1000, function () {
+                    client.gameManager.sendTurn(
+                        {
+                            type: 'takeCards',
+                            cards: cards,
+                            through_throw: threw,
+                            allow_throw: allow_throw !== false
+                        });
+                }.bind(this));
             }
             else {
                 this.get('game_with_comp').addCards(true, function () {
                     this.trigger('update_deck_remain');
                 }.bind(this));
                 if (!this.get('view_only')) {
-                    setTimeout(function () {
-                        this.safeTimeOutAction(timestamp, function () {
-                            this.get('opponent').step();
-                        }.bind(this));
-                    }.bind(this), 800);
+                    this.safeTimeOutAction(800, function () {
+                        this.get('opponent').step();
+                    }.bind(this));
                 }
             }
         }.bind(this));
     },
-    changeProperty: function (setting, apply) {
+    changeProperty: function (setting) {
+        var value = setting.value;
+        if (setting.property == 'trump_mapping') {
+            if (!this.getTrump())
+                return false;
+            if (setting.value == 'without' || setting.value == this.getTrump())
+                value = null;
+            else {
+                value = {};
+                value[this.getTrump()] = setting.value;
+                value[setting.value] = this.getTrump();
+            }
+        }
         var settingObj = this.get('settings');
-        var human = this.get('human');
-        var table = this.get('table');
-        var property = {};
-        property[setting.property] = setting.value;
-        settingObj.set(property);
-//        switch (setting.property) {
-//            case 'sort':
-//                settingObj.set('sort', setting.value);
-//                if (apply && human)
-//                    human.renderCards();
-//                break;
-//            case 'card_design':
-//                settingObj.set('card_design', setting.value);
-//                if (apply && human) {
-//                    human.updateCardImages(function () {
-//                        this.renderTrump();
-//                        if (table.getCards())
-//                            table.render();
-//                    });
-//
-//                }
-//                break;
-//            case 'back_image':
-//                settingObj.set('sort', setting.value);
-//                this.settings.back_image = setting.value;
-//                if (apply)
-//                    App.changeBackImage();
-//                break;
-//            case 'step':
-//                this.settings.step = setting.value;
-//                if (apply && App.human) {
-//                    App.human.unBindCards();
-//                    App.human.bindCards();
-//                }
-//                break;
-//            case 'trump_mapping':
-//                if (setting.value == 'without' || setting.value == App.getTrump()) {
-//                    this.settings.trump_mapping = '';
-//                }
-//                else {
-//                    var value = {};
-//                    value[App.getTrump()] = setting.value;
-//                    value[setting.value] = App.getTrump();
-//                    this.settings.trump_mapping = value;
-//                }
-//                if (apply && App.human) {
-//                    App.human.updateCardImages();
-//                    App.renderTrump();
-//                    App.table.updateCardImages();
-//                    App.table.renderLastPileIfVisible();
-//                    App.opponent.renderLastTakedCardsIfVisible();
-//                }
-//                break;
-//        }
+        settingObj.set(setting.property, value, {validate: true});
     },
     changeSettings: function (settings, apply) {
         for (var i in settings) {
@@ -366,9 +301,9 @@ var AppModel = Backbone.Model.extend({
     },
     getImageById: function (id) {
         var suit = id[0];
-        var suit_mapped = this.get('settings').get('trump_mapping')[suit];
-        if (suit_mapped) {
-            id = suit_mapped + id.slice(1);
+        var trump_mapping = this.get('settings').get('trump_mapping');
+        if (trump_mapping && trump_mapping[suit]) {
+            id = trump_mapping[suit] + id.slice(1);
         }
         return this.get('images')[id];
     },
@@ -436,11 +371,9 @@ var AppModel = Backbone.Model.extend({
                 onFinish: function () {
                     if (without_hiding)
                         return false;
-                    setTimeout(function () {
-                        App.safeTimeOutAction(timestamp, function () {
-                            App.get('human').renderCards();
-                        });
-                    }, 3000);
+                    App.safeTimeOutAction(3000, function () {
+                        App.get('human').renderCards();
+                    });
                 }
             });
             tween.play();
@@ -499,12 +432,9 @@ var AppModel = Backbone.Model.extend({
             }
             this.get('human').setCanStep(false);
             if (this.get('game_with_comp') && !this.get('view_only')) {
-                var timestamp = this.get('new_game_started');
-                setTimeout(function () {
-                    this.safeTimeOutAction(timestamp, function () {
-                        this.get('opponent').step();
-                    }.bind(this));
-                }.bind(this), 800);
+                this.safeTimeOutAction(800, function () {
+                    this.get('opponent').step();
+                }.bind(this));
             }
         }
         return false;
@@ -517,7 +447,6 @@ var AppModel = Backbone.Model.extend({
             return false;
         }
         this.set('Deck', new Konva.Layer());
-//        this.Deck = new Konva.Layer();
         this.get('stage').add(this.get('Deck'));
 
         var DeckImage = new Image();
@@ -545,7 +474,6 @@ var AppModel = Backbone.Model.extend({
             this.get('Deck').setZIndex(99);
             this.get('Deck').draw();
             this.set('backImage', DeckImage);
-//            App.get('backImage') = DeckImage;
         }.bind(this);
     },
     renderTrump: function () {
@@ -557,12 +485,10 @@ var AppModel = Backbone.Model.extend({
                 this.get('MyCards').add(card);
             }
             this.trigger('deck_is_empty');
-//            this.get('view').showTrumpValueOnDeck();
             return false;
         }
         else
             this.trigger('deck_is_not_empty');
-//            this.hideTrumpValueOnDeck();
 
         if (!card) {
             card = new Konva.Image({
@@ -635,8 +561,7 @@ var AppModel = Backbone.Model.extend({
     renderFromHistory: function (history) {
         this.clearCardsLayer();
         this.initGameStartTime();
-        this.set('opponent', new Computer());
-//        this.opponent = new Computer();
+        this.set('opponent', new Computer(Settings.player));
         this.get('human').setCards(history.human_cards);
         this.get('opponent').setCards(history.opponent_cards);
         this.get('table').setState(history.table_state);
@@ -652,11 +577,8 @@ var AppModel = Backbone.Model.extend({
         this.get('human').renderCards();
         this.get('opponent').renderCards();
         this.set('without_update_history', true);
-//        this.get('without_update_history' = true;
         this.get('human').setCanStep(true);
         this.set('without_update_history', false);
-//        this.get('without_update_history = false;
-
     },
     renderCardsByClassName: function (name, image) {
         var cards = this.get('stage').find('.' + name);
@@ -727,15 +649,16 @@ var AppModel = Backbone.Model.extend({
             trump: trump[0],
             trump_val: trump
         });
-//        this.trump = trump[0];
-//        this.trump_val = trump;
     },
-    safeTimeOutAction: function (timestamp, fn) {
-        if (timestamp != this.get('new_game_started')) {
-            return;
-        }
-        else
-            fn();
+    safeTimeOutAction: function (time, fn) {
+        var timestamp = this.get('new_game_started');
+        setTimeout(function () {
+            if (timestamp != this.get('new_game_started')) {
+                return;
+            }
+            else
+                fn();
+        }.bind(this), time);
     },
     setMode: function (mode) {
         switch (mode) {
@@ -749,14 +672,7 @@ var AppModel = Backbone.Model.extend({
                 break;
         }
     },
-//    setProperty: function (property) {
-//        var settings = this.get('settings');
-//        settings.get(_.keys(property).pop()).set()
-//    },
-//    showTrumpValueOnDeck: function () {
-//    },
     start: function (with_comp, onStart) {
-//        var self = this;
         this.trigger('before_start');
         this.reset();
         this.applyClientSettings();
@@ -785,7 +701,7 @@ var AppModel = Backbone.Model.extend({
 //                    self.opponent = new Computer(player.defaults);
                     this.renderTrump();
 
-                    var timestamp = this.get('new_game_started');
+//                    var timestamp = this.get('new_game_started');
 
                     this.get('game_with_comp').history.disablePrev();
                     this.get('game_with_comp').history.disableNext();
@@ -796,12 +712,10 @@ var AppModel = Backbone.Model.extend({
                         this.trigger('comp_step_first', comp_step_first);
                         this.get('human').setCanStep(!comp_step_first);
                         if (comp_step_first) {
-                            setTimeout(function () {
-                                this.safeTimeOutAction(timestamp, function () {
-                                    console.log('comp step');
-                                    this.get('opponent').step();
-                                }.bind(this));
-                            }.bind(this), 1500);
+                            this.safeTimeOutAction(1500, function () {
+                                console.log('comp step');
+                                this.get('opponent').step();
+                            }.bind(this));
                         }
                     }.bind(this));
                 }
@@ -811,13 +725,9 @@ var AppModel = Backbone.Model.extend({
                     this.set('game_with_comp', null);
 
                     this.set('opponent', new Opponent(Settings.player));
-//                    this.game_with_comp = null;
-//                    var player = new Player();
-//                    this.opponent = new Opponent(player.defaults);
                     if (this.get('awaiting_opponent_cards')) {
                         this.get('opponent').addCards(this.get('awaiting_opponent_cards'));
                         this.set('awaiting_opponent_cards', []);
-//                        this.awaiting_opponent_cards = [];
                     }
                 }
                 if (onStart) {

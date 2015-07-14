@@ -54,5 +54,9 @@ var Settings = {
                 fill: 'white'
             }
         }
+    },
+    text: {
+        attack_phrase: 'Атакуйте',
+        protect_phrase: 'Отбивайтесь'
     }
 };

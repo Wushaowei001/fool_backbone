@@ -13,7 +13,7 @@ var Human = Player.extend({
         for (var i in options) {
             this.set(i, options[i]);
         }
-        this.on('human:cards_added human:take_cards', function (without_animation, from_deck) {
+        this.on('cards_added take_cards', function (without_animation, from_deck) {
             this.renderCards(without_animation, from_deck);
         }.bind(this));
         this.on('change:_cards', function () {
@@ -107,7 +107,6 @@ var Human = Player.extend({
         }
     },
     beforeMyStep: function () {
-        var timestamp = App.get('new_game_started');
         if (!App.get('view_only') && this.noCards()) {
             return;
         }
@@ -121,32 +120,24 @@ var Human = Player.extend({
             if (!App.get('table').getCardForBeat() && !App.get('table').getCardsForThrow() && !this.getCardsForThrow()) {
                 App.get('human').setCanStep(false);
                 App.trigger('beaten');
-                setTimeout(function () {
-                    App.safeTimeOutAction(timestamp, function () {
-                        App.get('table').addToPile();
-                        setTimeout(function () {
-                            App.safeTimeOutAction(timestamp, function () {
-                                if (!App.get('game_with_comp')) {
-                                    App.trigger('addToPile');
-//                                    client.gameManager.sendTurn({type: 'addToPile'});
-//                                    client.gameManager.sendEvent('event', {data: 'getCards'});
-                                }
-                                else {
-                                    App.get('game_with_comp').addCards(true, function () {
-                                        App.trigger('update_deck_remain');
-                                    });
-                                    if (!App.get('view_only')) {
-                                        setTimeout(function () {
-                                            App.safeTimeOutAction(timestamp, function () {
-                                                App.get('opponent').step();
-                                            });
-                                        }, 800);
-                                    }
-                                }
+                App.safeTimeOutAction(800, function () {
+                    App.get('table').addToPile();
+                    App.safeTimeOutAction(1000, function () {
+                        if (!App.get('game_with_comp')) {
+                            App.trigger('addToPile');
+                        }
+                        else {
+                            App.get('game_with_comp').addCards(true, function () {
+                                App.trigger('update_deck_remain');
                             });
-                        }, 1000);
+                            if (!App.get('view_only')) {
+                                App.safeTimeOutAction(800, function () {
+                                    App.get('opponent').step();
+                                });
+                            }
+                        }
                     });
-                }, 800);
+                });
                 return;
             }
             else {
@@ -159,11 +150,9 @@ var Human = Player.extend({
 //                    $('#nothing_to_beat').fadeIn(300);
 //                    $('#nothing_to_beat').fadeOut(4000);
                     if (!App.get('view_only'))
-                        setTimeout(function () {
-                            App.safeTimeOutAction(timestamp, function () {
-                                App.humanTakeCards();
-                            });
-                        }, 1000);
+                        App.safeTimeOutAction(1000, function () {
+                            App.humanTakeCards();
+                        });
                     return;
                 }
             }
@@ -181,7 +170,6 @@ var Human = Player.extend({
             this.bindCardEvents(card, id);
         }
     },
-
     bindCardsForThrow: function (cards, count) {
         for (var i in cards) {
             var id = cards[i];
@@ -190,17 +178,13 @@ var Human = Player.extend({
             this.bindCardForThrow(card, id, cards);
         }
     },
-
     temporaryUnbindCardEvents: function (time) {
         var timestamp = App.get('new_game_started');
         this.unBindCards();
-        setTimeout(function () {
-            App.safeTimeOutAction(timestamp, function () {
-                this.bindCards();
-            });
-        }, time);
+        App.safeTimeOutAction(time, function () {
+            this.bindCards();
+        });
     },
-
     bindCardEvents: function (card, id) {
         var action_step = App.getProperty('step');
 
@@ -266,7 +250,7 @@ var Human = Player.extend({
         }
         if (typeof callback == 'function')
             callback();
-        this.trigger('human:cards_added');
+        this.trigger('cards_added');
     },
     noCards: function () {
         return !this.getCards().length && App.deckIsEmpty();
@@ -280,7 +264,7 @@ var Human = Player.extend({
         for (var i in cards) {
             this.addCard(cards[i]);
         }
-        this.trigger('human:take_cards');
+        this.trigger('take_cards');
         if (typeof callback == 'function')
             callback();
     },
@@ -296,8 +280,6 @@ var Human = Player.extend({
         this._renderCards(false, without_animation, from_deck);
     },
     step: function (id) {
-        var timestamp = App.get('new_game_started');
-
         if (App.get('game_with_comp')) {
             App.get('game_with_comp').history.disableMoves();
         }
@@ -315,12 +297,9 @@ var Human = Player.extend({
 
 
         if (App.get('game_with_comp') && !App.get('without_animation')) {
-            setTimeout(
-                function () {
-                    App.safeTimeOutAction(timestamp, function () {
-                        App.get('opponent').step();
-                    });
-                }, 800);
+            App.safeTimeOutAction(800, function () {
+                App.get('opponent').step();
+            });
         }
 
         var last_card = App.get('human').noCards();
@@ -363,294 +342,3 @@ var Human = Player.extend({
         return this._super('_getAllPossibleCardsForBeat');
     }
 });
-
-
-//var Human = function () {
-//    this._cards = [];
-//    this.tweens = [];
-//    this.can_step = false;
-//    this.cards_need_up = [];
-//    var that = this;
-//
-//    this.setCanStep = function (can) {
-//        that.can_step = can;
-//        if (can)
-//            App.myStepText();
-//        else
-//            App.opponentStepText();
-//    };
-//
-//    this.canStep = function () {
-//        return that.can_step;
-//    };
-//
-//    var canStartStep = function (id) {
-//        if (!id)
-//            return false;
-//        if (!that._isMyCard(id))
-//            return false;
-//        var count_cards_on_table = App.table.getCountCards() + App.table.getCountCardsForThrow();
-//        if (App.table.human_attack) {
-//            if (count_cards_on_table == App.human.MAX_COUNT_CARDS)
-//                return false;
-//            if (!App.game_with_comp && App.opponent.countCards() == App.table.getCountCardsNotYetBeatenWithThrow())
-//                return false;
-//
-//        }
-//        if (canThrowCard(id))
-//            return true;
-//        var card_on_table = App.table.getCardForBeatID();
-//        var cards_on_table = App.table.getCards();
-//
-//        var card_val = +id.slice(1);
-//        if (card_on_table) {
-//            return App.human.isCardCanCoverCardOnTable(id) && that.canStep();
-//        }
-//        else {
-//            if (cards_on_table) {
-//                for (var i in cards_on_table) {
-//                    if (+cards_on_table[i].slice(1) == card_val)
-//                        return that.canStep();
-//                }
-//                return false;
-//            }
-//        }
-//        return that.canStep();
-//    };
-//
-//    var canThrowCard = function (card) {
-//        if (App.game_with_comp)
-//            return false;
-//        if (App.table.human_attack) {
-//            var cards = App.table.getCards();
-//            for (var i in cards) {
-//                if (cards[i].slice(1) == card.slice(1))
-//                    return true;
-//            }
-//            return false;
-//        }
-//        return false;
-//    };
-//
-//    var unBindCardEvents = function (card) {
-//        if (card) {
-//            card.off(
-//                'mouseover dblclick dragstart mousedown mouseup dbltap touchstart touchend click'
-//            );
-//        }
-//    };
-//
-//    this.unBindCards = function () {
-//        for (var i in that._cards) {
-//            var card = App.stage.findOne('#' + that._cards[i]);
-//            unBindCardEvents(card);
-//        }
-//    };
-//
-//    this.bindCards = function () {
-//        for (var i in that._cards) {
-//            var id = that._cards[i];
-//            var card = App.stage.findOne('#' + id);
-//            bindCardEvents(card, id);
-//        }
-//    };
-//
-//    this.bindCardsForThrow = function (cards, count) {
-//        for (var i in cards) {
-//            var id = cards[i];
-//            var card = App.stage.findOne('#' + id);
-//            bindCardForThrow.count = count; // мемоизация кол-ва карт для подкидывания
-//            bindCardForThrow(card, id, cards);
-//        }
-//    };
-//
-//    this.temporaryUnbindCardEvents = function (time) {
-//        var timestamp = App.new_game_started;
-//        that.unBindCards();
-//        setTimeout(function () {
-//            App.safeTimeOutAction(timestamp, function () {
-//                that.bindCards();
-//            });
-//        }, time);
-//    };
-//
-//    var bindCardEvents = function (card, id) {
-//        var settings = App.getSettings();
-//
-//        var action_step = settings.step;
-//
-//        card.on(action_step + ' dbltap', function () {
-//            if (!canStartStep(id))
-//                return false;
-//            that.step(id);
-//        });
-//    };
-//
-//    var bindCardForThrow = function (card, id, cards) {
-//        var settings = App.getSettings();
-//
-//        var action_step = settings.step;
-//
-//        card.on(action_step + ' dbltap', function () {
-//            if (!canStartStep(id))
-//                return false;
-//            bindCardForThrow.count--;
-//            removeCard(id);
-//            App.table.addCardForThrow(id);
-//            var cards_for_throw = that._getCardsForThrow(cards);
-//            if (!cards_for_throw || !bindCardForThrow.count)
-//                endThrow();
-//        });
-//    };
-//
-//    this.updateCardImages = function (onload) {
-//        App.updateCardImages(that._cards, onload);
-//    };
-//
-//    var turnCards = function (cards) {
-//        for (var i in cards) {
-//            var id = cards[i];
-//            var card = App.addCardToLayer(id);
-//            card.setX(20);
-//            card.setY(App.getDeckCoords().y);
-//        }
-//    };
-//
-//    var addCard = function (id, up_new_cards) {
-//        if (!id)
-//            return false;
-//        var card = App.stage.findOne('#' + id);
-//        if (up_new_cards) {
-//            that.cards_need_up.push(id);
-//        }
-//
-//        if (!App.without_animation && (!App.view_only)) {
-//            setTimeout(function () {
-//                App.addCardSound();
-//            }, 300);
-//        }
-//
-//        if (!App.view_only) {
-//            bindCardEvents(card, id);
-//        }
-//    };
-//
-//    this.noCards = function () {
-//        return !that._cards.length && App.deckIsEmpty();
-//    };
-//
-//    this.takeCardsFromTable = function (cards, callback) {
-//        if (App.game_with_comp) {
-//            App.game_with_comp.history.disableMoves();
-//        }
-//        for (var i in cards) {
-//            that._cards.push(cards[i]);
-//            addCard(cards[i], true);
-//        }
-//        that._renderCards(false, false, false);
-//        if (typeof callback == 'function')
-//            callback();
-//    };
-//
-//    this.addCards = function (new_cards, need_turn, callback) {
-//        var up_new_cards = that._cards.length ? true : false;
-//        for (var i in new_cards) {
-//            that._cards.push(new_cards[i]);
-//        }
-//        if (need_turn) {
-//            turnCards(new_cards);
-//        }
-//        for (var i in new_cards) {
-//            addCard(new_cards[i], up_new_cards);
-//        }
-//        if (typeof callback == 'function')
-//            callback();
-//        that._renderCards(false, false, false);
-//    };
-//
-//    var removeCard = function (id) {
-//
-//        that._removeCard(id);
-//        var card = App.stage.findOne('#' + id);
-//        if (card)
-//            unBindCardEvents(card);
-//    };
-//
-//    this.renderCards = function (without_animation, from_deck) {
-//        that._renderCards(false, without_animation, from_deck);
-//    };
-//
-//    this.step = function (id) {
-//        var timestamp = App.new_game_started;
-//
-//        if (App.game_with_comp) {
-//            App.game_with_comp.history.disableMoves();
-//        }
-//
-//        removeCard(id);
-//
-//        if (!that.canStep()) {
-//            App.table.addCardForThrow(id);
-//            return false;
-//        }
-//        else
-//            App.table.addCard(id, false);
-//
-//        App.turnSound();
-//
-//        that.setCanStep(false);
-//        if (App.game_with_comp && !App.without_animation) {
-//            setTimeout(
-//                function () {
-//                    App.safeTimeOutAction(timestamp, function () {
-//                        App.opponent.step();
-//                    });
-//                }, 800);
-//        }
-//
-//        var last_card = App.human.noCards();
-//        if (!App.game_with_comp) {
-//            client.gameManager.sendTurn({card: id, last_card: last_card});
-//        }
-//    };
-//
-//    this.isHaveCardForPut = function (cards) {
-//        return that._getCardsForThrow(cards);
-//    };
-//
-//    this.isCardCanCoverCardOnTable = function (card) {
-//        var card_on_table = App.table.getCardForBeatID();
-//        if (!card_on_table)
-//            return false;
-//        if (card_on_table[0] == card[0]) {
-//            var card_val = +card.slice(1);
-//            var card_on_table_val = card_on_table.slice(1);
-//
-//            if (card_val > card_on_table_val)
-//                return true;
-//        }
-//        else {
-//            if (card[0] == App.getTrump())
-//                return true;
-//        }
-//        return false;
-//    };
-//
-//    this.getMinCard = function (card) {
-//        return that._getMinCard(card);
-//    };
-//
-//    this.getMinTrump = function () {
-//        return that._getMinTrump();
-//    };
-//
-//    this.needCards = function () {
-//        return that._needCards();
-//    };
-//
-//    this.getAllPossibleCardsForBeat = function () {
-//        return that._getAllPossibleCardsForBeat();
-//    };
-//};
-//
-//Human.prototype = new Player();
