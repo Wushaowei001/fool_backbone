@@ -35,6 +35,7 @@ var AppView = Backbone.View.extend({
 
 
         this.listenTo(App, 'start', this.onStart);
+        this.listenTo(App, 'default_screen', this.showDefaultScreen);
         this.listenTo(App, 'comp_step_first', function (first) {
             this.onCompStepFirst(first)
         });
@@ -136,6 +137,9 @@ var AppView = Backbone.View.extend({
     hideActionButtons: function () {
         this.$takeCards.hide();
         this.$putToPile.hide();
+    },
+    hideOpponentName: function () {
+        this.$opponentName.hide();
     },
     hideScore: function () {
         this.$score.find('span').text('');
@@ -310,6 +314,16 @@ var AppView = Backbone.View.extend({
     },
     putToPile: function () {
         App.putToPile();
+    },
+    showDefaultScreen: function () {
+        this.myStepTextHide();
+        this.$nameAndRating.hide();
+        this.hideScore();
+        this.hideTrumpValueOnDeck();
+        this.hideActionButtons();
+        this.showButtonsForGameWithComp();
+        this.updateDeckRemains(0);
+        this.$switchGame.show();
     },
     showTrumpValueOnDeck: function (trump) {
         this.$trump.show();

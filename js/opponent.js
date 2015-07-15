@@ -7,8 +7,10 @@ var Opponent = Player.extend({
     initialize: function (options) {
         for (var i in options) {
             this.set(i, options[i]);
-//            this.defaults[i] = options[i];
         }
+        this.on('change', function (p) {
+            console.log(p.changed);
+        });
     },
     getCards: function () {
         return this.get('_cards');
@@ -21,25 +23,18 @@ var Opponent = Player.extend({
         this.set('_cards', cards);
         card.setAttr('id', id);
     },
-
-    addCard: function () {
-        var id = 0;
-        if (this.getCards().length)
-            id = this.getCards()[this.getCards().length - 1] + 1;
-        else
-            id = 1;
-        var cards = this.getCards();
-        cards.push(id);
+    setCards: function (cards) {
         this.set('_cards', cards);
-        return id;
     },
-
     addCards: function (count) {
         var cards = [];
+        var id = this.getCards().length;
         for (var i = 0; i < count; i++) {
-            var id = this.addCard();
+            id++;
             cards.push(id);
         }
+        this.setCards(this.getCards().concat(cards));
+
         this._super('_addCards', cards);
 
         if (!App.get('without_animation'))
@@ -50,7 +45,6 @@ var Opponent = Player.extend({
         if (!through_throw) {
             this._super('_destroyLastTakedCards');
             this.set('lastTakedcards', App.get('table').getState());
-//            this.lastTakedcards = App.table.getState();
         }
         var cards = [];
         for (var i in cards_from_table) {

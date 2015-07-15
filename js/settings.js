@@ -1,4 +1,8 @@
 var Settings = {
+    cards: {
+        height: 96,
+        width: 71
+    },
     player: {
         MAX_COUNT_CARDS: 6,
         LAST_TAKED_CARDS_X: 100,

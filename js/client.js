@@ -3,7 +3,7 @@ LogicGame.init(onInit);
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
     window.client = new Client({
-        https: true,
+        https: false,
         domain: 'logic-games.spb.ru',
 //        domain: 'localhost',
         game: 'fool_backbone',
@@ -351,9 +351,9 @@ function onInit() {
     });
 
     client.gameManager.on('game_leave', function (data) {
-//        hide_action_buttons();
         console.log('main;', 'game_leave room:', data);
-        App.start(true);
+        App.reset();
+        App.trigger('default_screen');
     });
 
     client.gameManager.on('time', function (data) {

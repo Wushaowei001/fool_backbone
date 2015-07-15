@@ -123,8 +123,8 @@ var AppModel = Backbone.Model.extend({
     },
     addCardToLayer: function (id, inverted, onload) {
         var card = new Konva.Image({
-            width: this.card_width,
-            height: this.card_height,
+            width: Settings.cards.width,
+            height: Settings.cards.height,
             id: id,
             rotation: 0
         });
@@ -602,6 +602,8 @@ var AppModel = Backbone.Model.extend({
         var cards = this.get('stage').find('.' + name);
         for (var i = 0; i < cards.length; i++) {
             cards[i].setImage(image);
+            cards[i].height(Settings.cards.height);
+            cards[i].width(Settings.cards.width);
         }
         this.get('stage').draw();
     },
@@ -609,24 +611,17 @@ var AppModel = Backbone.Model.extend({
     reset: function () {
         this.destroyStage();
         this.initStage();
-
-//        if (typeof this.get('onStart') == 'function')
-//            this.onStart();
         this.set({
             empty_deck: false,
             view_only: false,
             history: null
         });
-//        this.empty_deck = false;
-//        this.view_only = false;
-//        this.history = null;
         this.renderTrump.trump = null;
 
         if (this.get('MyCards')) {
             this.get('MyCards').destroy();
         }
         this.set('MyCards', new Konva.Layer());
-//        this.MyCards = new Konva.Layer();
         this.set(
             {
                 Trump: new Konva.Layer(),
@@ -635,25 +630,18 @@ var AppModel = Backbone.Model.extend({
                 TimerLayer: new Konva.Layer()
             }
         );
-//        this.Trump = new Konva.Layer();
-//        this.Throw = new Konva.Layer();
-//        this.PossibleCards = new Konva.Layer();
-//        this.TimerLayer = new Konva.Layer();
         this.get('stage').add(this.get('MyCards'));
         this.get('stage').add(this.get('Throw'));
         this.get('stage').add(this.get('TimerLayer'));
         this.renderDeck();
 
-//        this.table = new Table();
-//        this.human = new Human(player.defaults);
-//        this.opponent = null;
-
-//        var player = new Player();
         this.set({
             table: new Table(),
-            human: new Human(Settings.player),
-            opponent: null
+            human: new Human(Settings.player)
+//            opponent: null
         });
+        if (this.get('opponent'))
+            this.get('opponent').destroy();
     },
 
     setGameArea: function (params) {
@@ -691,6 +679,12 @@ var AppModel = Backbone.Model.extend({
         }
     },
     start: function (with_comp, onStart) {
+        var old_game = this.get('new_game_started');
+        if (Date.now() - old_game < 1000)
+            return false;
+
+        this.initGameStartTime();
+
         this.trigger('before_start');
         this.reset();
         this.applyClientSettings();
@@ -703,7 +697,6 @@ var AppModel = Backbone.Model.extend({
                 loadTextHide();
 //                this.destroyKonvaById(Settings.loader.id);
                 this.reset();
-                this.initGameStartTime();
 
                 if (with_comp) {
                     this.set('game_with_comp', new GameWithComputer());
@@ -714,12 +707,8 @@ var AppModel = Backbone.Model.extend({
                     var lastCard = this.get('game_with_comp').getLastCard();
                     this.setTrump(lastCard);
                     this.applyClientSettings();
-//                    var player = new Player();
                     this.set('opponent', new Computer(Settings.player));
-//                    self.opponent = new Computer(player.defaults);
                     this.renderTrump();
-
-//                    var timestamp = this.get('new_game_started');
 
                     this.get('game_with_comp').history.disablePrev();
                     this.get('game_with_comp').history.disableNext();
