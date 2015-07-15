@@ -88,9 +88,6 @@ var AppModel = Backbone.Model.extend({
         this.on('change:score', function (self) {
             this.trigger('score_changed', self.changed.score);
         });
-//        this.on('change:my_name', function () {
-//            this.trigger('my_name_changed');
-//        });
         this.on('change:opponent_name', function (self) {
             this.trigger('opponent_name_changed', self.changed.opponent_name);
         });
@@ -637,8 +634,15 @@ var AppModel = Backbone.Model.extend({
 
         this.set({
             table: new Table(),
-            human: new Human(Settings.player)
-//            opponent: null
+            human: new Human(Settings.player),
+            awaiting_opponent_cards: [],
+            score: null,
+            my_name: null,
+            opponent_name: null,
+            my_rating: null,
+            opponent_rating: null,
+            can_step: null,
+            deck_is_empty: null
         });
         if (this.get('opponent'))
             this.get('opponent').destroy();
@@ -720,7 +724,6 @@ var AppModel = Backbone.Model.extend({
                         this.get('human').setCanStep(!comp_step_first);
                         if (comp_step_first) {
                             this.safeTimeOutAction(1500, function () {
-                                console.log('comp step');
                                 this.get('opponent').step();
                             }.bind(this));
                         }

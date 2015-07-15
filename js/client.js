@@ -124,7 +124,6 @@ function onInit() {
                 var players = data.players;
                 for (var i in players) {
                     if (players[i].isPlayer) {
-//                    my_name = players[i].userName;
                         my_rating = players[i].getRank();
                         my_score = data.score[players[i].userId];
                     }
@@ -134,20 +133,11 @@ function onInit() {
                         opponent_score = data.score[players[i].userId];
                     }
                 }
-//            $('#score').show();
                 App.set('score', my_score + ':' + opponent_score);
-//            $('#score span').text(my_score + ':' + opponent_score);
-//            App.set('my_name', my_name);
-//            $('#my_name').text(my_name);
                 App.set('opponent_name', opponent_name);
                 App.set('my_rating', my_rating);
                 App.set('opponent_rating', opponent_rating);
-//            $('#opponent_name').text(opponent_name);
             });
-
-//            var my_name = null;
-
-
         };
 
         if (data.loading) {
@@ -417,6 +407,7 @@ function onInit() {
     });
 
     client.gameManager.on('game_load', function (history) {
+        return false;
 //        AppView.showButtonsForRealGame();
         var players = client.gameManager.currentRoom.players;
         for (var i in players) {

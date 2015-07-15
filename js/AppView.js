@@ -63,7 +63,6 @@ var AppView = Backbone.View.extend({
             this.showMyName(name);
         });
         this.listenTo(App, 'opponent_name_changed', function (name) {
-            console.log('opponent_name_changed');
             this.showOpponentName(name);
         });
         this.listenTo(App, 'my_rating_changed', function (rating) {
@@ -74,7 +73,6 @@ var AppView = Backbone.View.extend({
         });
         this.listenTo(App, 'can_step', function (can) {
             console.log('CAN STEP!!!!');
-            console.log(can);
             if (can)
                 this.beforeMyStep();
             else
