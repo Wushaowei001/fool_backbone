@@ -85,6 +85,8 @@ var AppView = Backbone.View.extend({
         this.listenTo(App, 'renderFromHistory', function (human_attack, table_not_empty) {
             this.onRenderFromHistory(human_attack, table_not_empty);
         });
+        this.listenTo(App, 'table:addToPile', this.onAddToPile);
+        this.listenTo(App, 'table:renderLastPile', this.onRenderLastPile);
 
         App.setGameArea(
             {
@@ -207,6 +209,9 @@ var AppView = Backbone.View.extend({
     myStepTextHide: function () {
         this.$myStepText.hide();
     },
+    onAddToPile: function () {
+        App.renderTooltip(Settings.tooltip.for_pile);
+    },
     onStart: function () {
     },
     onBeforeStart: function () {
@@ -281,6 +286,9 @@ var AppView = Backbone.View.extend({
             this.beforeMyStep(Settings.text.protect_phrase);
             this.$takeCards.show();
         }
+    },
+    onRenderLastPile: function () {
+
     },
     onWinComputer: function () {
         this.$looseMessage.show();

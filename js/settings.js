@@ -39,19 +39,24 @@ var Settings = {
     },
     tooltip: {
         for_pile: {
-            x: 120,
-            y: 50,
-            fill: 'black',
-            pointerDirection: 'right',
-            pointerWidth: 20,
-            pointerHeight: 20,
-            lineJoin: 'round',
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: 10,
-            shadowOpacity: 0.5,
+            tooltip: {
+                x: 650,
+                y: 270,
+                opacity: 0.75
+            },
+            tag: {
+                fill: 'black',
+                pointerDirection: 'right',
+                pointerWidth: 20,
+                pointerHeight: 20,
+                lineJoin: 'round',
+                shadowColor: 'black',
+                shadowBlur: 10,
+                shadowOffset: 10,
+                shadowOpacity: 0.5
+            },
             text: {
-                text: 'Tooltip pointing down',
+                text: 'Щелкните для просмотра последнего отбоя',
                 fontFamily: 'Calibri',
                 fontSize: 18,
                 padding: 5,

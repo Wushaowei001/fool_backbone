@@ -114,7 +114,6 @@ var Table = function () {
             App.get('lastPileLayer').destroy();
         var lastPileLayer = new Konva.Layer();
         App.set('lastPileLayer', lastPileLayer);
-//        App.lastPileLayer = lastPileLayer;
         App.get('stage').add(lastPileLayer);
 
         var x = that.LAST_PILE_LEFT_POSITION -
@@ -122,6 +121,7 @@ var Table = function () {
                 * (that.last_pile.cards.length - 1);
         var y = that.LAST_PILE_POS_FOR_CARDS;
         that.renderSmallCards(that.last_pile, x, y, lastPileLayer);
+        App.trigger('table:renderLastPile');
     };
 
     this.renderLastTakedCards = function (cards_object, x, y) {
@@ -311,6 +311,7 @@ var Table = function () {
     };
 
     this.addToPile = function () {
+        App.trigger('table:addToPile');
         that.destroyLastPile();
         var cards = that.getCards();
         that.last_pile = that.getState();

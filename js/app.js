@@ -147,6 +147,9 @@ var AppModel = Backbone.Model.extend({
             trump_mapping: settings.trump_mapping
         });
     },
+    destroyLayer: function (layer) {
+//      if(this.get('stage').find)
+    },
     endThrow: function () {
         App.get('human').unBindCards();
         App.get('human').bindCards();
@@ -535,6 +538,16 @@ var AppModel = Backbone.Model.extend({
         card.setImage(this.getImageById(trump_val));
         this.get('stage').draw();
     },
+    renderTooltip: function (settings) {
+        if (!this.tooltipLayer)
+            this.tooltipLayer = new Konva.Layer();
+        var tooltip = new Konva.Label(settings.tooltip);
+        tooltip.add(new Konva.Tag(settings.tag));
+        tooltip.add(new Konva.Text(settings.text));
+        this.tooltipLayer.add(tooltip);
+        this.get('stage').add(this.tooltipLayer);
+        this.get('stage').draw();
+    },
     renderKonvaTimer: function (percent, opponent, config) {
         if (!this.get('TimerLayer')) {
             this.set('TimerLayer', new Konva.Layer());
@@ -691,7 +704,8 @@ var AppModel = Backbone.Model.extend({
         var old_game = this.get('new_game_started');
         if (Date.now() - old_game < 1000)
             return false;
-
+//        if (!with_comp)
+//            new WebManager();
         this.initGameStartTime();
 
         this.trigger('before_start');
@@ -735,6 +749,7 @@ var AppModel = Backbone.Model.extend({
                     }.bind(this));
                 }
                 else {
+//                    this.set('web', new WebManager());
                     this.trigger('play_with_opponent');
                     this.applyClientSettings();
                     this.set('game_with_comp', null);

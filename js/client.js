@@ -11,6 +11,7 @@ function onInit() {
         resultDialogDelay: 1000,
         reload: true,
         autoShowProfile: true,
+//        newGameFormat: true,
         getUserParams: function () {
             return {gameType: 'Main Mode'}
         },

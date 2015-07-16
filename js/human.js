@@ -124,7 +124,7 @@ var Human = Player.extend({
                     App.get('table').addToPile();
                     App.safeTimeOutAction(1000, function () {
                         if (!App.get('game_with_comp')) {
-                            App.trigger('addToPile');
+                            App.trigger('human:addToPile');
                         }
                         else {
                             App.get('game_with_comp').addCards(true, function () {
