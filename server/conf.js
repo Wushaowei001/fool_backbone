@@ -1,6 +1,6 @@
 module.exports = {
-    game: 'fool_backbone', // required, game name
-    port: 6028,
+    game: 'fool', // required, game name
+    port: 8028,
     pingTimeout: 100000,
     pingInterval: 10000,
     logLevel: 1,

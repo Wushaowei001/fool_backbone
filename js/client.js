@@ -3,11 +3,11 @@ LogicGame.init(onInit);
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
     window.client = new Client({
-        https: false,
-        domain: 'logic-games.spb.ru',
-//        domain: 'localhost',
-        game: 'fool_backbone',
-        port: 6028,
+//        https: true,
+//        domain: 'logic-games.spb.ru',
+        domain: 'localhost',
+        game: 'fool',
+        port: 8028,
         resultDialogDelay: 1000,
         reload: true,
         autoShowProfile: true,
@@ -293,7 +293,6 @@ function onInit() {
             if (data.opponent_cards) {
                 if (!App.get('opponent')) {
                     App.set('awaiting_opponent_cards', data.opponent_cards);
-//                    App.awaiting_opponent_cards = data.opponent_cards;
                 }
                 else
                     App.get('opponent').addCards(data.opponent_cards);
@@ -335,6 +334,7 @@ function onInit() {
 
     client.gameManager.on('end_game', function (data) {
 //        hide_action_buttons();
+        App.reset();
         App.end();
 //        App.onEndGame();
 
@@ -342,6 +342,7 @@ function onInit() {
 
     client.gameManager.on('game_leave', function (data) {
         console.log('main;', 'game_leave room:', data);
+        App.end();
         App.reset();
         App.trigger('default_screen');
     });

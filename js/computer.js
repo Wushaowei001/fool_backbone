@@ -105,8 +105,8 @@ var Computer = Player.extend({
                     App.safeTimeOutAction(1000, function () {
                         App.get('game_with_comp').addCards(false, function () {
                             App.trigger('update_deck_remain');
+                            App.get('human').setCanStep(true);
                         });
-                        App.get('human').setCanStep(true);
                     });
                 }
             }
@@ -120,8 +120,8 @@ var Computer = Player.extend({
                         App.get('table').addToPile();
                         App.get('game_with_comp').addCards(true, function () {
                             App.trigger('update_deck_remain');
+                            App.get('human').setCanStep(true);
                         });
-                        App.get('human').setCanStep(true);
                     }
                 }
                 else {

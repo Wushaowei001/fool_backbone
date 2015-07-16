@@ -28,12 +28,11 @@ var Opponent = Player.extend({
     },
     addCards: function (count) {
         var cards = [];
-        var id = this.getCards().length;
+        var id;
         for (var i = 0; i < count; i++) {
-            id++;
-            cards.push(id);
+            id = this.calculateId();
+            this.setCards(this.getCards().concat(id));
         }
-        this.setCards(this.getCards().concat(cards));
 
         this._super('_addCards', cards);
 
@@ -47,16 +46,28 @@ var Opponent = Player.extend({
             this.set('lastTakedcards', App.get('table').getState());
         }
         var cards = [];
+        var id;
         for (var i in cards_from_table) {
-            var id = this.addCard();
-            cards.push(id);
+            id = this.calculateId();
+            this.setCards(this.getCards().concat(id));
         }
+
         App.get('table').clearTable();
         if (App.get('without_animation'))
             return false;
 
         this._super('_takeCardsFromTable', cards_from_table);
         this.trigger('take_cards');
+    },
+
+    calculateId: function () {
+        var id = 0;
+        var cards = this.getCards();
+        if (cards.length)
+            id = cards[cards.length - 1] + 1;
+        else
+            id = 1;
+        return id;
     },
 
     removeCard: function (id) {

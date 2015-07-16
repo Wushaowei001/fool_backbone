@@ -72,14 +72,18 @@ var AppView = Backbone.View.extend({
             this.showOpponentRating(rating);
         });
         this.listenTo(App, 'can_step', function (can) {
-            console.log('CAN STEP!!!!');
             if (can)
                 this.beforeMyStep();
             else
                 this.beforeOpponentStep();
         });
-        this.listenTo(App, 'deck_is_empty', function (trump) {
+        this.listenTo(App, 'deck_is_empty show_trump', function (trump) {
             this.showTrumpValueOnDeck(trump)
+        });
+        this.listenTo(App, 'moveBack', this.onMoveBack);
+        this.listenTo(App, 'moveForward', this.onMoveForward);
+        this.listenTo(App, 'renderFromHistory', function (human_attack, table_not_empty) {
+            this.onRenderFromHistory(human_attack, table_not_empty);
         });
 
         App.setGameArea(
@@ -94,12 +98,12 @@ var AppView = Backbone.View.extend({
         if (!phrase)
             phrase = Settings.text.attack_phrase;
         this.$myStepText.show().text(phrase);
-        this.$opponentStepText.hide();
+//        this.$opponentStepText.hide();
         this.hideActionButtons();
     },
     beforeOpponentStep: function () {
         console.log('beforeOpponentStep');
-        this.$opponentStepText.show();
+//        this.$opponentStepText.show();
         this.$myStepText.hide();
         this.$takeCards.hide();
         this.$putToPile.hide();
@@ -186,7 +190,7 @@ var AppView = Backbone.View.extend({
     },
     onEndGame: function () {
         $('#my_step_text').hide();
-        $('#opponent_step_text').hide();
+//        $('#opponent_step_text').hide();
         $('#take_cards').hide();
         $('#put_tu_pile').hide();
         $('#timer').hide();
@@ -208,7 +212,7 @@ var AppView = Backbone.View.extend({
     onBeforeStart: function () {
         console.log('onBeforeStart');
         this.$myStepText.hide();
-        this.$opponentStepText.hide();
+//        this.$opponentStepText.hide();
 
         this.$takeCards.hide();
         this.$putToPile.hide();
@@ -267,13 +271,24 @@ var AppView = Backbone.View.extend({
         this.showScore();
         this.showButtonsForRealGame();
     },
+    onRenderFromHistory: function (human_attack, table_not_empty) {
+        if (human_attack || human_attack === null) {
+            this.beforeMyStep(Settings.text.attack_phrase);
+            if (table_not_empty)
+                this.$putToPile.show();
+        }
+        else {
+            this.beforeMyStep(Settings.text.protect_phrase);
+            this.$takeCards.show();
+        }
+    },
     onWinComputer: function () {
         this.$looseMessage.show();
     },
     onWinHuman: function () {
         this.$winMessage.show();
         this.$myStepText.hide();
-        this.$opponentStepText.hide();
+//        this.$opponentStepText.hide();
     },
     onDraw: function () {
         this.$drawMessage.show();
@@ -292,6 +307,14 @@ var AppView = Backbone.View.extend({
     onCanPutToPile: function () {
         this.beforeMyStep(Settings.text.attack_phrase);
         this.$putToPile.show();
+    },
+    onMoveBack: function () {
+        this.hideActionButtons();
+        this.myStepTextHide();
+    },
+    onMoveForward: function () {
+        this.hideActionButtons();
+        this.myStepTextHide();
     },
     onNothingToBeat: function () {
         this.$takeCards.hide();
@@ -315,6 +338,7 @@ var AppView = Backbone.View.extend({
     },
     showDefaultScreen: function () {
         this.myStepTextHide();
+//        this.$opponentStepText.hide();
         this.$nameAndRating.hide();
         this.hideScore();
         this.hideTrumpValueOnDeck();
@@ -376,12 +400,6 @@ var AppView = Backbone.View.extend({
     },
     takeCards: function () {
         App.humanTakeCards();
-//        if (!App.human.canStep())
-//            return false;
-//        if (App.table.getCardForBeat()) {
-//            App.humanTakeCards();
-//        }
-//        return false;
     },
     temporaryBlockUI: function (time) {
         this.blockUI();

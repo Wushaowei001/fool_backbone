@@ -70,18 +70,18 @@ var GameWithComputer = function () {
             this.list = this.list.slice(0, this.index + 1);
         },
         moveBack: function () {
-//            this.temporaryDisableMoves();
+            App.trigger('moveBack');
             if (this.index > 0) {
-                App.renderFromHistory(this.list[--this.index]);
+                App.renderFromHistory(cloner.clone(this.list[--this.index]));
                 this.enableNext();
             }
             if (this.index == 0)
                 this.disablePrev();
         },
         moveForward: function () {
-//            this.temporaryDisableMoves();
+            App.trigger('moveForward');
             if (this.index + 1 < this.list.length) {
-                App.renderFromHistory(this.list[++this.index]);
+                App.renderFromHistory(cloner.clone(this.list[++this.index]));
                 this.enablePrev();
                 if (this.index == this.list.length - 1)
                     this.disableNext();
