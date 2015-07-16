@@ -2,7 +2,7 @@ var Computer = Player.extend({
     defaults: {
         _cards: [],
         tweens: [],
-        lastTakedcards: []
+        lastTakenCards: []
     },
     initialize: function (options) {
         for (var i in options) {
@@ -31,8 +31,8 @@ var Computer = Player.extend({
     },
 
     takeCardsFromTable: function (cards) {
-        this._super('_destroyLastTakedCards');
-        this.set('lastTakedcards', App.get('table').getLastState());
+        this._super('_destroyLastTakenCards');
+        this.set('lastTakenCards', App.get('table').getLastState());
         this.setCards(this.getCards().concat(cards));
 //        for (var i in cards) {
 //            this._cards.push(cards[i]);
@@ -41,12 +41,12 @@ var Computer = Player.extend({
         this.trigger('take_cards');
     },
 
-    getLastTakedCards: function () {
-        return this.get('lastTakedcards');
+    getLastTakenCards: function () {
+        return this.get('lastTakenCards');
     },
 
-    renderLastTakedCardsIfVisible: function () {
-        this._super('_renderLastTakedCardsIfVisible');
+    renderLastTakenCardsIfVisible: function () {
+        this._super('_renderLastTakenCardsIfVisible');
     },
 
     removeCard: function (id) {

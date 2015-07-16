@@ -2,7 +2,7 @@ var Opponent = Player.extend({
     defaults: {
         _cards: [],
         tweens: [],
-        lastTakedcards: []
+        lastTakenCards: []
     },
     initialize: function (options) {
         for (var i in options) {
@@ -42,8 +42,8 @@ var Opponent = Player.extend({
 
     takeCardsFromTable: function (cards_from_table, through_throw) {
         if (!through_throw) {
-            this._super('_destroyLastTakedCards');
-            this.set('lastTakedcards', App.get('table').getState());
+            this._super('_destroyLastTakenCards');
+            this.set('lastTakenCards', App.get('table').getState());
         }
         var cards = [];
         var id;
@@ -78,12 +78,12 @@ var Opponent = Player.extend({
         return this._super('_getMinTrump');
     },
 
-    getLastTakedCards: function () {
-        return this.get('lastTakedcards');
+    getLastTakenCards: function () {
+        return this.get('lastTakenCards');
     },
 
-    renderLastTakedCardsIfVisible: function () {
-        this._super('_renderLastTakedCardsIfVisible');
+    renderLastTakenCardsIfVisible: function () {
+        this._super('_renderLastTakenCardsIfVisible');
     },
 
     needCards: function () {
@@ -115,117 +115,3 @@ var Opponent = Player.extend({
         }
     }
 });
-
-//var Opponent = function () {
-//    this._cards = [];
-//    this.tweens = [];
-//    this.lastTakedcards = {};
-//
-//    var this = this;
-//
-//    var addCardBeforeStep = function (id) {
-//
-//        var card = App.stage.findOne('#' + this._cards[0]);
-//        this._cards[0] = id;
-//        card.setAttr('id', id);
-//    };
-//
-//    var addCard = function () {
-//        var id = 0;
-//        if (this._cards.length)
-//            id = this._cards[this._cards.length - 1] + 1;
-//        else
-//            id = 1;
-//        this._cards.push(id);
-//        return id;
-//    };
-//
-//    var addCards = function (count) {
-//        var cards = [];
-//        for (var i = 0; i < count; i++) {
-//            var id = addCard();
-//            cards.push(id);
-//        }
-//        this._addCards(cards);
-//
-//        if (!App.without_animation)
-//            this._renderCards(true, true);
-//    };
-//
-//    var takeCardsFromTable = function (cards_from_table, through_throw) {
-//        if (!through_throw) {
-//            this._destroyLastTakedCards();
-//            this.lastTakedcards = App.table.getState();
-//        }
-//        var cards = [];
-//        for (var i in cards_from_table) {
-//            var id = addCard();
-//            cards.push(id);
-//        }
-//        App.table.clearTable();
-//        if (App.without_animation)
-//            return false;
-//
-//        this._takeCardsFromTable(cards_from_table);
-//        this.trigger('take_cards');
-//    };
-//
-//    var removeCard = function (id) {
-//        this._removeCard(id);
-//    };
-//
-//    var getMinTrump = function () {
-//        return this._getMinTrump();
-//    };
-//
-//    this.getLastTakedCards = function () {
-//        return this.lastTakedcards;
-//    };
-//
-//    var renderLastTakedCardsIfVisible = function () {
-//        this._renderLastTakedCardsIfVisible();
-//    };
-//
-//    var needCards = function () {
-//        return this._needCards();
-//    };
-//
-//    var countCards = function () {
-//        return this._cards.length;
-//    };
-//
-//    var renderCards = function (without_animation) {
-//        this._renderCards(true, without_animation);
-//    };
-//
-//    var getMinCard = function (card) {
-//        return this._getMinCard(card);
-//    };
-//
-//    var isHaveCardForPut = function () {
-//        return this._getCardsForThrow();
-//    };
-//
-//    var step = function (card) {
-//        if (card) {
-//            addCardBeforeStep(card);
-//            App.table.addCard(card, true);
-//            removeCard(card);
-//            this._renderCards(true, App.without_animation);
-//        }
-//    };
-//
-//    return {
-//        removeCard: removeCard,
-//        renderCards: renderCards,
-//        addCards: addCards,
-//        getMinTrump: getMinTrump,
-//        step: step,
-//        needCards: needCards,
-//        countCards: countCards,
-//        takeCardsFromTable: takeCardsFromTable,
-//        renderLastTakedCardsIfVisible: renderLastTakedCardsIfVisible
-//    };
-//};
-//
-//Opponent.prototype = new Player();

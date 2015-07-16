@@ -1,8 +1,5 @@
 var Player = Backbone.Model.extend({
     defaults: {
-//        MAX_COUNT_CARDS: 6,
-//        LAST_TAKED_CARDS_X: 100,
-//        LAST_TAKED_CARDS_Y: 100
     },
 
     getCards: function () {
@@ -29,7 +26,7 @@ var Player = Backbone.Model.extend({
                 card.off('click');
             }
         }
-        this._destroyLastTakedCards();
+        this._destroyLastTakenCards();
     },
     _sortBySuit: function (cards) {
         var result = [];
@@ -213,7 +210,7 @@ var Player = Backbone.Model.extend({
             App.get('MyCards').add(card);
 
             card.on('click', function () {
-                that._activateLastTakedCards();
+                that._activateLastTakenCards();
             });
             App.get('MyCards').draw();
         }
@@ -231,7 +228,7 @@ var Player = Backbone.Model.extend({
             card.setImage(App.get('backImage'));
             card.name('inverted');
             card.on('click', function () {
-                that._activateLastTakedCards();
+                that._activateLastTakenCards();
             });
             App.get('MyCards').draw();
 
@@ -338,32 +335,31 @@ var Player = Backbone.Model.extend({
         var cards = this._getCardsForThrow();
         return cards.length ? cards[0] : null;
     },
-    _activateLastTakedCards: function (cards) {
-        if (App.get('TackedCardsLayer')) {
-            if (App.get('TackedCardsLayer').isVisible())
-                App.get('TackedCardsLayer').hide();
+    _activateLastTakenCards: function (cards) {
+        if (App.get('TakenCardsLayer')) {
+            if (App.get('TakenCardsLayer').isVisible())
+                App.get('TakenCardsLayer').hide();
             else
-                App.get('TackedCardsLayer').show();
+                App.get('TakenCardsLayer').show();
             App.get('stage').draw();
             return false;
         }
 
-        this._renderLastTakedCards();
+        this._renderLastTakenCards();
     },
-    _renderLastTakedCards: function () {
-        App.get('table').renderLastTakedCards(this.get('lastTakedcards'), this.get('LAST_TAKED_CARDS_X'), this.get('LAST_TAKED_CARDS_Y'));
+    _renderLastTakenCards: function () {
+        App.get('table').renderLastTakenCards(this.get('lastTakenCards'), this.get('LAST_TAKEN_CARDS_X'), this.get('LAST_TAKEN_CARDS_Y'));
     },
-    _renderLastTakedCardsIfVisible: function () {
-        if (App.get('TackedCardsLayer') && App.get('TackedCardsLayer').isVisible()) {
-            this._renderLastTakedCards();
+    _renderLastTakenCardsIfVisible: function () {
+        if (App.get('TakenCardsLayer') && App.get('TakenCardsLayer').isVisible()) {
+            this._renderLastTakenCards();
         }
     },
-    _destroyLastTakedCards: function () {
-        this.set('lastTakedcards', {});
-//        this.lastTakedcards = {};
-        if (App.get('TackedCardsLayer')) {
-            App.get('TackedCardsLayer').destroy();
-            App.set('TackedCardsLayer', null);
+    _destroyLastTakenCards: function () {
+        this.set('lastTakenCards', {});
+        if (App.get('TakenCardsLayer')) {
+            App.get('TakenCardsLayer').destroy();
+            App.set('TakenCardsLayer', null);
         }
     },
     _isMyCard: function (id) {

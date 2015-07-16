@@ -124,16 +124,16 @@ var Table = function () {
         App.trigger('table:renderLastPile');
     };
 
-    this.renderLastTakedCards = function (cards_object, x, y) {
+    this.renderLastTakenCards = function (cards_object, x, y) {
         if (!cards_object)
             return false;
-        if (App.get('TackedCardsLayer'))
-            App.get('TackedCardsLayer').destroy();
-        var TackedCardsLayer = new Konva.Layer();
-        App.set('TackedCardsLayer', TackedCardsLayer);
-//        App.TackedCardsLayer = TackedCardsLayer;
-        App.get('stage').add(TackedCardsLayer);
-        that.renderSmallCards(cards_object, x, y, TackedCardsLayer);
+        if (App.get('TakenCardsLayer'))
+            App.get('TakenCardsLayer').destroy();
+        var TakenCardsLayer = new Konva.Layer();
+        App.set('TakenCardsLayer', TakenCardsLayer);
+//        App.TakenCardsLayer = TakenCardsLayer;
+        App.get('stage').add(TakenCardsLayer);
+        that.renderSmallCards(cards_object, x, y, TakenCardsLayer);
     };
 
     this.renderLastPileIfVisible = function () {

@@ -210,7 +210,10 @@ var AppView = Backbone.View.extend({
         this.$myStepText.hide();
     },
     onAddToPile: function () {
-        App.renderTooltip(Settings.tooltip.for_pile);
+        if (!localStorage.getItem('tooltip_for_pile_showed')) {
+            App.renderTooltip(Settings.tooltip.for_pile);
+            localStorage.setItem('tooltip_for_pile_showed', true);
+        }
     },
     onStart: function () {
     },
@@ -288,7 +291,10 @@ var AppView = Backbone.View.extend({
         }
     },
     onRenderLastPile: function () {
-
+        if (App.get('tooltipLayer')) {
+            App.destroyLayer('tooltipLayer');
+            App.get('stage').draw();
+        }
     },
     onWinComputer: function () {
         this.$looseMessage.show();

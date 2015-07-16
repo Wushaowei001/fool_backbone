@@ -34,7 +34,7 @@ var SettingObj = Backbone.Model.extend({
                 App.get('table').updateCardImages();
                 App.get('table').renderLastPileIfVisible();
                 if (App.get('opponent'))
-                    App.get('opponent').renderLastTakedCardsIfVisible();
+                    App.get('opponent').renderLastTakenCardsIfVisible();
             }
         });
         this.on('change:step', function () {
@@ -148,7 +148,9 @@ var AppModel = Backbone.Model.extend({
         });
     },
     destroyLayer: function (layer) {
-//      if(this.get('stage').find)
+        if (this.get(layer)) {
+            this.get(layer).destroy();
+        }
     },
     endThrow: function () {
         App.get('human').unBindCards();
@@ -241,8 +243,8 @@ var AppModel = Backbone.Model.extend({
         this.set('MyCards', new Konva.Layer());
 //        this.MyCards = new Konva.Layer();
         this.get('stage').add(this.get('MyCards'));
-        if (this.get('TackedCardsLayer'))
-            this.get('TackedCardsLayer').destroy();
+        if (this.get('TakenCardsLayer'))
+            this.get('TakenCardsLayer').destroy();
         if (this.get('lastPileLayer'))
             this.get('lastPileLayer').destroy();
         this.get('stage').draw();
@@ -539,13 +541,13 @@ var AppModel = Backbone.Model.extend({
         this.get('stage').draw();
     },
     renderTooltip: function (settings) {
-        if (!this.tooltipLayer)
-            this.tooltipLayer = new Konva.Layer();
+        if (!this.get('tooltipLayer'))
+            this.set('tooltipLayer', new Konva.Layer());
         var tooltip = new Konva.Label(settings.tooltip);
         tooltip.add(new Konva.Tag(settings.tag));
         tooltip.add(new Konva.Text(settings.text));
-        this.tooltipLayer.add(tooltip);
-        this.get('stage').add(this.tooltipLayer);
+        this.get('tooltipLayer').add(tooltip);
+        this.get('stage').add(this.get('tooltipLayer'));
         this.get('stage').draw();
     },
     renderKonvaTimer: function (percent, opponent, config) {

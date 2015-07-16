@@ -5,8 +5,8 @@ var Settings = {
     },
     player: {
         MAX_COUNT_CARDS: 6,
-        LAST_TAKED_CARDS_X: 100,
-        LAST_TAKED_CARDS_Y: 100
+        LAST_TAKEN_CARDS_X: 100,
+        LAST_TAKEN_CARDS_Y: 100
     },
     card_stroke_color: 'black',
     timer: {
@@ -57,6 +57,31 @@ var Settings = {
             },
             text: {
                 text: 'Щелкните для просмотра последнего отбоя',
+                fontFamily: 'Calibri',
+                fontSize: 18,
+                padding: 5,
+                fill: 'white'
+            }
+        },
+        for_taken_cards: {
+            tooltip: {
+                x: 400,
+                y: 150,
+                opacity: 0.75
+            },
+            tag: {
+                fill: 'black',
+                pointerDirection: 'up',
+                pointerWidth: 20,
+                pointerHeight: 20,
+                lineJoin: 'round',
+                shadowColor: 'black',
+                shadowBlur: 10,
+                shadowOffset: 10,
+                shadowOpacity: 0.5
+            },
+            text: {
+                text: 'Щелкните для просмотра последних взятых карт',
                 fontFamily: 'Calibri',
                 fontSize: 18,
                 padding: 5,
