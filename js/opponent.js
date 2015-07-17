@@ -31,6 +31,7 @@ var Opponent = Player.extend({
         var id;
         for (var i = 0; i < count; i++) {
             id = this.calculateId();
+            cards.push(id);
             this.setCards(this.getCards().concat(id));
         }
 

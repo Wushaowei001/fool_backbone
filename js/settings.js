@@ -56,7 +56,7 @@ var Settings = {
                 shadowOpacity: 0.5
             },
             text: {
-                text: 'Щелкните для просмотра последнего отбоя',
+                text: 'Нажмите для просмотра последних отбитых карт',
                 fontFamily: 'Calibri',
                 fontSize: 18,
                 padding: 5,
@@ -81,7 +81,7 @@ var Settings = {
                 shadowOpacity: 0.5
             },
             text: {
-                text: 'Щелкните для просмотра последних взятых карт',
+                text: 'Нажмите для просмотра последних взятых соперником карт',
                 fontFamily: 'Calibri',
                 fontSize: 18,
                 padding: 5,
@@ -90,7 +90,7 @@ var Settings = {
         }
     },
     text: {
-        attack_phrase: 'Атакуйте',
-        protect_phrase: 'Отбивайтесь'
+        attack_phrase: 'Ваш ход',
+        protect_phrase: 'Ваш ход'
     }
 };

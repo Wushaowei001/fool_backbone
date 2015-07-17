@@ -131,9 +131,9 @@ var Table = function () {
             App.get('TakenCardsLayer').destroy();
         var TakenCardsLayer = new Konva.Layer();
         App.set('TakenCardsLayer', TakenCardsLayer);
-//        App.TakenCardsLayer = TakenCardsLayer;
         App.get('stage').add(TakenCardsLayer);
         that.renderSmallCards(cards_object, x, y, TakenCardsLayer);
+        App.trigger('table:renderLastTakenCards');
     };
 
     this.renderLastPileIfVisible = function () {

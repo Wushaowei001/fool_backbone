@@ -1,7 +1,7 @@
 var SettingObj = Backbone.Model.extend({
     defaults: {
-        back_image: 'back',
-        card_design: 'base',
+        back_image: null,
+        card_design: null,
         sort: null,
         trump_mapping: null,
         step: null
@@ -14,13 +14,22 @@ var SettingObj = Backbone.Model.extend({
             App.changeBackImage();
         });
         this.on('change:card_design', function () {
-            if (App.get('human')) {
-                App.get('human').updateCardImages(function () {
-                    App.renderTrump();
-                    if (App.get('table').getCards())
-                        App.get('table').render();
+            App.trigger('load_images_start');
+            App.loadImages(
+                function () {
+                    loadTextShow();
+                },
+                function () {
+                    loadTextHide();
+                    App.trigger('load_images_end');
+                    if (App.get('human')) {
+                        App.get('human').updateCardImages(function () {
+                            App.renderTrump();
+                            if (App.get('table').getCards())
+                                App.get('table').render();
+                        });
+                    }
                 });
-            }
         });
         this.on('change:sort', function () {
             if (App.get('human')) {
@@ -138,12 +147,18 @@ var AppModel = Backbone.Model.extend({
     },
     addToPileSound: function () {
     },
-    applyClientSettings: function () {
-        var settings = client.settings;
-
-        App.changeSettings({
+    applyClientSettings: function (settings) {
+        this.changeSettings({
             sort: settings.sort,
             card_design: settings.card_design,
+            back_image: settings.back_image,
+            step: settings.step
+//            trump_mapping: settings.trump_mapping
+        });
+    },
+    applyTrumMapping: function () {
+        var settings = client.settings;
+        this.changeSettings({
             trump_mapping: settings.trump_mapping
         });
     },
@@ -166,7 +181,6 @@ var AppModel = Backbone.Model.extend({
     },
     end: function () {
         this.trigger('end_game');
-        App.get('human').unBindCards();
     },
     humanTakeCards: function (threw, allow_throw) {
         this.trigger('human_take_cards');
@@ -641,33 +655,30 @@ var AppModel = Backbone.Model.extend({
         if (this.get('MyCards')) {
             this.get('MyCards').destroy();
         }
-        this.set('MyCards', new Konva.Layer());
+        if (this.get('opponent'))
+            this.get('opponent').destroy();
         this.set(
             {
+                MyCards: new Konva.Layer(),
                 Trump: new Konva.Layer(),
                 Throw: new Konva.Layer(),
                 PossibleCards: new Konva.Layer(),
-                TimerLayer: new Konva.Layer()
+                TimerLayer: new Konva.Layer(),
+                table: new Table(),
+                human: null,
+                score: null,
+                my_name: null,
+                opponent_name: null,
+                my_rating: null,
+                opponent_rating: null,
+                can_step: null,
+                deck_is_empty: null
             }
         );
         this.get('stage').add(this.get('MyCards'));
         this.get('stage').add(this.get('Throw'));
         this.get('stage').add(this.get('TimerLayer'));
         this.renderDeck();
-
-        this.set({
-            table: new Table(),
-            human: new Human(Settings.player),
-            score: null,
-            my_name: null,
-            opponent_name: null,
-            my_rating: null,
-            opponent_rating: null,
-            can_step: null,
-            deck_is_empty: null
-        });
-        if (this.get('opponent'))
-            this.get('opponent').destroy();
     },
 
     setGameArea: function (params) {
@@ -702,95 +713,77 @@ var AppModel = Backbone.Model.extend({
                 break;
         }
     },
+    setProperty: function (property, value) {
+        this.get('settings').set(property, value);
+    },
     start: function (with_comp, onStart) {
         var old_game = this.get('new_game_started');
         if (Date.now() - old_game < 1000)
             return false;
-//        if (!with_comp)
-//            new WebManager();
         this.initGameStartTime();
 
         this.trigger('before_start');
         this.reset();
-        this.applyClientSettings();
-        this.loadImages(
-            function (percent) {
-                loadTextShow();
-//                this.renderKonvaTimer(percent, false, Settings.loader);
-            }.bind(this),
-            function () {
-                loadTextHide();
-//                this.destroyKonvaById(Settings.loader.id);
-                this.reset();
+        this.set('human', new Human(Settings.player));
 
-                if (with_comp) {
-                    this.set('game_with_comp', new GameWithComputer());
-                    this.trigger('play_with_comp');
+        if (with_comp) {
+            this.set('game_with_comp', new GameWithComputer());
+            this.trigger('play_with_comp');
 
-//                    self.game_with_comp = new GameWithComputer();
-//                    this.initializeHistoryStepButtons();
-                    var lastCard = this.get('game_with_comp').getLastCard();
-                    this.setTrump(lastCard);
-                    this.applyClientSettings();
-                    this.set('opponent', new Computer(Settings.player));
-                    this.renderTrump();
+            var lastCard = this.get('game_with_comp').getLastCard();
+            this.setTrump(lastCard);
+            this.applyTrumMapping();
+            this.set('opponent', new Computer(Settings.player));
+            this.renderTrump();
 
-                    this.get('game_with_comp').history.disablePrev();
-                    this.get('game_with_comp').history.disableNext();
+            this.get('game_with_comp').history.disablePrev();
+            this.get('game_with_comp').history.disableNext();
 
-                    this.get('game_with_comp').addCards(true, function () {
-                        this.trigger('update_deck_remain');
-                        var comp_step_first = this.get('game_with_comp').ifComputerStepFirst();
-                        this.trigger('comp_step_first', comp_step_first);
-                        this.get('human').setCanStep(!comp_step_first);
-                        if (comp_step_first) {
-                            this.safeTimeOutAction(1500, function () {
-                                this.get('opponent').step();
-                            }.bind(this));
-                        }
+            this.get('game_with_comp').addCards(true, function () {
+                this.trigger('update_deck_remain');
+                var comp_step_first = this.get('game_with_comp').ifComputerStepFirst();
+                this.trigger('comp_step_first', comp_step_first);
+                this.get('human').setCanStep(!comp_step_first);
+                if (comp_step_first) {
+                    this.safeTimeOutAction(1500, function () {
+                        this.get('opponent').step();
                     }.bind(this));
                 }
-                else {
-//                    this.set('web', new WebManager());
-                    this.trigger('play_with_opponent');
-                    this.applyClientSettings();
-                    this.set('game_with_comp', null);
+            }.bind(this));
+        }
+        else {
+            this.trigger('play_with_opponent');
+            this.set('game_with_comp', null);
 
-                    this.set('opponent', new Opponent(Settings.player));
-                    console.log(App.get('awaiting_opponent_cards'));
-                    if (this.get('awaiting_opponent_cards')) {
-                        this.get('opponent').addCards(this.get('awaiting_opponent_cards'));
-                        this.set('awaiting_opponent_cards', []);
-                    }
-                }
-                if (onStart) {
-                    onStart();
-                }
-                this.trigger('after_start');
-            }.bind(this)
-        );
+            this.set('opponent', new Opponent(Settings.player));
+        }
+        if (onStart) {
+            onStart();
+        }
+        this.trigger('after:start');
     },
     turnSound: function () {
     },
     updateCardImages: function (cards, onload) {
-        this.loadImages(
-            function (percent) {
-                loadTextShow();
+//        this.loadImages(
+//            function (percent) {
+//                loadTextShow();
 //                this.renderKonvaTimer(percent, false, Settings.loader);
-            },
-            function () {
-                loadTextHide();
-                for (var i in cards) {
-                    var id = cards[i];
-                    var card = this.get('stage').findOne('#' + id);
-                    this.updateCardImage(card, id);
-                }
-                if (onload) {
-                    onload();
-                }
-            }.bind(this));
+//            },
+//            function () {
+//                loadTextHide();
+        for (var i in cards) {
+            var id = cards[i];
+            var card = this.get('stage').findOne('#' + id);
+            this.updateCardImage(card, id);
+        }
+        if (onload) {
+            onload();
+        }
+//            }.bind(this));
     },
     updateCardImage: function (card, id) {
+        console.log(card);
         if (card) {
             card.setImage(this.getImageById(id));
             this.get('stage').draw();

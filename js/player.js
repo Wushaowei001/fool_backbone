@@ -208,8 +208,7 @@ var Player = Backbone.Model.extend({
                 rotation: 0
             });
             App.get('MyCards').add(card);
-
-            card.on('click', function () {
+            card.on('click tap', function () {
                 that._activateLastTakenCards();
             });
             App.get('MyCards').draw();
@@ -227,7 +226,7 @@ var Player = Backbone.Model.extend({
             card.setId(id);
             card.setImage(App.get('backImage'));
             card.name('inverted');
-            card.on('click', function () {
+            card.on('click tap', function () {
                 that._activateLastTakenCards();
             });
             App.get('MyCards').draw();
@@ -348,7 +347,11 @@ var Player = Backbone.Model.extend({
         this._renderLastTakenCards();
     },
     _renderLastTakenCards: function () {
-        App.get('table').renderLastTakenCards(this.get('lastTakenCards'), this.get('LAST_TAKEN_CARDS_X'), this.get('LAST_TAKEN_CARDS_Y'));
+        App.get('table').renderLastTakenCards(
+            this.get('lastTakenCards'),
+            this.get('LAST_TAKEN_CARDS_X'),
+            this.get('LAST_TAKEN_CARDS_Y')
+        );
     },
     _renderLastTakenCardsIfVisible: function () {
         if (App.get('TakenCardsLayer') && App.get('TakenCardsLayer').isVisible()) {

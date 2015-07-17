@@ -40,7 +40,8 @@ var AppView = Backbone.View.extend({
             this.onCompStepFirst(first)
         });
         this.listenTo(App, 'before_start', this.onBeforeStart);
-        this.listenTo(App, 'after_start', this.onAfterStart);
+        this.listenTo(App, 'after:start', this.onAfterStart);
+//        this.listenTo(App, 'after:login', this.onAfterLogin);
         this.listenTo(App, 'can_take_cards', this.onCanTakeCards);
         this.listenTo(App, 'human_take_cards', this.onTakeCards);
         this.listenTo(App, 'can_put_to_pile', this.onCanPutToPile);
@@ -86,7 +87,16 @@ var AppView = Backbone.View.extend({
             this.onRenderFromHistory(human_attack, table_not_empty);
         });
         this.listenTo(App, 'table:addToPile', this.onAddToPile);
-        this.listenTo(App, 'table:renderLastPile', this.onRenderLastPile);
+        this.listenTo(App, 'table:renderLastPile', this.hideTooltips);
+        this.listenTo(App, 'table:renderLastTakenCards', this.hideTooltips);
+        this.listenTo(App, 'load_images_start', function () {
+            this.blockUI();
+        });
+        this.listenTo(App, 'load_images_end', function () {
+            if (!App.get('human'))
+                this.showDefaultScreen();
+            this.unBlockUI();
+        });
 
         App.setGameArea(
             {
@@ -135,6 +145,12 @@ var AppView = Backbone.View.extend({
     getSettingsTemplate: function () {
         return $('#settings_template').html();
     },
+    hideTooltips: function () {
+        if (App.get('tooltipLayer')) {
+            App.destroyLayer('tooltipLayer');
+            App.get('stage').draw();
+        }
+    },
     hideTrumpValueOnDeck: function () {
         this.$trump.hide();
     },
@@ -178,7 +194,6 @@ var AppView = Backbone.View.extend({
         };
     },
     onAfterStart: function () {
-        console.log('onAfterStart');
         this.listenTo(App.get('human'), 'before_my_step', this.beforeMyStep);
         this.listenTo(App.get('human'), 'before_opponent_step', this.beforeOpponentStep);
         this.listenTo(App.get('human'), 'win', this.onWinHuman);
@@ -186,6 +201,9 @@ var AppView = Backbone.View.extend({
         this.listenTo(App.get('opponent'), 'draw', this.onDraw);
         this.listenTo(App.get('opponent'), 'take_cards', this.onOpponentTakeCards);
     },
+//    onAfterLogin: function () {
+//        this.showDefaultScreen();
+//    },
     onBeaten: function () {
         this.$beaten.fadeIn(300);
         this.$beaten.fadeOut(300);
@@ -290,12 +308,6 @@ var AppView = Backbone.View.extend({
             this.$takeCards.show();
         }
     },
-    onRenderLastPile: function () {
-        if (App.get('tooltipLayer')) {
-            App.destroyLayer('tooltipLayer');
-            App.get('stage').draw();
-        }
-    },
     onWinComputer: function () {
         this.$looseMessage.show();
     },
@@ -342,6 +354,10 @@ var AppView = Backbone.View.extend({
     },
     onOpponentTakeCards: function () {
         this.temporaryBlockUI(2000);
+        if (!localStorage.getItem('tooltip_for_taken_cards_showed')) {
+            App.renderTooltip(Settings.tooltip.for_taken_cards);
+            localStorage.setItem('tooltip_for_taken_cards_showed', true);
+        }
     },
     playWithComp: function () {
         console.log('playWithComp');

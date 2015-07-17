@@ -3,9 +3,9 @@ LogicGame.init(onInit);
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
     window.client = new Client({
-//        https: true,
-//        domain: 'logic-games.spb.ru',
-        domain: 'localhost',
+        https: true,
+        domain: 'logic-games.spb.ru',
+//        domain: 'localhost',
         game: 'fool',
         port: 8028,
         resultDialogDelay: 1000,
@@ -85,15 +85,11 @@ function onInit() {
     client.on('login', function (data) {
         console.log('main;', 'login', data.userId, data.userName);
         var you = client.getPlayer();
+        App.applyClientSettings(client.settings);
         App.set('my_name', you.userName);
-//        appView.showButtonsForGameWithComp();
-        var settings = client.settings;
-        App.changeSettings({
-            back_image: settings.back_image,
-            step: settings.step
-        });
         App.initStage();
         App.renderDeck();
+        App.trigger('after:login');
     });
 
     client.gameManager.on('game_start', function (data) {
@@ -114,6 +110,7 @@ function onInit() {
 
             App.setMode(data.inviteData.mode);
             App.setTrump(data.inviteData.trumpVal);
+            App.applyTrumMapping();
             App.start(false, function () {
                 App.renderTrump();
                 client.gameManager.sendEvent('event', {data: 'getCards'});
@@ -292,11 +289,7 @@ function onInit() {
                 App.get('human').addCards(data.cards, true);
             }
             if (data.opponent_cards) {
-                if (!App.get('opponent')) {
-                    App.set('awaiting_opponent_cards', data.opponent_cards);
-                }
-                else
-                    App.get('opponent').addCards(data.opponent_cards);
+                App.get('opponent').addCards(data.opponent_cards);
             }
             if (data.deckIsEmpty) {
                 App.set('deck_is_empty', true);
