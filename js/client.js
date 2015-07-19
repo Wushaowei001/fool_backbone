@@ -3,15 +3,15 @@ LogicGame.init(onInit);
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
     window.client = new Client({
-        https: true,
-        domain: 'logic-games.spb.ru',
-//        domain: 'localhost',
+//        https: true,
+//        domain: 'logic-games.spb.ru',
+        domain: 'localhost',
         game: 'fool',
         port: 8028,
         resultDialogDelay: 1000,
         reload: true,
         autoShowProfile: true,
-//        newGameFormat: true,
+        newGameFormat: true,
         getUserParams: function () {
             return {gameType: 'Main Mode'}
         },
@@ -95,6 +95,15 @@ function onInit() {
     client.gameManager.on('game_start', function (data) {
 
         console.log('main;', 'game_start, room: ', data);
+        var players = data.players;
+        for (var i in players) {
+            if (players[i].isPlayer)
+                return;
+        }
+
+        App.set('spectate', true);
+        App.set('my_name', players[0].userName);
+        App.set('opponent_name', players[1].userName);
     });
 
     client.gameManager.on('round_start', function (data) {
@@ -139,18 +148,20 @@ function onInit() {
         };
 
         if (data.loading) {
+            App.set('game_load', true);
+            return false;
             setTimeout(function () {
                 if (!App.get('opponent')) {
                     round_start();
                 }
-            }, 800);
+            }, 2000);
         }
         else
             round_start();
     });
 
     client.gameManager.on('turn', function (data) {
-        var your_turn = data.user == client.getPlayer().userId;
+        var your_turn = data.user.isPlayer;
 
         App.get('human').setCanStep(false);
 
@@ -158,7 +169,6 @@ function onInit() {
             if (data.turn.type == 'takeCards') {
 //                App.temporaryBlockUI(2000);
                 App.get('opponent').takeCardsFromTable(data.turn.cards, data.turn.through_throw);
-//                App.onTakeCards();
                 if (App.get('human').noCards()) {
                     App.win();
                     return false;
@@ -175,17 +185,20 @@ function onInit() {
     });
 
     client.gameManager.on('switch_player', function (user) {
-        var your_turn = user.userId == client.getPlayer().userId;
+        var your_turn = user.isPlayer;
         if (your_turn) {
             App.get('human').setCanStep(true);
             var cards_for_throw_on_table, cards_for_throw;
             var length = client.gameManager.currentRoom.history.length;
             var last_turn = client.gameManager.currentRoom.history[length - 1];
+            if (last_turn)
+                last_turn = last_turn.turn;
 
             if (last_turn && last_turn.type == 'takeCards') {
                 if (App.get('human').noCards()) {
                     // win
-                    client.gameManager.sendTurn({result: 1});
+                    App.win();
+//                    client.gameManager.sendTurn({result: 1});
                     return;
                 }
                 if (last_turn.allow_throw) {
@@ -220,13 +233,11 @@ function onInit() {
                 }
                 cards_for_throw_on_table = App.get('table').getCardsForThrow();
                 if (cards_for_throw_on_table) {
-                    client.gameManager.sendTurn(
-                        {
-                            cards: cards_for_throw_on_table,
-                            type: 'throw',
-                            allow_throw: true
-                        }
-                    );
+                    App.throw({
+                        cards: cards_for_throw_on_table,
+                        type: 'throw',
+                        allow_throw: true
+                    });
                     App.get('table').clearCardsForThrow();
                     return false;
                 }
@@ -250,48 +261,50 @@ function onInit() {
 
             if (cards_for_throw) {
                 var card = App.get('table').shiftCardForThrow();
-                client.gameManager.sendTurn({card: card, last_card: App.get('human').noCards()});
+                App.throw({
+                    card: card,
+                    last_card: App.get('human').noCards()
+                });
                 return;
             }
 
             if (last_turn && last_turn.last_card && App.get('human').noCards()) {
                 // draw
-                client.gameManager.sendTurn({result: 2});
+                App.draw();
                 return;
             }
             if (last_turn && last_turn.last_card && !App.get('table').getCardForBeat()) {
                 // loose
-                client.gameManager.sendTurn({result: 0});
+                App.loose();
                 return;
             }
             if (last_turn && !last_turn.last_card && App.get('human').noCards()) {
                 // win
-                client.gameManager.sendTurn({result: 1});
+                App.win();
                 return;
             }
 
             if (App.get('opponent').countCards() == 0 && !App.deckIsEmpty()) {
                 if (App.get('table').human_attack) {
-                    App.get('table').addToPile();
-                    client.gameManager.sendTurn({type: 'addToPile'});
-                    client.gameManager.sendEvent('event', {data: 'getCards'});
+                    App.putToPile();
                 }
             }
         }
         else {
-            App.get('human').setCanStep(false);
+            if (App.get('human'))
+                App.get('human').setCanStep(false);
         }
     });
 
     client.gameManager.on('event', function (data) {
-        if (data.type == 'getCards') {
-            if (data.cards) {
-                App.get('human').addCards(data.cards, true);
+        if (data.event.type == 'getCards') {
+            if (data.event.cards) {
+                App.get('human').addCards(data.event.cards, true);
             }
-            if (data.opponent_cards) {
-                App.get('opponent').addCards(data.opponent_cards);
+            if (data.event.opponent_cards) {
+                App.get('opponent').addCards(data.event.opponent_cards);
             }
-            if (data.deckIsEmpty) {
+            if (data.event.deckIsEmpty) {
                 App.set('deck_is_empty', true);
 //                App.empty_deck = true;
                 App.get('Deck').destroy();
@@ -299,11 +312,12 @@ function onInit() {
 
 //                App.showTrumpValueOnDeck();
             }
-            if (data.onlyTrumpRemain) {
+            if (data.event.onlyTrumpRemain) {
                 App.get('Deck').destroy();
             }
-            if (data.cardsRemain != undefined) {
-                App.trigger('update_deck_remain', data.cardsRemain);
+            if (data.event.cardsRemain != undefined) {
+                App.set('deck_remain', data.event.cardsRemain);
+//                App.trigger('update_deck_remain', data.event.cardsRemain);
 //                App.updateDeckRemains(data.cardsRemain);
             }
             if (App.get('human'))
@@ -351,6 +365,10 @@ function onInit() {
     });
 
     client.historyManager.on('game_load', function (game) {
+        console.log(game);
+//        alert('game_load');
+
+
         return false;
         if (!App.get('game_with_comp'))
             return false;
@@ -401,35 +419,78 @@ function onInit() {
         console.log('main;', 'history game loaded, game:', game);
     });
 
-    client.gameManager.on('game_load', function (history) {
-        return false;
-//        AppView.showButtonsForRealGame();
-        var players = client.gameManager.currentRoom.players;
-        for (var i in players) {
-            if (players[i].isPlayer)
-                $('#my_name').text(players[i].userName);
-            else
-                $('#opponent_name').text(players[i].userName);
-        }
-        var callback = function () {
-            App.get('opponent').renderCards(true);
-            App.get('table').render();
-            App.set('without_animation', false);
-//            App.without_animation = false;
-            App.set('view_only', false)
-//            App.view_only = false;
-        };
-        App.start();
-//        App.set('history', new History(history));
-        App.set({
-            history: new History(history),
-            without_animation: true
-        });
-//        App.history = new History(history);
+    client.gameManager.on('game_load', function (game) {
+        if (App.get('spectate')) {
 
-//        App.without_animation = true;
-        App.get('history').without_animation = true;
-        App.get('history').play(callback);
+            var state;
+//            App.set('spectate', null);
+            App.start();
+
+            var human = App.get('human');
+            var opponent = App.get('opponent');
+            var my_name = App.get('my_name');
+            var opponent_name = App.get('opponent_name');
+
+            for (var i in game) {
+                if (game[i].event) {
+                    var event = game[i].event;
+                    if ((event.type == 'getCards' || event.type == 'takeCards')
+                        && event.cards && event.cards.length && event.target.userName == my_name)
+                        human.setCards(human.getCards().concat(event.cards));
+                    else
+                        opponent.setCards(opponent.getCards().concat(event.cards));
+                }
+                if (game[i].turn) {
+                    var turn = game[i].turn;
+                    state = turn.state;
+                    var player = game[i].user.userName == my_name ? human : opponent;
+                    if (turn.card)
+                        player.removeCard(turn.card);
+                    if (turn.cards) {
+                        for (var j in turn.cards) {
+                            player.removeCard(turn.card[j]);
+                        }
+                    }
+                }
+            }
+            App.set('deck_remain', state.deck_remain);
+            App.setTrump(state.trump_value);
+            App.renderTrump();
+            human.renderCards();
+            opponent.renderCards();
+            App.get('table').setState(state.table_state);
+            App.get('table').render();
+        }
+        console.log(history);
+//        alert('game_load');
+//        return false;
+////        AppView.showButtonsForRealGame();
+//        var players = client.gameManager.currentRoom.players;
+//        for (var i in players) {
+//            if (players[i].isPlayer)
+//                $('#my_name').text(players[i].userName);
+//            else
+//                $('#opponent_name').text(players[i].userName);
+//        }
+//        var callback = function () {
+//            App.get('opponent').renderCards(true);
+//            App.get('table').render();
+//            App.set('without_animation', false);
+////            App.without_animation = false;
+//            App.set('view_only', false)
+////            App.view_only = false;
+//        };
+//        App.start();
+////        App.set('history', new History(history));
+//        App.set({
+//            history: new History(history),
+//            without_animation: true
+//        });
+////        App.history = new History(history);
+//
+////        App.without_animation = true;
+//        App.get('history').without_animation = true;
+//        App.get('history').play(callback);
     });
 //
     client.on('settings_changed', function (data) {

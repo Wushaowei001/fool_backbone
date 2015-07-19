@@ -445,10 +445,10 @@ var AppView = Backbone.View.extend({
         $('#blocker').remove();
     },
     updateDeckRemains: function (count) {
-        if (!count) {
-            if (App.get('game_with_comp'))
-                var count = App.get('game_with_comp').remainsInDeck();
-        }
+//        if (!count) {
+//            if (App.get('game_with_comp'))
+//                var count = App.get('game_with_comp').remainsInDeck();
+//        }
         if (count === 0)
             $('#deck_remain').hide();
         else

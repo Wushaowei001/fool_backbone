@@ -13,6 +13,10 @@ var Human = Player.extend({
         for (var i in options) {
             this.set(i, options[i]);
         }
+        this.on('destroy', function () {
+            this.off();
+            this.stopListening();
+        });
         this.on('cards_added take_cards', function (without_animation, from_deck) {
             this.renderCards(without_animation, from_deck);
         }.bind(this));
@@ -33,15 +37,8 @@ var Human = Player.extend({
 //        this.set('can_step', can);
         console.log('setCanStep: ' + can);
         if (can) {
-//            this.trigger('before_my_step');
             this.beforeMyStep();
         }
-//        App.myStepText();
-//        else {
-//            this.trigger('before_opponent_step');
-//        }
-
-//        App.opponentStepText();
     },
     canStep: function () {
         return App.get('can_step');
@@ -128,7 +125,7 @@ var Human = Player.extend({
                         }
                         else {
                             App.get('game_with_comp').addCards(true, function () {
-                                App.trigger('update_deck_remain');
+//                                App.trigger('update_deck_remain');
                             });
                             if (!App.get('view_only')) {
                                 App.safeTimeOutAction(800, function () {
@@ -273,6 +270,8 @@ var Human = Player.extend({
     removeCard: function (id) {
 
         this._super('_removeCard', id);
+        if (App.get('spectate'))
+            return;
         var card = App.get('stage').findOne('#' + id);
         if (card)
             this.unBindCardEvents(card);
@@ -305,7 +304,10 @@ var Human = Player.extend({
 
         var last_card = App.get('human').noCards();
         if (!App.get('game_with_comp')) {
-            client.gameManager.sendTurn({card: id, last_card: last_card});
+            App.trigger('human:step', {
+                card: id,
+                last_card: last_card
+            });
         }
         this.trigger('stepped', {last_card: last_card});
         this.setCanStep(false);

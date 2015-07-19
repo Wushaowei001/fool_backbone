@@ -4,17 +4,17 @@ module.exports = {
     pingTimeout: 100000,
     pingInterval: 10000,
     logLevel: 1,
-    turnTime: 60,   // user turn time in seconds
+    turnTime: 6000,   // user turn time in seconds
     maxTimeouts: 1, // count user timeouts in game to lose
     minTurns: 3,
     ratingElo: true,
     sounds: false,
-    loseOnLeave: true,     // player lose game or not after leave
-    reconnectOldGame: false, // continue old game on reconnect or auto leave
-    spectateEnable: false,   // on/off spectate games
+    loseOnLeave: false,     // player lose game or not after leave
+    reconnectOldGame: true, // continue old game on reconnect or auto leave
+    spectateEnable: true,   // on/off spectate games
     mode: 'develop', // set developing mode, db isn't required
     gameModes: ['default', 'deck_52'], // game modes, with different history, ratings, games, default is one mode ['default']
-    modesAlias:{'default':'36 карт', 'deck_52': '52 карты'},
+    modesAlias: {'default': '36 карт', 'deck_52': '52 карты'},
     mongo: {
         host: '192.168.250.40', port: '27001'
     },

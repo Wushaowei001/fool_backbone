@@ -22,8 +22,8 @@ var Player = Backbone.Model.extend({
         for (var i in this.getCards()) {
             if (this.getCards()[i] == id) {
                 this.getCards().splice(i, 1);
-                var card = App.get('stage').findOne('#' + id);
-                card.off('click');
+//                var card = App.get('stage').findOne('#' + id);
+//                card.off('click');
             }
         }
         this._destroyLastTakenCards();

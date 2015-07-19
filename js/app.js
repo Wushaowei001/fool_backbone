@@ -83,7 +83,8 @@ var AppModel = Backbone.Model.extend({
         my_rating: null,
         opponent_rating: null,
         can_step: null,
-        deck_is_empty: null
+        deck_is_empty: null,
+        deck_remain: null
     },
 
     initialize: function () {
@@ -122,6 +123,9 @@ var AppModel = Backbone.Model.extend({
             else
                 this.trigger('deck_is_not_empty');
 
+        });
+        this.on('change:deck_remain', function (self) {
+            this.trigger('update_deck_remain', self.changed.deck_remain);
         });
     },
 
@@ -195,18 +199,17 @@ var AppModel = Backbone.Model.extend({
         this.get('human').takeCardsFromTable(cards, function () {
             if (!this.get('game_with_comp')) {
                 this.safeTimeOutAction(1000, function () {
-                    client.gameManager.sendTurn(
-                        {
-                            type: 'takeCards',
-                            cards: cards,
-                            through_throw: threw,
-                            allow_throw: allow_throw !== false
-                        });
+                    this.trigger('takeCards', {
+                        type: 'takeCards',
+                        cards: cards,
+                        through_throw: threw,
+                        allow_throw: allow_throw !== false
+                    });
                 }.bind(this));
             }
             else {
                 this.get('game_with_comp').addCards(true, function () {
-                    this.trigger('update_deck_remain');
+//                    this.trigger('update_deck_remain');
                 }.bind(this));
                 if (!this.get('view_only')) {
                     this.safeTimeOutAction(800, function () {
@@ -276,6 +279,7 @@ var AppModel = Backbone.Model.extend({
             this.get('stage').destroy();
     },
     draw: function () {
+        this.trigger('draw');
     },
     getDeckCoords: function () {
         return {
@@ -442,6 +446,9 @@ var AppModel = Backbone.Model.extend({
                 onload(id, CurrentCard);
         };
     },
+    loose: function () {
+        this.trigger('loose');
+    },
     putToPile: function () {
         if (!this.get('human').canStep())
             return false;
@@ -452,13 +459,12 @@ var AppModel = Backbone.Model.extend({
             this.get('table').addToPile();
 
             if (!this.get('game_with_comp')) {
-                client.gameManager.sendTurn({type: 'addToPile'});
-                client.gameManager.sendEvent('event', {data: 'getCards'});
+                this.trigger('human:addToPile');
             }
             else {
                 this.get('game_with_comp').history.disableMoves();
                 this.get('game_with_comp').addCards(true, function () {
-                    this.trigger('update_deck_remain');
+//                    this.trigger('update_deck_remain');
                 }.bind(this));
             }
             this.get('human').setCanStep(false);
@@ -616,11 +622,12 @@ var AppModel = Backbone.Model.extend({
         this.get('game_with_comp').setDeck(history.deck);
 
         this.renderDeck(true);
+        this.set('deck_remain', this.get('game_with_comp').remainsInDeck());
         this.renderTrump();
 
         this.get('table').render();
 
-        this.trigger('update_deck_remain');
+//        this.trigger('update_deck_remain');
 
         this.get('human').renderCards();
         this.get('opponent').renderCards();
@@ -657,6 +664,8 @@ var AppModel = Backbone.Model.extend({
         }
         if (this.get('opponent'))
             this.get('opponent').destroy();
+        if (this.get('webManager'))
+            this.get('webManager').destroy();
         this.set(
             {
                 MyCards: new Konva.Layer(),
@@ -740,7 +749,7 @@ var AppModel = Backbone.Model.extend({
             this.get('game_with_comp').history.disableNext();
 
             this.get('game_with_comp').addCards(true, function () {
-                this.trigger('update_deck_remain');
+//                this.trigger('update_deck_remain');
                 var comp_step_first = this.get('game_with_comp').ifComputerStepFirst();
                 this.trigger('comp_step_first', comp_step_first);
                 this.get('human').setCanStep(!comp_step_first);
@@ -752,6 +761,8 @@ var AppModel = Backbone.Model.extend({
             }.bind(this));
         }
         else {
+            this.set('webManager', new WebManager());
+//            var webManager = new WebManager();
             this.trigger('play_with_opponent');
             this.set('game_with_comp', null);
 
@@ -761,6 +772,9 @@ var AppModel = Backbone.Model.extend({
             onStart();
         }
         this.trigger('after:start');
+    },
+    throw: function (obj) {
+        this.trigger('human:throw', obj);
     },
     turnSound: function () {
     },
@@ -790,6 +804,7 @@ var AppModel = Backbone.Model.extend({
         }
     },
     win: function () {
+        this.trigger('win');
     }
 
 });

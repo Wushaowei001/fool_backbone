@@ -174,6 +174,7 @@ var GameWithComputer = function () {
             App.get('human').renderCards();
             App.get('opponent').renderCards();
         }
+        App.set('deck_remain', this.remainsInDeck());
         //TODO: trigger
         if (typeof callback == 'function') {
             callback();

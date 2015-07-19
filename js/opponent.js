@@ -8,6 +8,10 @@ var Opponent = Player.extend({
         for (var i in options) {
             this.set(i, options[i]);
         }
+        this.on('destroy', function () {
+            this.off();
+            this.stopListening();
+        });
         this.on('change', function (p) {
             console.log(p.changed);
         });

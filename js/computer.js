@@ -8,6 +8,10 @@ var Computer = Player.extend({
         for (var i in options) {
             this.set(i, options[i]);
         }
+        this.on('destroy', function () {
+            this.off();
+            this.stopListening();
+        });
         this.on('cards_added take_cards', function (from_deck) {
             this.renderCards(from_deck);
         }.bind(this));
@@ -104,7 +108,7 @@ var Computer = Player.extend({
                     }
                     App.safeTimeOutAction(1000, function () {
                         App.get('game_with_comp').addCards(false, function () {
-                            App.trigger('update_deck_remain');
+//                            App.trigger('update_deck_remain');
                             App.get('human').setCanStep(true);
                         });
                     });
