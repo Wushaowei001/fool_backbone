@@ -95,7 +95,7 @@ module.exports = {
                 data.push({
                     target: user,
                     event: {
-                        type: 'getCards',
+                        type: 'addCards',
                         cards: cards,
                         deckIsEmpty: deckIsEmpty,
                         onlyTrumpRemain: onlyTrumpRemain,
@@ -105,11 +105,19 @@ module.exports = {
                 data.push({
                     target: opponent,
                     event: {
-                        type: 'getCards',
+                        type: 'addCards',
                         opponent_cards: cards.length,
                         deckIsEmpty: deckIsEmpty,
                         onlyTrumpRemain: onlyTrumpRemain,
                         cardsRemain: cardsRemain
+                    }
+                });
+                data.push({
+                    target: room,
+                    event: {
+                        type: 'addCards',
+                        cards: cards.length,
+                        from: user
                     }
                 });
             }
@@ -117,7 +125,7 @@ module.exports = {
                 data.push({
                     target: user,
                     event: {
-                        type: 'getCards'
+                        type: 'addCards'
                     }
                 });
             }

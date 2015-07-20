@@ -286,12 +286,14 @@ var Human = Player.extend({
 
         this.removeCard(id);
 
-        if (!this.canStep()) {
+        if (!this.canStep() && !App.get('spectate')) {
             App.get('table').addCardForThrow(id);
             return false;
         }
         else
             App.get('table').addCard(id, false);
+        if (App.get('spectate'))
+            return;
 
         App.turnSound();
 

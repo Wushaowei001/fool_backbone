@@ -7,6 +7,9 @@ var WebManager = Backbone.Model.extend({
         this.listenTo(App, 'human:addToPile', function () {
             this.addToPile();
         });
+        this.listenTo(App, 'addToPile', function () {
+            client.gameManager.sendEvent('event', {data: 'getCards'});
+        });
         this.listenTo(App, 'endThrow', function (cards) {
             if (cards)
                 this.endThrow(cards);
@@ -33,11 +36,10 @@ var WebManager = Backbone.Model.extend({
     },
     doTurn: function (turn) {
         turn.state = {
-//            human_cards: cloner.clone(App.get('human').getCards()),
-            opponent_cards: cloner.clone(App.get('opponent').getCards()),
+//            opponent_cards: cloner.clone(App.get('opponent').getCards()),
             table_state: cloner.clone(App.get('table').getState()),
-            trump_value: App.getTrumpValue(),
-            deck_remain: App.get('deck_remain')
+            trump_value: App.getTrumpValue()
+//            deck_remain: App.get('deck_remain')
         };
         client.gameManager.sendTurn(turn);
     },

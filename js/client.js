@@ -100,8 +100,9 @@ function onInit() {
             if (players[i].isPlayer)
                 return;
         }
-
+        App.start();
         App.set('spectate', true);
+//        console.log(players[0].userName);
         App.set('my_name', players[0].userName);
         App.set('opponent_name', players[1].userName);
     });
@@ -161,7 +162,15 @@ function onInit() {
     });
 
     client.gameManager.on('turn', function (data) {
-        var your_turn = data.user.isPlayer;
+        var your_turn;
+        if (App.get('spectate')) {
+            your_turn = data.nextPlayer.userName != App.get('my_name');
+            if (your_turn)
+                App.get('human').step(data.turn.card);
+            else
+                App.get('opponent').step(data.turn.card);
+        }
+        your_turn = data.user.isPlayer;
 
         App.get('human').setCanStep(false);
 
@@ -176,7 +185,9 @@ function onInit() {
             }
             if (data.turn.type == 'addToPile') {
                 App.get('table').addToPile();
-                client.gameManager.sendEvent('event', {data: 'getCards'});
+                if (!App.get('spectate'))
+                    App.trigger('addToPile');
+//                client.gameManager.sendEvent('event', {data: 'getCards'});
                 return;
             }
 
@@ -297,7 +308,7 @@ function onInit() {
     });
 
     client.gameManager.on('event', function (data) {
-        if (data.event.type == 'getCards') {
+        if (data.event.type == 'addCards') {
             if (data.event.cards) {
                 App.get('human').addCards(data.event.cards, true);
             }
@@ -420,11 +431,13 @@ function onInit() {
     });
 
     client.gameManager.on('game_load', function (game) {
+        console.log(game);
         if (App.get('spectate')) {
 
-            var state;
+            var state = {};
+            var player;
 //            App.set('spectate', null);
-            App.start();
+
 
             var human = App.get('human');
             var opponent = App.get('opponent');
@@ -434,16 +447,26 @@ function onInit() {
             for (var i in game) {
                 if (game[i].event) {
                     var event = game[i].event;
-                    if ((event.type == 'getCards' || event.type == 'takeCards')
-                        && event.cards && event.cards.length && event.target.userName == my_name)
-                        human.setCards(human.getCards().concat(event.cards));
-                    else
-                        opponent.setCards(opponent.getCards().concat(event.cards));
+                    if (event.type == 'addCards') {
+                        player = event.target.userName == my_name ? human : opponent;
+                    }
+                    if (event.type == 'takeCards') {
+                        player = game[i].nextPlayer.userName == my_name ? opponent : human;
+                        state.table_state = null;
+                    }
+                    if (event.type == 'addToPile') {
+                        state.table_state = null;
+                    }
+                    if (event.cards && event.cards.length) {
+                        player.setCards(player.getCards().concat(event.cards));
+                    }
+                    if (event.cardsRemain)
+                        state.deck_remain = event.cardsRemain;
                 }
                 if (game[i].turn) {
                     var turn = game[i].turn;
                     state = turn.state;
-                    var player = game[i].user.userName == my_name ? human : opponent;
+                    player = game[i].user.userName == my_name ? human : opponent;
                     if (turn.card)
                         player.removeCard(turn.card);
                     if (turn.cards) {
@@ -452,45 +475,18 @@ function onInit() {
                         }
                     }
                 }
+                player = null;
             }
             App.set('deck_remain', state.deck_remain);
             App.setTrump(state.trump_value);
             App.renderTrump();
             human.renderCards();
             opponent.renderCards();
-            App.get('table').setState(state.table_state);
-            App.get('table').render();
+            if (state.table_state) {
+                App.get('table').setState(state.table_state);
+                App.get('table').render();
+            }
         }
-        console.log(history);
-//        alert('game_load');
-//        return false;
-////        AppView.showButtonsForRealGame();
-//        var players = client.gameManager.currentRoom.players;
-//        for (var i in players) {
-//            if (players[i].isPlayer)
-//                $('#my_name').text(players[i].userName);
-//            else
-//                $('#opponent_name').text(players[i].userName);
-//        }
-//        var callback = function () {
-//            App.get('opponent').renderCards(true);
-//            App.get('table').render();
-//            App.set('without_animation', false);
-////            App.without_animation = false;
-//            App.set('view_only', false)
-////            App.view_only = false;
-//        };
-//        App.start();
-////        App.set('history', new History(history));
-//        App.set({
-//            history: new History(history),
-//            without_animation: true
-//        });
-////        App.history = new History(history);
-//
-////        App.without_animation = true;
-//        App.get('history').without_animation = true;
-//        App.get('history').play(callback);
     });
 //
     client.on('settings_changed', function (data) {
