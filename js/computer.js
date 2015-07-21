@@ -30,6 +30,9 @@ var Computer = Player.extend({
     getCards: function () {
         return this.get('_cards');
     },
+    getCardsCoords: function () {
+        return this._super('_getCardsCoords');
+    },
     setCards: function (cards) {
         this.set('_cards', cards);
     },

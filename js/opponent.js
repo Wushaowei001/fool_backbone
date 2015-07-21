@@ -19,6 +19,10 @@ var Opponent = Player.extend({
     getCards: function () {
         return this.get('_cards');
     },
+    getCardsCoords: function () {
+        return this._super('_getCardsCoords');
+    },
+
     addCardBeforeStep: function (id) {
 
         var card = App.get('stage').findOne('#' + this.getCards()[0]);

@@ -117,7 +117,10 @@ module.exports = {
                     event: {
                         type: 'addCards',
                         cards: cards.length,
-                        from: user
+                        for: user.userId,
+                        deckIsEmpty: deckIsEmpty,
+                        onlyTrumpRemain: onlyTrumpRemain,
+                        cardsRemain: cardsRemain
                     }
                 });
             }

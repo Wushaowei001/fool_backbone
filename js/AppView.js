@@ -61,7 +61,7 @@ var AppView = Backbone.View.extend({
             this.showScore(score)
         });
         this.listenTo(App, 'my_name_changed', function (name) {
-            this.showMyName(name);
+            this.changeMyName(name);
         });
         this.listenTo(App, 'opponent_name_changed', function (name) {
             this.showOpponentName(name);
@@ -138,6 +138,13 @@ var AppView = Backbone.View.extend({
         this.canThrowMessageShow();
         this.throwButtonShow();
         this.myStepTextHide();
+    },
+    changeMyName: function (name) {
+        console.log('changeMyName');
+//        this.$myName.show();
+        if (name) {
+            this.$myName.text(name);
+        }
     },
     endThrow: function () {
         App.endThrow();

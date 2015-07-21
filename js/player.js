@@ -5,6 +5,12 @@ var Player = Backbone.Model.extend({
     getCards: function () {
         return this.get('_cards');
     },
+    _getCardsCoords: function () {
+        return {
+            x: this.get('x'),
+            y: this.get('y')
+        };
+    },
     setCards: function (cards) {
         this.set('_cards', cards);
     },
@@ -100,10 +106,11 @@ var Player = Backbone.Model.extend({
         return result.concat(trumps);
     },
     _renderCards: function (opponent, without_animation, from_deck) {
-        var default_y = App.getMyCardsCoords().y;
-        if (opponent)
-            default_y = App.getOpponentCoords().y;
-        else {
+        var default_y = this.getCardsCoords().y;
+//        if (opponent)
+//            default_y = App.getOpponentCoords().y;
+//        else {
+        if (this.get('sortable')) {
             var sort = App.getProperty('sort');
             switch (sort) {
                 case 'without':
@@ -119,6 +126,8 @@ var Player = Backbone.Model.extend({
                     break;
             }
         }
+
+//        }
         var interval = 30;
         var x = App.get('game_area').width / 2 - (interval * (this.getCards().length + 1)) / 2;
 
@@ -133,9 +142,9 @@ var Player = Backbone.Model.extend({
 //            var up_new_card = false;
             if (this.get('cards_need_up') && this.get('cards_need_up').length) {
                 var index_card_need_up = this.get('cards_need_up').indexOf(id);
-                if (!opponent && this.get('cards_need_up') && index_card_need_up !== -1) {
+                if (this.get('cards_need_up') && index_card_need_up !== -1) {
 //                    up_new_card = true;
-                    y = App.getMyCardsCoords().y - 15;
+                    y = this.getCardsCoords().y - 15;
                     App.safeTimeOutAction(1000, function () {
                         that._renderCards();
                     });
@@ -235,7 +244,7 @@ var Player = Backbone.Model.extend({
                 node: card,
                 duration: 0.1,
                 x: x,
-                y: 20,
+                y: this.getCardsCoords().y,
                 onFinish: function () {
                     that._renderCards(true);
                 }

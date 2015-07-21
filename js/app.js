@@ -127,6 +127,9 @@ var AppModel = Backbone.Model.extend({
         this.on('change:deck_remain', function (self) {
             this.trigger('update_deck_remain', self.changed.deck_remain);
         });
+        this.on('change:my_name', function (self) {
+            this.trigger('my_name_changed', self.changed.my_name);
+        })
     },
 
     addCardSound: function () {
@@ -200,7 +203,6 @@ var AppModel = Backbone.Model.extend({
             if (!this.get('game_with_comp')) {
                 this.safeTimeOutAction(1000, function () {
                     this.trigger('takeCards', {
-                        type: 'takeCards',
                         cards: cards,
                         through_throw: threw,
                         allow_throw: allow_throw !== false
@@ -390,7 +392,6 @@ var AppModel = Backbone.Model.extend({
 //        this.new_game_started = Date.now();
     },
     liftPossibleCards: function (without_hiding, cards) {
-        var timestamp = App.get('new_game_started');
         if (!cards)
             cards = App.get('human').getAllPossibleCardsForBeat();
         if (!cards.length)
@@ -402,7 +403,7 @@ var AppModel = Backbone.Model.extend({
             var tween = new Konva.Tween({
                 node: card,
                 duration: 0.3,
-                y: App.getMyCardsCoords().y - 15,
+                y: App.get('human').getCardsCoords().y - 15,
                 onFinish: function () {
                     if (without_hiding)
                         return false;
@@ -615,7 +616,7 @@ var AppModel = Backbone.Model.extend({
     renderFromHistory: function (history) {
         this.clearCardsLayer();
         this.initGameStartTime();
-        this.set('opponent', new Computer(Settings.player));
+        this.set('opponent', new Computer(Settings.opponent));
         this.get('human').setCards(history.human_cards);
         this.get('opponent').setCards(history.opponent_cards);
         this.get('table').setState(history.table_state);
@@ -733,7 +734,7 @@ var AppModel = Backbone.Model.extend({
 
         this.trigger('before_start');
         this.reset();
-        this.set('human', new Human(Settings.player));
+        this.set('human', new Human(Settings.human));
 
         if (with_comp) {
             this.set('game_with_comp', new GameWithComputer());
@@ -742,7 +743,7 @@ var AppModel = Backbone.Model.extend({
             var lastCard = this.get('game_with_comp').getLastCard();
             this.setTrump(lastCard);
             this.applyTrumMapping();
-            this.set('opponent', new Computer(Settings.player));
+            this.set('opponent', new Computer(Settings.opponent));
             this.renderTrump();
 
             this.get('game_with_comp').history.disablePrev();
@@ -766,15 +767,18 @@ var AppModel = Backbone.Model.extend({
             this.trigger('play_with_opponent');
             this.set('game_with_comp', null);
 
-            this.set('opponent', new Opponent(Settings.player));
+            this.set('opponent', new Opponent(Settings.opponent));
         }
         if (onStart) {
             onStart();
         }
         this.trigger('after:start');
     },
-    throw: function (obj) {
+    Throw: function (obj) {
         this.trigger('human:throw', obj);
+    },
+    ThrowTurn: function(obj){
+        this.trigger('human:throw_turn', obj);
     },
     turnSound: function () {
     },

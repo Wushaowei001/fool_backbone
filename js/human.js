@@ -29,6 +29,9 @@ var Human = Player.extend({
     getCards: function () {
         return this._super('getCards');
     },
+    getCardsCoords: function () {
+        return this._super('_getCardsCoords');
+    },
     setCards: function (cards) {
         this._super('setCards', cards);
     },

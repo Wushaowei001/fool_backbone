@@ -18,27 +18,30 @@ var WebManager = Backbone.Model.extend({
             this.getCards();
         });
         this.listenTo(App, 'takeCards', function (obj) {
-            this.doTurn(obj);
+            this.takeCards(obj);
         });
         this.listenTo(App, 'human:step', function (turn) {
             this.doTurn(turn);
         });
         this.listenTo(App, 'human:throw', function (obj) {
-            this.doTurn(obj);
+            this.Throw(obj);
+        });
+        this.listenTo(App, 'human:throw_turn', function (obj) {
+            this.ThrowTurn(obj);
         });
         this.listenTo(App, 'win', this.win);
         this.listenTo(App, 'draw', this.draw);
         this.listenTo(App, 'loose', this.loose);
     },
     addToPile: function () {
-        this.doTurn({type: 'addToPile'});
+        this.doTurn({turn_type: 'addToPile'});
         client.gameManager.sendEvent('event', {data: 'getCards'});
     },
     doTurn: function (turn) {
         turn.state = {
 //            opponent_cards: cloner.clone(App.get('opponent').getCards()),
-            table_state: cloner.clone(App.get('table').getState()),
-            trump_value: App.getTrumpValue()
+            table_state: cloner.clone(App.get('table').getState())
+//            trump_value: App.getTrumpValue()
 //            deck_remain: App.get('deck_remain')
         };
         client.gameManager.sendTurn(turn);
@@ -50,7 +53,7 @@ var WebManager = Backbone.Model.extend({
         if (cards)
             this.doTurn({
                 cards: cards,
-                type: 'throw',
+                turn_type: 'throw',
                 allow_throw: false
             });
     },
@@ -59,6 +62,17 @@ var WebManager = Backbone.Model.extend({
     },
     loose: function () {
         this.doTurn({result: 0});
+    },
+    takeCards: function (obj) {
+        obj.turn_type = 'takeCards';
+        this.doTurn(obj);
+    },
+    Throw: function (obj) {
+        obj.turn_type = 'throw';
+        this.doTurn(obj);
+    },
+    ThrowTurn: function (obj) {
+        this.doTurn(obj);
     },
     win: function () {
         this.doTurn({result: 1});

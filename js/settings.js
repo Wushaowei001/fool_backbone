@@ -8,6 +8,30 @@ var Settings = {
         LAST_TAKEN_CARDS_X: 100,
         LAST_TAKEN_CARDS_Y: 100
     },
+    opponent: {
+        MAX_COUNT_CARDS: 6,
+        LAST_TAKEN_CARDS_X: 100,
+        LAST_TAKEN_CARDS_Y: 100,
+        y: 70,
+        x: 170,
+        sortable: false
+    },
+    bottom_opponent: {
+        MAX_COUNT_CARDS: 6,
+        LAST_TAKEN_CARDS_X: 100,
+        LAST_TAKEN_CARDS_Y: 100,
+        y: 524,
+        x: 170,
+        sortable: false
+    },
+    human: {
+        MAX_COUNT_CARDS: 6,
+        LAST_TAKEN_CARDS_X: 100,
+        LAST_TAKEN_CARDS_Y: 100,
+        y: 524,
+        x: 170,
+        sortable: true
+    },
     card_stroke_color: 'black',
     timer: {
         color: '#ffffc2',
