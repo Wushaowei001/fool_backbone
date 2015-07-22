@@ -60,6 +60,10 @@ $(function () {
 
     $('#showDescription').on('click', function () {
         $('#Description').show();
+    })
+
+    $('#tbLeaveSpectate').on('click', function(){
+        client.gameManager.leaveGame();
     });
 
     $('#gameArea').on('click', '#tbNewGame', function () {
@@ -78,7 +82,6 @@ $(function () {
     });
 
     $('#gameArea').on('click', '#tbLeaveReview', function () {
-//        AppView.showButtonsForGameWithComp();
         App.start(true);
     });
 

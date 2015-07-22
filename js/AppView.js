@@ -97,6 +97,8 @@ var AppView = Backbone.View.extend({
                 this.showDefaultScreen();
             this.unBlockUI();
         });
+        this.listenTo(App, 'leave_spectate', this.showButtonsForGameWithComp);
+        this.listenTo(App, 'join_spectate', this.onSpectate);
 
         App.setGameArea(
             {
@@ -140,7 +142,7 @@ var AppView = Backbone.View.extend({
         this.myStepTextHide();
     },
     changeMyName: function (name) {
-        console.log('changeMyName');
+        console.log('changeMyName: ' + name);
 //        this.$myName.show();
         if (name) {
             this.$myName.text(name);
@@ -164,6 +166,9 @@ var AppView = Backbone.View.extend({
     hideActionButtons: function () {
         this.$takeCards.hide();
         this.$putToPile.hide();
+    },
+    hideDefaultScreen: function () {
+        this.$switchGame.hide();
     },
     hideOpponentName: function () {
         this.$opponentName.hide();
@@ -295,7 +300,7 @@ var AppView = Backbone.View.extend({
         this.$score.hide();
         this.$nameAndRating.show();
         this.showButtonsForGameWithComp();
-        this.$opponentName.text('Компьютер');
+        this.$opponentName.text(Settings.text.computer_name);
         this.$opponentRating.text('');
         this.$switchGame.hide();
         this.initializeHistoryStepButtons();
@@ -303,6 +308,7 @@ var AppView = Backbone.View.extend({
     onPlayWithOpponent: function () {
         this.showScore();
         this.showButtonsForRealGame();
+        this.$switchGame.hide();
     },
     onRenderFromHistory: function (human_attack, table_not_empty) {
         if (human_attack || human_attack === null) {
@@ -393,16 +399,28 @@ var AppView = Backbone.View.extend({
     showButtonsForRealGame: function () {
         $('.controlPanelLayout .real_game').show();
         $('.controlPanelLayout .game_with_comp').hide();
+        $('.controlPanelLayout .spectate_game').hide();
     },
     showButtonsForGameWithComp: function () {
         $('.controlPanelLayout .game_with_comp').show();
         $('.controlPanelLayout .real_game').hide();
+        $('.controlPanelLayout .spectate_game').hide();
         $('#tbLeaveReview').hide();
         $('.controlPanel .game_with_comp td').each(function () {
             $(this).removeClass('disable');
         });
         $('#tbPrev').addClass('disable').show();
         $('#tbNext').addClass('disable').show();
+    },
+    showButtonsForSpectate: function () {
+        $('.controlPanelLayout .game_with_comp').hide();
+        $('.controlPanelLayout .real_game').hide();
+        $('.controlPanelLayout .spectate_game').show();
+    },
+    onSpectate: function () {
+        this.showButtonsForSpectate();
+        this.hideDefaultScreen();
+        this.$nameAndRating.show();
     },
     showScore: function (score) {
         this.$score.show();
@@ -411,7 +429,6 @@ var AppView = Backbone.View.extend({
         }
     },
     showMyName: function (name) {
-        console.log('showMyName');
         this.$myName.show();
         if (name) {
             this.$myName.text(name);

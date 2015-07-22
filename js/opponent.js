@@ -118,7 +118,7 @@ var Opponent = Player.extend({
     step: function (card) {
         if (card) {
             this.addCardBeforeStep(card);
-            App.get('table').addCard(card, true);
+            App.get('table').addCard(card, this.get('bottom_player'));
             this.removeCard(card);
             this._super('_renderCards', true, App.get('without_animation'));
         }

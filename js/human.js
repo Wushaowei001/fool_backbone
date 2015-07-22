@@ -44,7 +44,7 @@ var Human = Player.extend({
         }
     },
     canStep: function () {
-        return App.get('can_step');
+        return App.get('can_step') && !App.get('spectate');
 //        return this.get('can_step');
     },
     canStartStep: function (id) {
@@ -294,7 +294,7 @@ var Human = Player.extend({
             return false;
         }
         else
-            App.get('table').addCard(id, false);
+            App.get('table').addCard(id, this.get('bottom_player'));
         if (App.get('spectate'))
             return;
 

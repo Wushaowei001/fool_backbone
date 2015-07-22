@@ -49,10 +49,10 @@ module.exports = {
             opponent.cards = null;
             return turn;
         }
-        if (turn.type == 'addToPile') {
+        if (turn.turn_type == 'addToPile') {
             return turn;
         }
-        if (turn.type == 'takeCards') {
+        if (turn.turn_type == 'takeCards') {
             for (var i in turn.cards) {
                 user.cards.push(turn.cards[i]);
             }
@@ -74,8 +74,10 @@ module.exports = {
         var last_turn = room.game.history.length ? room.game.history[room.game.history.length - 1] : null;
 
         if (event.data == 'getCards') {
-            if (last_turn && last_turn.card)
-                return false;
+            if (last_turn) {
+                if (last_turn.card || (last_turn.turn_type && last_turn.turn_type == 'throw'))
+                    return false;
+            }
             var need_cards = !user.cards ? 6 : 6 - user.cards.length;
             if (need_cards > 0) {
                 if (!user.cards)

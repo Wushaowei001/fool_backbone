@@ -139,7 +139,7 @@ var Computer = Player.extend({
                 App.safeTimeOutAction(800, function () {
                     this.removeCard(id);
                     App.turnSound();
-                    App.get('table').addCard(id, true);
+                    App.get('table').addCard(id, this.get('bottom_player'));
                     if (App.get('human').noCards() && this.noCards()) {
                         this.trigger('draw');
                         return false;
@@ -156,7 +156,7 @@ var Computer = Player.extend({
         else {
             App.turnSound();
             this.removeCard(id);
-            App.get('table').addCard(id, true);
+            App.get('table').addCard(id, this.get('bottom_player'));
         }
 
     }

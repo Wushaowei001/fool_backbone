@@ -14,7 +14,8 @@ var Settings = {
         LAST_TAKEN_CARDS_Y: 100,
         y: 70,
         x: 170,
-        sortable: false
+        sortable: false,
+        bottom_player: false
     },
     bottom_opponent: {
         MAX_COUNT_CARDS: 6,
@@ -22,7 +23,8 @@ var Settings = {
         LAST_TAKEN_CARDS_Y: 100,
         y: 524,
         x: 170,
-        sortable: false
+        sortable: false,
+        bottom_player: true
     },
     human: {
         MAX_COUNT_CARDS: 6,
@@ -30,7 +32,8 @@ var Settings = {
         LAST_TAKEN_CARDS_Y: 100,
         y: 524,
         x: 170,
-        sortable: true
+        sortable: true,
+        bottom_player: true
     },
     card_stroke_color: 'black',
     timer: {
@@ -115,6 +118,7 @@ var Settings = {
     },
     text: {
         attack_phrase: 'Ваш ход',
-        protect_phrase: 'Ваш ход'
+        protect_phrase: 'Ваш ход',
+        computer_name: 'Компьютер'
     }
 };

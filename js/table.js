@@ -59,13 +59,11 @@ var Table = function () {
         return card ? card.id : false;
     };
 
-    this.addCard = function (id, opponent) {
-        var all_cards = that.all_cards.cards;
+    this.addCard = function (id, bottom_player) {
+        var all_cards = this.all_cards.cards;
 
-        if (!that.card) {
-            if (that.human_attack == null) {
-                that.human_attack = opponent ? false : true;
-            }
+        if (this.human_attack == null) {
+            this.human_attack = bottom_player;
         }
         if (all_cards.indexOf(id) == -1) {
             var card_for_beat = that.getCardForBeat();

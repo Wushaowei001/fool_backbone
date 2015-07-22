@@ -84,7 +84,8 @@ var AppModel = Backbone.Model.extend({
         opponent_rating: null,
         can_step: null,
         deck_is_empty: null,
-        deck_remain: null
+        deck_remain: null,
+        spectate: null
     },
 
     initialize: function () {
@@ -129,7 +130,13 @@ var AppModel = Backbone.Model.extend({
         });
         this.on('change:my_name', function (self) {
             this.trigger('my_name_changed', self.changed.my_name);
-        })
+        });
+        this.on('change:spectate', function (self) {
+            if (self.changed.spectate)
+                this.trigger('join_spectate');
+            else
+                this.trigger('leave_spectate');
+        });
     },
 
     addCardSound: function () {
@@ -221,6 +228,10 @@ var AppModel = Backbone.Model.extend({
             }
         }.bind(this));
     },
+    canStart: function () {
+        var old_game = this.get('new_game_started');
+        return (Date.now() - old_game > 1000);
+    },
     changeProperty: function (setting) {
         var value = setting.value;
         if (setting.property == 'trump_mapping') {
@@ -268,7 +279,6 @@ var AppModel = Backbone.Model.extend({
             this.get('lastPileLayer').destroy();
         this.get('stage').draw();
     },
-
     deckIsEmpty: function () {
         return this.get('game_with_comp') ? this.get('game_with_comp').deckIsEmpty() : this.get('deck_is_empty');
     },
@@ -295,7 +305,6 @@ var AppModel = Backbone.Model.extend({
             x: 170
         }
     },
-
     getOpponentCoords: function () {
         return {
             y: 70
@@ -372,8 +381,6 @@ var AppModel = Backbone.Model.extend({
     getProperty: function (property) {
         return this.get('settings').get(property);
     },
-//    hideTrumpValueOnDeck: function () {
-//    },
     initStage: function () {
         var area = this.get('game_area');
         this.set('stage', new Konva.Stage({
@@ -415,7 +422,6 @@ var AppModel = Backbone.Model.extend({
             tween.play();
         }
     },
-
     loadImages: function (onstep, onload) {
         var begin = 2, end = 14;
         var count = 0;
@@ -438,7 +444,6 @@ var AppModel = Backbone.Model.extend({
             }
         }
     },
-
     loadImageByID: function (id, onload) {
         var CurrentCard = new Image();
         CurrentCard.src = this.getImgUrlByCardId(id);
@@ -682,7 +687,8 @@ var AppModel = Backbone.Model.extend({
                 my_rating: null,
                 opponent_rating: null,
                 can_step: null,
-                deck_is_empty: null
+                deck_is_empty: null,
+                spectate: null
             }
         );
         this.get('stage').add(this.get('MyCards'));
@@ -726,9 +732,9 @@ var AppModel = Backbone.Model.extend({
     setProperty: function (property, value) {
         this.get('settings').set(property, value);
     },
+
     start: function (with_comp, onStart) {
-        var old_game = this.get('new_game_started');
-        if (Date.now() - old_game < 1000)
+        if (!this.canStart())
             return false;
         this.initGameStartTime();
 
@@ -737,6 +743,7 @@ var AppModel = Backbone.Model.extend({
         this.set('human', new Human(Settings.human));
 
         if (with_comp) {
+
             this.set('game_with_comp', new GameWithComputer());
             this.trigger('play_with_comp');
 
@@ -774,10 +781,19 @@ var AppModel = Backbone.Model.extend({
         }
         this.trigger('after:start');
     },
+    startSpectate: function () {
+        App.reset();
+        this.initGameStartTime();
+        this.set('spectate', true);
+        App.set('human', new Opponent(Settings.bottom_opponent));
+        App.set('opponent', new Opponent(Settings.opponent));
+    },
+
+
     Throw: function (obj) {
         this.trigger('human:throw', obj);
     },
-    ThrowTurn: function(obj){
+    ThrowTurn: function (obj) {
         this.trigger('human:throw_turn', obj);
     },
     turnSound: function () {

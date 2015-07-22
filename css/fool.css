@@ -257,11 +257,12 @@ body {
     max-width: 160px;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 #my_rating, #opponent_rating {
     color: #CCC;
-    width: 49px;
+    width: 53px;
     display: inline-block;
     font-size: 11pt;
 }
@@ -374,7 +375,7 @@ body {
 }
 
 .name_and_rating {
-    width: 202px;
+    width: 225px;
 }
 
 .name_and_rating.opponent {
