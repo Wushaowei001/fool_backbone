@@ -20,7 +20,7 @@ var Settings = {
     bottom_opponent: {
         MAX_COUNT_CARDS: 6,
         LAST_TAKEN_CARDS_X: 100,
-        LAST_TAKEN_CARDS_Y: 100,
+        LAST_TAKEN_CARDS_Y: 550,
         y: 524,
         x: 170,
         sortable: false,

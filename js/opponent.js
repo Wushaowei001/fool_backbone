@@ -2,7 +2,7 @@ var Opponent = Player.extend({
     defaults: {
         _cards: [],
         tweens: [],
-        lastTakenCards: []
+        lastTakenCards: null
     },
     initialize: function (options) {
         for (var i in options) {
@@ -34,11 +34,11 @@ var Opponent = Player.extend({
     setCards: function (cards) {
         this.set('_cards', cards);
     },
-    addCards: function (count) {
+    addCards: function (count, prefix) {
         var cards = [];
         var id;
         for (var i = 0; i < count; i++) {
-            id = this.calculateId();
+            id = prefix ? prefix + this.calculateId() : this.calculateId();
             cards.push(id);
             this.setCards(this.getCards().concat(id));
         }
@@ -47,6 +47,13 @@ var Opponent = Player.extend({
 
         if (!App.get('without_animation'))
             this._super('_renderCards', true, true);
+    },
+
+    bindCard: function (card) {
+        card.on('click tap', function () {
+            console.log('click tap');
+            this._activateLastTakenCards();
+        }.bind(this));
     },
 
     takeCardsFromTable: function (cards_from_table, through_throw) {

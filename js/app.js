@@ -688,6 +688,7 @@ var AppModel = Backbone.Model.extend({
                 opponent_rating: null,
                 can_step: null,
                 deck_is_empty: null,
+                deck_remain: null,
                 spectate: null
             }
         );
@@ -781,12 +782,16 @@ var AppModel = Backbone.Model.extend({
         }
         this.trigger('after:start');
     },
-    startSpectate: function () {
+    startSpectate: function (user1, user2) {
         App.reset();
         this.initGameStartTime();
         this.set('spectate', true);
         App.set('human', new Opponent(Settings.bottom_opponent));
         App.set('opponent', new Opponent(Settings.opponent));
+        App.get('human').set('userId', user1.userId);
+        App.get('opponent').set('userId', user2.userId);
+        App.set('my_name', user1.userName);
+        App.set('opponent_name', user2.userName);
     },
 
 

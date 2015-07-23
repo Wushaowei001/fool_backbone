@@ -17,6 +17,7 @@ var AppView = Backbone.View.extend({
         this.$deckRemain = this.$('#deck_remain');
         this.$nothingToBeat = this.$('#nothing_to_beat');
         this.$takeCards = this.$('#take_cards');
+        this.$taken = this.$('#taken');
         this.$putToPile = this.$('#put_tu_pile');
         this.$endThrow = this.$('#end_throw');
         this.$nameAndRating = this.$('.name_and_rating');
@@ -46,8 +47,17 @@ var AppView = Backbone.View.extend({
         this.listenTo(App, 'human_take_cards', this.onTakeCards);
         this.listenTo(App, 'can_put_to_pile', this.onCanPutToPile);
         this.listenTo(App, 'beaten', this.onBeaten);
+        this.listenTo(App, 'spectate:beaten', function () {
+            this.onBeaten('spectate');
+        });
         this.listenTo(App, 'nothing_to_beat', this.onNothingToBeat);
         this.listenTo(App, 'threw', this.onThrew);
+        this.listenTo(App, 'spectate:threw', function () {
+            this.onThrew('spectate');
+        });
+        this.listenTo(App, 'spectate:taken', function () {
+            this.onTaken('spectate');
+        });
         this.listenTo(App, 'end_game', this.onEndGame);
         this.listenTo(App, 'deck_is_not_empty', this.hideTrumpValueOnDeck);
         this.listenTo(App, 'can_throw', this.canThrow);
@@ -88,7 +98,7 @@ var AppView = Backbone.View.extend({
         });
         this.listenTo(App, 'table:addToPile', this.onAddToPile);
         this.listenTo(App, 'table:renderLastPile', this.hideTooltips);
-        this.listenTo(App, 'table:renderLastTakenCards', this.hideTooltips);
+        this.listenTo(App, 'renderLastTakenCards', this.hideTooltips);
         this.listenTo(App, 'load_images_start', function () {
             this.blockUI();
         });
@@ -193,14 +203,11 @@ var AppView = Backbone.View.extend({
         };
 
         App.get('game_with_comp').history.enableNext = function () {
-            console.log('enableNext ');
-
             $('#tbNext').css('opacity', '1').
                 removeClass('disable');
         };
 
         App.get('game_with_comp').history.enablePrev = function () {
-            console.log('enablePrev ');
             $('#tbPrev').css('opacity', '1').
                 removeClass('disable');
         };
@@ -216,9 +223,14 @@ var AppView = Backbone.View.extend({
 //    onAfterLogin: function () {
 //        this.showDefaultScreen();
 //    },
-    onBeaten: function () {
+    onBeaten: function (css_class) {
+        if (css_class)
+            this.$beaten.addClass(css_class);
         this.$beaten.fadeIn(300);
-        this.$beaten.fadeOut(300);
+        this.$beaten.fadeOut(300, function () {
+            if (css_class)
+                this.$beaten.removeClass(css_class);
+        }.bind(this));
     },
     onEndGame: function () {
         $('#my_step_text').hide();
@@ -340,6 +352,15 @@ var AppView = Backbone.View.extend({
 //        this.$opponentTakeCards.fadeIn(300);
 //        this.$opponentTakeCards.fadeOut(4000);
     },
+    onTaken: function(css_class){
+        if (css_class)
+            this.$taken.addClass(css_class);
+        this.$taken.fadeIn('fast');
+        this.$taken.fadeOut(300, function () {
+            if (css_class)
+                this.$taken.removeClass(css_class);
+        }.bind(this));
+    },
     onOpponentTakeCards: function () {
 
     },
@@ -361,9 +382,14 @@ var AppView = Backbone.View.extend({
         this.$nothingToBeat.fadeIn(300);
         this.$nothingToBeat.fadeOut(4000);
     },
-    onThrew: function () {
+    onThrew: function (css_class) {
+        if (css_class)
+            this.$threw.addClass(css_class);
         this.$threw.fadeIn('fast');
-        this.$threw.fadeOut(2000);
+        this.$threw.fadeOut(2000, function () {
+            if (css_class)
+                this.$threw.removeClass(css_class);
+        }.bind(this));
     },
     onOpponentTakeCards: function () {
         this.temporaryBlockUI(2000);

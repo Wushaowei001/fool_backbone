@@ -28,8 +28,11 @@ var Player = Backbone.Model.extend({
         for (var i in this.getCards()) {
             if (this.getCards()[i] == id) {
                 this.getCards().splice(i, 1);
-//                var card = App.get('stage').findOne('#' + id);
-//                card.off('click');
+                if (App.get('stage')) {
+                    var card = App.get('stage').findOne('#' + id);
+                    if (card)
+                        card.off('click dblclick tap');
+                }
             }
         }
         this._destroyLastTakenCards();
@@ -85,7 +88,6 @@ var Player = Backbone.Model.extend({
         }
         return result;
     },
-
     _sortByValue_TrumpToRight: function (cards) {
         var result = [];
         var trumps = [];
@@ -153,6 +155,8 @@ var Player = Backbone.Model.extend({
             var card = App.get('stage').findOne('#' + id);
             if (!card) {
                 card = App.addCardToLayer(id, opponent);
+                if (opponent)
+                    this.bindCard(card);
             }
             else {
                 if (opponent) {
@@ -198,7 +202,6 @@ var Player = Backbone.Model.extend({
             this.animate_cards();
     },
     _needCards: function () {
-        console.log(this);
         return this.get('MAX_COUNT_CARDS') - this.getCards().length;
     },
     _addCards: function (cards) {
@@ -235,6 +238,7 @@ var Player = Backbone.Model.extend({
             card.setId(id);
             card.setImage(App.get('backImage'));
             card.name('inverted');
+            card.off('click tap');
             card.on('click tap', function () {
                 that._activateLastTakenCards();
             });
@@ -344,11 +348,11 @@ var Player = Backbone.Model.extend({
         return cards.length ? cards[0] : null;
     },
     _activateLastTakenCards: function (cards) {
-        if (App.get('TakenCardsLayer')) {
-            if (App.get('TakenCardsLayer').isVisible())
-                App.get('TakenCardsLayer').hide();
+        if (this.get('TakenCardsLayer')) {
+            if (this.get('TakenCardsLayer').isVisible())
+                this.get('TakenCardsLayer').hide();
             else
-                App.get('TakenCardsLayer').show();
+                this.get('TakenCardsLayer').show();
             App.get('stage').draw();
             return false;
         }
@@ -356,11 +360,18 @@ var Player = Backbone.Model.extend({
         this._renderLastTakenCards();
     },
     _renderLastTakenCards: function () {
-        App.get('table').renderLastTakenCards(
-            this.get('lastTakenCards'),
-            this.get('LAST_TAKEN_CARDS_X'),
-            this.get('LAST_TAKEN_CARDS_Y')
-        );
+        var cards = this.get('lastTakenCards');
+        var x = this.get('LAST_TAKEN_CARDS_X');
+        var y = this.get('LAST_TAKEN_CARDS_Y');
+        if (!cards)
+            return false;
+        if (this.get('TakenCardsLayer'))
+            this.get('TakenCardsLayer').destroy();
+        var TakenCardsLayer = new Konva.Layer();
+        this.set('TakenCardsLayer', TakenCardsLayer);
+        App.get('stage').add(TakenCardsLayer);
+        App.get('table').renderSmallCards(cards, x, y, TakenCardsLayer);
+        App.trigger('renderLastTakenCards');
     },
     _renderLastTakenCardsIfVisible: function () {
         if (App.get('TakenCardsLayer') && App.get('TakenCardsLayer').isVisible()) {
@@ -368,10 +379,10 @@ var Player = Backbone.Model.extend({
         }
     },
     _destroyLastTakenCards: function () {
-        this.set('lastTakenCards', {});
-        if (App.get('TakenCardsLayer')) {
-            App.get('TakenCardsLayer').destroy();
-            App.set('TakenCardsLayer', null);
+        this.set('lastTakenCards', null);
+        if (this.get('TakenCardsLayer')) {
+            this.get('TakenCardsLayer').destroy();
+            this.set('TakenCardsLayer', null);
         }
     },
     _isMyCard: function (id) {

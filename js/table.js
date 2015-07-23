@@ -122,18 +122,6 @@ var Table = function () {
         App.trigger('table:renderLastPile');
     };
 
-    this.renderLastTakenCards = function (cards_object, x, y) {
-        if (!cards_object)
-            return false;
-        if (App.get('TakenCardsLayer'))
-            App.get('TakenCardsLayer').destroy();
-        var TakenCardsLayer = new Konva.Layer();
-        App.set('TakenCardsLayer', TakenCardsLayer);
-        App.get('stage').add(TakenCardsLayer);
-        that.renderSmallCards(cards_object, x, y, TakenCardsLayer);
-        App.trigger('table:renderLastTakenCards');
-    };
-
     this.renderLastPileIfVisible = function () {
         if (App.get('lastPileLayer') && App.get('lastPileLayer').isVisible()) {
             App.get('table').renderLastPile();

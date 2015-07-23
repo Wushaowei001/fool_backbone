@@ -23,7 +23,10 @@ body {
     overflow: hidden;
     margin: auto;
     position: absolute;
-    top: 0; left: 0; bottom: 0; right: 0;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 
 }
 
@@ -206,7 +209,7 @@ body {
     height: 96px;
 }
 
-#my_step_text{
+#my_step_text {
     width: 110px;
     top: 281px;
 }
@@ -267,7 +270,7 @@ body {
     font-size: 11pt;
 }
 
-#beaten, #opponent_take_cards, #threw, #nothing_to_beat {
+#beaten, #opponent_take_cards, #threw, #nothing_to_beat, #taken {
     position: absolute;
     top: 211px;
     color: #EEEEEE;
@@ -275,6 +278,10 @@ body {
     font-size: 15pt;
     font-weight: bold;
     width: 219px;
+}
+
+#beaten.spectate, #threw.spectate, #taken.spectate {
+    top: 0;
 }
 
 #can_throw {
@@ -404,7 +411,7 @@ body {
     display: block;
 }
 
-#opponent_step_text{
+#opponent_step_text {
     width: 160px;
     /*float: left;*/
     bottom: 320px;
