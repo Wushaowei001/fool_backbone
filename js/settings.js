@@ -12,7 +12,7 @@ var Settings = {
         MAX_COUNT_CARDS: 6,
         LAST_TAKEN_CARDS_X: 100,
         LAST_TAKEN_CARDS_Y: 100,
-        y: 70,
+        y: 10,
         x: 170,
         sortable: false,
         bottom_player: false
@@ -21,7 +21,7 @@ var Settings = {
         MAX_COUNT_CARDS: 6,
         LAST_TAKEN_CARDS_X: 100,
         LAST_TAKEN_CARDS_Y: 550,
-        y: 524,
+        y: 584,
         x: 170,
         sortable: false,
         bottom_player: true
@@ -30,10 +30,20 @@ var Settings = {
         MAX_COUNT_CARDS: 6,
         LAST_TAKEN_CARDS_X: 100,
         LAST_TAKEN_CARDS_Y: 100,
-        y: 524,
+        y: 584,
         x: 170,
         sortable: true,
         bottom_player: true
+    },
+    table: {
+        for_opponent: {
+            first_line: 337,
+            second_line: 207
+        },
+        for_bottom: {
+            first_line: 207,
+            second_line: 337
+        }
     },
     card_stroke_color: 'black',
     timer: {
@@ -46,11 +56,11 @@ var Settings = {
         x: 10,
         vertical: true,
         opponent: {
-            y: 70, // App.getOpponentCoords().y
+            y: 10, // App.getOpponentCoords().y
             x: 10
         },
         my: {
-            y: 524, //App.getMyCardsCoords().y,
+            y: 584, //App.getMyCardsCoords().y,
             x: 10
         }
     },
@@ -93,7 +103,7 @@ var Settings = {
         for_taken_cards: {
             tooltip: {
                 x: 400,
-                y: 150,
+                y: 90,
                 opacity: 0.75
             },
             tag: {

@@ -299,21 +299,10 @@ var AppModel = Backbone.Model.extend({
             x: 10
         };
     },
-    getMyCardsCoords: function () {
-        return {
-            y: this.get('game_area').height - this.get('card_height') - 70,
-            x: 170
-        }
-    },
-    getOpponentCoords: function () {
-        return {
-            y: 70
-        }
-    },
     getPileCoords: function () {
         return {
             x: this.get('game_area').width - this.get('card_width') - 40,
-            y: 220
+            y: this.get('game_area').height / 2 - this.get('card_height') / 2
         }
     },
     getImgUrlByCardId: function (card_id) {

@@ -211,7 +211,7 @@ body {
 
 #my_step_text {
     width: 110px;
-    top: 281px;
+    top: 326px;
 }
 
 #my_step_text, #opponent_step_text {
@@ -386,12 +386,15 @@ body {
 }
 
 .name_and_rating.opponent {
-    bottom: 614px;
-    /*width: 208px;*/
+    position: absolute;
+    right: 0;
+    top: 235px;
 }
 
 .name_and_rating.my {
-    top: 615px;
+    position: absolute;
+    right: 0;
+    top: 426px;
     /*width: 202px;*/
 }
 
@@ -404,7 +407,7 @@ body {
 
 #score {
     position: absolute;
-    top: 315px;
+    top: 400px;
     right: 25px;
     width: 80px;
     float: left;
@@ -414,5 +417,5 @@ body {
 #opponent_step_text {
     width: 160px;
     /*float: left;*/
-    bottom: 320px;
+    top: 323px;
 }

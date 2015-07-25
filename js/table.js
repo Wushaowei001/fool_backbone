@@ -88,20 +88,45 @@ var Table = function () {
         var x = that.LEFT_POSITION_START;
         var y = that.human_attack ? that.POS_FOR_CARDS : that.POS_FOR_CARDS_OPPONENT;
         var zIndex;
+        var count = all_cards.length;
         for (var i in all_cards) {
             var id = all_cards[i].id;
-            y = that.human_attack ? that.POS_FOR_CARDS : that.POS_FOR_CARDS_OPPONENT;
+            if (i > 2) {
+                y = that.human_attack ? Settings.table.for_bottom.second_line : Settings.table.for_opponent.second_line;
+                x = that.LEFT_POSITION_START + (App.get('card_width') + that.INTERVAL_BETWEEN_CARDS) * (i - 3);
+            }
+            else {
+                x = that.LEFT_POSITION_START + (App.get('card_width') + that.INTERVAL_BETWEEN_CARDS) * i;
+                y = that.human_attack ? Settings.table.for_bottom.first_line : Settings.table.for_opponent.first_line;
+            }
+
+//            y = that.human_attack ? that.POS_FOR_CARDS : that.POS_FOR_CARDS_OPPONENT;
             zIndex = renderCard_(id, x, y);
             if (all_cards[i].over) {
-                y = that.human_attack ? that.POS_FOR_CARDS_OVER_OPPONENT : that.POS_FOR_CARDS_OVER;
+                y = y - 30;
+//                y = that.human_attack ? that.POS_FOR_CARDS_OVER_OPPONENT : that.POS_FOR_CARDS_OVER;
                 renderCard_(all_cards[i].over, x, y, zIndex + 1);
             }
-            x = x + App.get('card_width') + that.INTERVAL_BETWEEN_CARDS;
+//            x = x + App.get('card_width') + that.INTERVAL_BETWEEN_CARDS;
         }
         var cards_for_throw = that.all_cards.cards_for_throw;
+        if (cards_for_throw) {
+//            count += cards_for_throw.length;
+
+        }
         for (var i in cards_for_throw) {
-            renderCard_(cards_for_throw[i], x, that.POS_FOR_CARDS);
-            x = x + App.get('card_width') + that.INTERVAL_BETWEEN_CARDS;
+            if (count > 3) {
+                y = that.human_attack ? Settings.table.for_bottom.second_line : Settings.table.for_opponent.second_line;
+                x = that.LEFT_POSITION_START + (App.get('card_width') + that.INTERVAL_BETWEEN_CARDS) * (count - 3);
+            }
+            else {
+                y = that.human_attack ? Settings.table.for_bottom.first_line : Settings.table.for_opponent.first_line;
+                x = that.LEFT_POSITION_START + (App.get('card_width') + that.INTERVAL_BETWEEN_CARDS) * (count);
+            }
+            renderCard_(cards_for_throw[i], x, y);
+            count++;
+//            renderCard_(cards_for_throw[i], x, that.POS_FOR_CARDS);
+//            x = x + App.get('card_width') + that.INTERVAL_BETWEEN_CARDS;
         }
     };
 
