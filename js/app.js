@@ -85,7 +85,8 @@ var AppModel = Backbone.Model.extend({
         can_step: null,
         deck_is_empty: null,
         deck_remain: null,
-        spectate: null
+        spectate: null,
+        deferred_actions: []
     },
 
     initialize: function () {
@@ -678,7 +679,8 @@ var AppModel = Backbone.Model.extend({
                 can_step: null,
                 deck_is_empty: null,
                 deck_remain: null,
-                spectate: null
+                spectate: null,
+                deferred_actions: []
             }
         );
         this.get('stage').add(this.get('MyCards'));
@@ -696,6 +698,10 @@ var AppModel = Backbone.Model.extend({
             trump: trump[0],
             trump_val: trump
         });
+    },
+    setUsersId: function (humanId, opponentId) {
+        App.set('humanId', humanId);
+        App.set('opponentId', opponentId);
     },
     safeTimeOutAction: function (time, fn) {
         var timestamp = this.get('new_game_started');
@@ -777,13 +783,10 @@ var AppModel = Backbone.Model.extend({
         this.set('spectate', true);
         App.set('human', new Opponent(Settings.bottom_opponent));
         App.set('opponent', new Opponent(Settings.opponent));
-        App.get('human').set('userId', user1.userId);
-        App.get('opponent').set('userId', user2.userId);
+        this.setUsersId(user1.userId, user2.userId);
         App.set('my_name', user1.userName);
         App.set('opponent_name', user2.userName);
     },
-
-
     Throw: function (obj) {
         this.trigger('human:throw', obj);
     },

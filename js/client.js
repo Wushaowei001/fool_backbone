@@ -96,12 +96,20 @@ function onInit() {
 
         console.log('main;', 'game_start, room: ', data);
         var players = data.players;
+        var humanId, opponentId, spectate = true;
         for (var i in players) {
-            if (players[i].isPlayer)
-                return;
+            if (players[i].isPlayer) {
+                humanId = players[i].userId;
+                spectate = false;
+            }
+            else
+                opponentId = players[i].userId;
         }
-        // spectate mode begin
-        App.startSpectate(players[0], players[1]);
+        App.setUsersId(humanId, opponentId);
+        if (spectate) {
+            // spectate mode begin
+            App.startSpectate(players[0], players[1]);
+        }
     });
 
     client.gameManager.on('round_start', function (data) {
@@ -226,7 +234,10 @@ function onInit() {
             return;
         var your_turn = user.isPlayer;
         if (your_turn) {
-            App.get('human').setCanStep(true);
+            if (App.get('human'))
+                App.get('human').setCanStep(true);
+            else
+                App.deferred_actions.push({can_step: true});
             var cards_for_throw_on_table, cards_for_throw;
             var length = client.gameManager.currentRoom.history.length;
             var last_turn = client.gameManager.currentRoom.history[length - 1];
@@ -331,6 +342,9 @@ function onInit() {
         else {
             if (App.get('human'))
                 App.get('human').setCanStep(false);
+            else {
+                App.deferred_actions.push({can_step: false});
+            }
         }
     });
 
@@ -458,68 +472,68 @@ function onInit() {
 
     client.gameManager.on('game_load', function (game) {
         console.log(game);
-        if (App.get('spectate')) {
+//        if (App.get('spectate')) {
 
-            var state = {};
-            var player;
+        var state = {};
+        var player;
 
-            var human = App.get('human');
-            var opponent = App.get('opponent');
-            var my_name = App.get('my_name');
-            var opponent_name = App.get('opponent_name');
-            var humanId = App.get('human').get('userId');
+        var human = App.get('human');
+        var opponent = App.get('opponent');
+        var my_name = App.get('my_name');
+        var opponent_name = App.get('opponent_name');
+        var humanId = App.get('humanId');
 
-            for (var i in game) {
-                if (game[i].event) {
-                    var event = game[i].event;
-                    if (event.type == 'addCards' && event.target) {
-                        player = event.target.userId == humanId ? human : opponent;
+        for (var i in game) {
+            if (game[i].event) {
+                var event = game[i].event;
+                if (event.type == 'addCards' && event.target) {
+                    player = event.target.userId == humanId ? human : opponent;
 
-                        if (event.cards && event.cards.length && !event.for) {
-                            var cards = event.cards.map(function (card) {
-                                return card + 'sold';
-                            });
-                            player.setCards(player.getCards().concat(cards));
-                        }
-                        if (event.cardsRemain || event.cardsRemain === 0)
-                            state.deck_remain = event.cardsRemain;
-                    }
-                }
-                if (game[i].turn) {
-                    var turn = game[i].turn;
-                    state.table_state = turn.state.table_state;
-                    state.table_state.human_attack = game[i].user.userId == humanId && state.table_state.human_attack;
-                    player = game[i].user.userId == humanId ? human : opponent;
-                    if (turn.turn_type == 'takeCards') {
-                        var cards = turn.cards.map(function (card) {
+                    if (event.cards && event.cards.length && !event.for) {
+                        var cards = event.cards.map(function (card) {
                             return card + 'sold';
                         });
                         player.setCards(player.getCards().concat(cards));
-                        continue;
                     }
-                    if (turn.turn_type == 'addToPile') {
-                        state.table_state = null;
-                        continue;
-                    }
-                    if (turn.card)
-                        player.removeCard(turn.card + 'sold');
-                    if (turn.cards) {
-                        for (var j in turn.cards) {
-                            player.removeCard(turn.cards[j] + 'sold');
-                        }
+                    if (event.cardsRemain || event.cardsRemain === 0)
+                        state.deck_remain = event.cardsRemain;
+                }
+            }
+            if (game[i].turn) {
+                var turn = game[i].turn;
+                state.table_state = turn.state.table_state;
+                state.table_state.human_attack = game[i].user.userId == humanId && state.table_state.human_attack;
+                player = game[i].user.userId == humanId ? human : opponent;
+                if (turn.turn_type == 'takeCards') {
+                    var cards = turn.cards.map(function (card) {
+                        return card + 'sold';
+                    });
+                    player.setCards(player.getCards().concat(cards));
+                    continue;
+                }
+                if (turn.turn_type == 'addToPile') {
+                    state.table_state = null;
+                    continue;
+                }
+                if (turn.card)
+                    player.removeCard(turn.card + 'sold');
+                if (turn.cards) {
+                    for (var j in turn.cards) {
+                        player.removeCard(turn.cards[j] + 'sold');
                     }
                 }
             }
-            App.set('deck_remain', state.deck_remain);
-            App.renderTrump();
-            human.renderCards();
-            opponent.renderCards();
-            if (state.table_state) {
-
-                App.get('table').setState(state.table_state);
-                App.get('table').render();
-            }
         }
+        App.set('deck_remain', state.deck_remain);
+        App.renderTrump();
+        human.renderCards();
+        opponent.renderCards();
+        if (state.table_state) {
+
+            App.get('table').setState(state.table_state);
+            App.get('table').render();
+        }
+//        }
     });
 //
     client.on('settings_changed', function (data) {
