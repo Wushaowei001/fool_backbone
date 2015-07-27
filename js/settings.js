@@ -78,7 +78,7 @@ var Settings = {
         for_pile: {
             tooltip: {
                 x: 650,
-                y: 270,
+                y: 330,
                 opacity: 0.75
             },
             tag: {

@@ -352,7 +352,7 @@ var AppView = Backbone.View.extend({
 //        this.$opponentTakeCards.fadeIn(300);
 //        this.$opponentTakeCards.fadeOut(4000);
     },
-    onTaken: function(css_class){
+    onTaken: function (css_class) {
         if (css_class)
             this.$taken.addClass(css_class);
         this.$taken.fadeIn('fast');
@@ -447,6 +447,7 @@ var AppView = Backbone.View.extend({
         this.showButtonsForSpectate();
         this.hideDefaultScreen();
         this.$nameAndRating.show();
+        this.showMyName();
     },
     showScore: function (score) {
         this.$score.show();

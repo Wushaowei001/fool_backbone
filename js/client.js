@@ -3,9 +3,9 @@ LogicGame.init(onInit);
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
     window.client = new Client({
-//        https: true,
-//        domain: 'logic-games.spb.ru',
-        domain: 'localhost',
+        https: true,
+        domain: 'logic-games.spb.ru',
+//        domain: 'localhost',
         game: 'fool',
         port: 8028,
         resultDialogDelay: 1000,
@@ -113,7 +113,8 @@ function onInit() {
     });
 
     client.gameManager.on('round_start', function (data) {
-        console.log('round_start');
+        console.log('round_start: ');
+        console.log(data);
         var players = data.players;
         var spectate = true;
         for (var i in players) {
@@ -175,7 +176,7 @@ function onInit() {
     client.gameManager.on('turn', function (data) {
         var your_turn;
         if (App.get('spectate')) {
-            your_turn = data.nextPlayer.userId != App.get('human').get('userId');
+            your_turn = data.nextPlayer.userId != App.get('humanId');
             if (data.turn.turn_type == 'takeCards') {
                 if (your_turn)
                     App.get('human').takeCardsFromTable(data.turn.cards);
@@ -352,9 +353,9 @@ function onInit() {
         if (data.event.type == 'addCards') {
             if (data.event.cards) {
                 if (App.get('spectate')) {
-                    if (data.event.for == App.get('human').get('userId'))
+                    if (data.event.for == App.get('humanId'))
                         App.get('human').addCards(data.event.cards, 'bottom');
-                    if (data.event.for == App.get('opponent').get('userId'))
+                    if (data.event.for == App.get('opponentId'))
                         App.get('opponent').addCards(data.event.cards, 'top');
                 }
                 else
@@ -409,7 +410,7 @@ function onInit() {
     client.gameManager.on('time', function (data) {
         var is_opponent;
         if (App.get('spectate')) {
-            is_opponent = data.user.userId == App.get('opponent').get('userId');
+            is_opponent = data.user.userId == App.get('opponentId');
         }
         else {
             is_opponent = !data.user.isPlayer;

@@ -115,7 +115,7 @@ var Table = function () {
 
         }
         for (var i in cards_for_throw) {
-            if (count > 3) {
+            if (count > 2) {
                 y = that.human_attack ? Settings.table.for_bottom.second_line : Settings.table.for_opponent.second_line;
                 x = that.LEFT_POSITION_START + (App.get('card_width') + that.INTERVAL_BETWEEN_CARDS) * (count - 3);
             }

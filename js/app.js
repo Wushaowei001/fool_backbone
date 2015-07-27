@@ -533,7 +533,7 @@ var AppModel = Backbone.Model.extend({
 
         if (!card) {
             card = new Konva.Image({
-                x: 140,
+                x: 136,
                 y: this.getDeckCoords().y + 15,
                 width: this.get('card_width'),
                 height: this.get('card_height'),
