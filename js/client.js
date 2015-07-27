@@ -3,9 +3,9 @@ LogicGame.init(onInit);
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
     window.client = new Client({
-        https: true,
-        domain: 'logic-games.spb.ru',
-//        domain: 'localhost',
+//        https: true,
+//        domain: 'logic-games.spb.ru',
+        domain: 'localhost',
         game: 'fool',
         port: 8028,
         resultDialogDelay: 1000,
@@ -258,12 +258,20 @@ function onInit() {
                         var count = App.get('opponent').countCards() - last_turn.cards.length * 2;
                         if (count > 0) {
                             App.trigger('can_throw');
-//                            canThrowMessageShow();
-//                            throwButtonShow();
                             App.liftPossibleCards(true, cards_for_throw);
-//                            myStepTextHide();
                             App.get('human').unBindCards();
                             App.get('human').bindCardsForThrow(cards_for_throw, count);
+                            if (!Util.actionInProgress('timer_for_throw')) {
+                                Util.countDown(Settings.interval_actions.throw.time,
+                                    function (count) {
+                                        App.trigger('timer_for_throw', count);
+                                    }, function () {
+                                        App.trigger('timer_for_throw', '');
+                                        App.endThrow();
+                                    },
+                                    'timer_for_throw'
+                                );
+                            }
                         }
                         else {
                             setTimeout(function () {

@@ -130,5 +130,10 @@ var Settings = {
         attack_phrase: 'Ваш ход',
         protect_phrase: 'Ваш ход',
         computer_name: 'Компьютер'
+    },
+    interval_actions: {
+        throw: {
+            time: 5 // in sec
+        }
     }
 };

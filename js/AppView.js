@@ -33,6 +33,7 @@ var AppView = Backbone.View.extend({
         this.$canThrow = this.$('#can_throw');
         this.$switchGame = this.$('#switch_game');
         this.$load_text = this.$('#load_text');
+        this.$timer_for_throw = this.$('#timer_for_throw');
 
 
         this.listenTo(App, 'start', this.onStart);
@@ -109,6 +110,9 @@ var AppView = Backbone.View.extend({
         });
         this.listenTo(App, 'leave_spectate', this.showButtonsForGameWithComp);
         this.listenTo(App, 'join_spectate', this.onSpectate);
+        this.listenTo(App, 'timer_for_throw', function (count) {
+            this.$timer_for_throw.text(count);
+        });
 
         App.setGameArea(
             {

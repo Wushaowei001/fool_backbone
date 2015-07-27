@@ -284,10 +284,14 @@ body {
     top: 0;
 }
 
-#can_throw {
+#can_throw, #timer_for_throw {
     position: absolute;
     top: 480px;
     left: 239px;
+}
+
+#timer_for_throw{
+    left: 400px;
 }
 
 #timer {
@@ -295,18 +299,6 @@ body {
     width: 49px;
     display: inline-block;
 }
-
-/*#nothing_to_beat{*/
-/*color: #EEEEEE;*/
-/*font-family: Trebuchet MS;*/
-/*font-size: 15pt;*/
-/*font-weight: bold;*/
-/*position: absolute;*/
-/*bottom: 310px;*/
-/*left: 205px;*/
-/*width: 167px;*/
-/*float: left;*/
-/*}*/
 
 #repControls {
     position: absolute;
