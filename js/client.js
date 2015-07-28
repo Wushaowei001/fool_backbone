@@ -3,9 +3,9 @@ LogicGame.init(onInit);
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
     window.client = new Client({
-        https: true,
-        domain: 'logic-games.spb.ru',
-//        domain: 'localhost',
+//        https: true,
+//        domain: 'logic-games.spb.ru',
+        domain: 'localhost',
         game: 'fool',
         port: 8028,
         resultDialogDelay: 1000,
@@ -209,8 +209,6 @@ function onInit() {
         }
         your_turn = data.user.isPlayer;
 
-        App.get('human').setCanStep(false);
-
         if (!your_turn) {
             if (data.turn.turn_type == 'takeCards') {
 //                App.temporaryBlockUI(2000);
@@ -276,25 +274,26 @@ function onInit() {
                         else {
                             setTimeout(function () {
                                 client.gameManager.sendEvent('event', {data: 'getCards'});
-                            }, 2000);
+                            }, 500);
                         }
                     }
                     else {
                         setTimeout(function () {
                             client.gameManager.sendEvent('event', {data: 'getCards'});
-                        }, 2000);
+                        }, 500);
                     }
                 }
                 else {
                     setTimeout(function () {
                         client.gameManager.sendEvent('event', {data: 'getCards'});
-                    }, 2000);
+                    }, 500);
                 }
                 cards_for_throw_on_table = App.get('table').getCardsForThrow();
+                var allow_throw = App.get('human').getCardsForThrow(cards_for_throw_on_table);
                 if (cards_for_throw_on_table) {
                     App.Throw({
                         cards: cards_for_throw_on_table,
-                        allow_throw: true
+                        allow_throw: allow_throw
                     });
                     App.get('table').clearCardsForThrow();
                     return false;
@@ -349,7 +348,7 @@ function onInit() {
             }
         }
         else {
-            if (App.get('human'))
+            if (App.get('human') && !App.get('table').getCardsForThrow())
                 App.get('human').setCanStep(false);
             else {
                 App.deferred_actions.push({can_step: false});
@@ -423,6 +422,10 @@ function onInit() {
         else {
             is_opponent = !data.user.isPlayer;
         }
+        if (!is_opponent)
+            App.trigger('my_timer_tick', data.userTimeS);
+        else
+            App.trigger('opponent_timer_tick', data.userTimeS);
         App.renderKonvaTimer(data.userTimePer, is_opponent, Settings.timer);
     });
 

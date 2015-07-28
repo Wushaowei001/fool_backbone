@@ -74,7 +74,7 @@ var Settings = {
         id: 'loader',
         horizontal: true
     },
-    tooltip: {
+    tooltips: {
         for_pile: {
             tooltip: {
                 x: 650,
@@ -98,7 +98,8 @@ var Settings = {
                 fontSize: 18,
                 padding: 5,
                 fill: 'white'
-            }
+            },
+            show: 5000
         },
         for_taken_cards: {
             tooltip: {
@@ -123,7 +124,8 @@ var Settings = {
                 fontSize: 18,
                 padding: 5,
                 fill: 'white'
-            }
+            },
+            show: 5000
         }
     },
     text: {

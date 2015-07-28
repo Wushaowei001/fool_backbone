@@ -46,7 +46,7 @@ var Opponent = Player.extend({
         this._super('_addCards', cards);
 
         if (!App.get('without_animation'))
-            this._super('_renderCards', true, true);
+            this._super('_renderCards', true, false, true);
     },
 
     bindCard: function (card) {

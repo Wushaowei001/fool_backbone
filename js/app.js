@@ -568,6 +568,14 @@ var AppModel = Backbone.Model.extend({
         this.get('tooltipLayer').add(tooltip);
         this.get('stage').add(this.get('tooltipLayer'));
         this.get('stage').draw();
+        if (settings.show) {
+            setTimeout(function () {
+                if (App.get('tooltipLayer')) {
+                    App.destroyLayer('tooltipLayer');
+                    App.get('stage').draw();
+                }
+            }, settings.show);
+        }
     },
     renderKonvaTimer: function (percent, opponent, config) {
         if (!this.get('TimerLayer')) {
