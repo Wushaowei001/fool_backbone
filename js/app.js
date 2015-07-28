@@ -183,6 +183,9 @@ var AppModel = Backbone.Model.extend({
         }
     },
     endThrow: function () {
+        if (Util.countDown.actionInProgress('timer_for_throw')) {
+            Util.countDown.stop('timer_for_throw');
+        }
         App.get('human').unBindCards();
         App.get('human').bindCards();
         var cards = App.get('table').getCardsForThrow();
