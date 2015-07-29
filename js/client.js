@@ -116,15 +116,34 @@ function onInit() {
         console.log('round_start: ');
         console.log(data);
         var players = data.players;
+        var opponent_name = null;
+        var my_rating, opponent_rating, score, my_score, opponent_score;
         var spectate = true;
         for (var i in players) {
-            if (players[i].isPlayer)
+            if (players[i].isPlayer) {
                 spectate = false;
+                my_rating = players[i].getRank();
+                my_score = data.score[players[i].userId];
+            }
+            else {
+                opponent_name = players[i].userName;
+                opponent_rating = players[i].getRank();
+                opponent_score = data.score[players[i].userId];
+            }
         }
+        var init_name_ratings_and_score = function () {
+            App.set('score', my_score + ':' + opponent_score);
+            App.set('opponent_name', opponent_name);
+            App.set('my_rating', my_rating);
+            App.set('opponent_rating', opponent_rating);
+        };
         if (App.get('spectate') || spectate) {
+            my_score = data.score[players[1].userId];
+            my_rating = players[1].getRank();
             App.startSpectate(players[0], players[1]);
             App.setTrump(data.inviteData.trumpVal);
             App.renderTrump();
+            init_name_ratings_and_score();
             return;
         }
         App.setTrump(data.inviteData.trumpVal);
@@ -137,30 +156,22 @@ function onInit() {
                 App.renderTrump();
                 client.gameManager.sendEvent('event', {data: 'getCards'});
                 App.get('human').setCanStep(data.first == client.getPlayer());
-//                $('#buttons').show();
-
-                var opponent_name = null;
-                var my_rating, opponent_rating, score, my_score, opponent_score;
-                var players = data.players;
-                for (var i in players) {
-                    if (players[i].isPlayer) {
-                        my_rating = players[i].getRank();
-                        my_score = data.score[players[i].userId];
-                    }
-                    else {
-                        opponent_name = players[i].userName;
-                        opponent_rating = players[i].getRank();
-                        opponent_score = data.score[players[i].userId];
-                    }
-                }
-                App.set('score', my_score + ':' + opponent_score);
-                App.set('opponent_name', opponent_name);
-                App.set('my_rating', my_rating);
-                App.set('opponent_rating', opponent_rating);
+                init_name_ratings_and_score();
             });
         };
 
         if (data.loading) {
+            if (!spectate) {
+                // reload
+                App.start(false, function () {
+                    init_name_ratings_and_score();
+                });
+//                App.reset();
+//                App.set({
+//                    human: new Human(Settings.human),
+//                    opponent: new Opponent(Settings.opponent)
+//                })
+            }
 //            App.set('game_load', true);
             return false;
             setTimeout(function () {
@@ -235,8 +246,10 @@ function onInit() {
         if (your_turn) {
             if (App.get('human'))
                 App.get('human').setCanStep(true);
-            else
-                App.deferred_actions.push({can_step: true});
+            else {
+                App.get('deferred_actions').push({can_step: true});
+                return;
+            }
             var cards_for_throw_on_table, cards_for_throw;
             var length = client.gameManager.currentRoom.history.length;
             var last_turn = client.gameManager.currentRoom.history[length - 1];
@@ -351,7 +364,7 @@ function onInit() {
             if (App.get('human') && !App.get('table').getCardsForThrow())
                 App.get('human').setCanStep(false);
             else {
-                App.deferred_actions.push({can_step: false});
+                App.get('deferred_actions').push({can_step: false});
             }
         }
     });
@@ -365,8 +378,10 @@ function onInit() {
                     if (data.event.for == App.get('opponentId'))
                         App.get('opponent').addCards(data.event.cards, 'top');
                 }
-                else
-                    App.get('human').addCards(data.event.cards, true);
+                else {
+                    if (data.event.target && data.event.target.isPlayer)
+                        App.get('human').addCards(data.event.cards, true);
+                }
             }
             if (data.event.opponent_cards) {
                 App.get('opponent').addCards(data.event.opponent_cards);
@@ -494,18 +509,24 @@ function onInit() {
         var my_name = App.get('my_name');
         var opponent_name = App.get('opponent_name');
         var humanId = App.get('humanId');
+        var prefix;
 
         for (var i in game) {
             if (game[i].event) {
                 var event = game[i].event;
                 if (event.type == 'addCards' && event.target) {
-                    player = event.target.userId == humanId ? human : opponent;
+                    var is_opponent = event.target.userId != humanId;
 
-                    if (event.cards && event.cards.length && !event.for) {
-                        var cards = event.cards.map(function (card) {
-                            return card + 'sold';
-                        });
-                        player.setCards(player.getCards().concat(cards));
+                    if (event.cards && event.cards.length && !event.for && !is_opponent) {
+                        if (App.get('spectate')) {
+                            prefix = human.get('prefix_for_cards');
+                            human.addCards(event.cards.length, prefix, true);
+                        }
+                        else
+                            human.setCards(human.getCards().concat(event.cards));
+                    }
+                    if (event.opponent_cards && !is_opponent) {
+                        opponent.addCards(event.opponent_cards, false, true);
                     }
                     if (event.cardsRemain || event.cardsRemain === 0)
                         state.deck_remain = event.cardsRemain;
@@ -516,11 +537,17 @@ function onInit() {
                 state.table_state = turn.state.table_state;
                 state.table_state.human_attack = game[i].user.userId == humanId && state.table_state.human_attack;
                 player = game[i].user.userId == humanId ? human : opponent;
+                prefix = player.get('prefix_for_cards');
                 if (turn.turn_type == 'takeCards') {
-                    var cards = turn.cards.map(function (card) {
-                        return card + 'sold';
-                    });
-                    player.setCards(player.getCards().concat(cards));
+                    if (App.get('spectate')) {
+                        player.addCards(turn.cards.length, prefix, true);
+                    }
+                    else {
+                        if (game[i].user.userId == humanId)
+                            human.setCards(human.getCards().concat(turn.cards));
+                        else
+                            opponent.addCards(turn.cards.length, false, true);
+                    }
                     continue;
                 }
                 if (turn.turn_type == 'addToPile') {
@@ -528,16 +555,17 @@ function onInit() {
                     continue;
                 }
                 if (turn.card)
-                    player.removeCard(turn.card + 'sold');
+                    player.removeCard(turn.card);
                 if (turn.cards) {
                     for (var j in turn.cards) {
-                        player.removeCard(turn.cards[j] + 'sold');
+                        player.removeCard(turn.cards[j]);
                     }
                 }
             }
         }
         App.set('deck_remain', state.deck_remain);
         App.renderTrump();
+        App.renderDeck(true);
         human.renderCards();
         opponent.renderCards();
         if (state.table_state) {

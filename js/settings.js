@@ -15,7 +15,8 @@ var Settings = {
         y: 10,
         x: 170,
         sortable: false,
-        bottom_player: false
+        bottom_player: false,
+        prefix_for_cards: 10
     },
     bottom_opponent: {
         MAX_COUNT_CARDS: 6,
@@ -24,7 +25,8 @@ var Settings = {
         y: 584,
         x: 170,
         sortable: false,
-        bottom_player: true
+        bottom_player: true,
+        prefix_for_cards: 20
     },
     human: {
         MAX_COUNT_CARDS: 6,

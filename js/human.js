@@ -20,8 +20,9 @@ var Human = Player.extend({
         this.on('cards_added take_cards', function (without_animation, from_deck) {
             this.renderCards(without_animation, from_deck);
         }.bind(this));
-        this.on('change:_cards', function () {
-        }.bind(this));
+        this.on('change', function (p) {
+            console.log(p.changed);
+        });
     },
     animate_cards: function () {
         this._super('animate_cards');

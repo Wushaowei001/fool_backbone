@@ -284,7 +284,8 @@ var AppModel = Backbone.Model.extend({
         this.get('stage').draw();
     },
     deckIsEmpty: function () {
-        return this.get('game_with_comp') ? this.get('game_with_comp').deckIsEmpty() : this.get('deck_is_empty');
+        return this.get('deck_remain') == 0;
+//        return this.get('game_with_comp') ? this.get('game_with_comp').deckIsEmpty() : this.get('deck_is_empty');
     },
     destroyKonvaById: function (id) {
         this.get('stage').findOne('#' + id).destroy();
@@ -477,6 +478,10 @@ var AppModel = Backbone.Model.extend({
     },
     renderDeck: function (if_not_empty) {
         if (this.get('Deck')) this.get('Deck').destroy();
+
+        if (if_not_empty && this.deckIsEmpty()) {
+            return false;
+        }
 
         if (this.get('game_with_comp') && if_not_empty &&
             (this.deckIsEmpty() || this.get('game_with_comp').onlyTrumpRemain())) {

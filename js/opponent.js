@@ -34,7 +34,7 @@ var Opponent = Player.extend({
     setCards: function (cards) {
         this.set('_cards', cards);
     },
-    addCards: function (count, prefix) {
+    addCards: function (count, prefix, without_animation) {
         var cards = [];
         var id;
         for (var i = 0; i < count; i++) {
@@ -42,6 +42,8 @@ var Opponent = Player.extend({
             cards.push(id);
             this.setCards(this.getCards().concat(id));
         }
+        if (without_animation)
+            return;
 
         this._super('_addCards', cards);
 
@@ -87,7 +89,15 @@ var Opponent = Player.extend({
     },
 
     removeCard: function (id) {
+        if (!_.contains(this.getCards(), id)) {
+            this.removeFirstCard();
+            return;
+        }
         this._super('_removeCard', id);
+    },
+
+    removeFirstCard: function () {
+        this._super('_removeCard', this.getCards()[0]);
     },
 
     getMinTrump: function () {

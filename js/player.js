@@ -12,7 +12,8 @@ var Player = Backbone.Model.extend({
         };
     },
     setCards: function (cards) {
-        this.set('_cards', cards);
+        if (cards !== false)
+            this.set('_cards', cards);
     },
     animate_cards: function (callback) {
         if (!this.tweens || !this.tweens.length) {
@@ -64,7 +65,8 @@ var Player = Backbone.Model.extend({
                 });
             }
         }
-        return result.concat(trumps);
+        result = result.concat(trumps);
+        return result.length ? result : false;
     },
     _sortByValue_TrumpAfterValue: function (cards) {
         var result = [];
@@ -86,7 +88,7 @@ var Player = Backbone.Model.extend({
                 result.push(trumps.pop());
             }
         }
-        return result;
+        return result.length ? result : false;
     },
     _sortByValue_TrumpToRight: function (cards) {
         var result = [];
@@ -105,7 +107,8 @@ var Player = Backbone.Model.extend({
                 }
             }
         }
-        return result.concat(trumps);
+        result = result.concat(trumps);
+        return result.length ? result : false;
     },
     _renderCards: function (opponent, without_animation, from_deck) {
         var default_y = this.getCardsCoords().y;

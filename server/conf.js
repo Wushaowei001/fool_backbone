@@ -9,8 +9,8 @@ module.exports = {
     minTurns: 3,
     ratingElo: true,
     sounds: false,
-    loseOnLeave: true,     // player lose game or not after leave
-    reconnectOldGame: false, // continue old game on reconnect or auto leave
+    loseOnLeave: false,     // player lose game or not after leave
+    reconnectOldGame: true, // continue old game on reconnect or auto leave
     spectateEnable: true,   // on/off spectate games
     mode: 'develop', // set developing mode, db isn't required
     gameModes: ['default', 'deck_52'], // game modes, with different history, ratings, games, default is one mode ['default']
