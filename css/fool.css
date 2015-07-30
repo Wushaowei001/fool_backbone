@@ -400,8 +400,8 @@ body {
 
 #score {
     position: absolute;
-    top: 400px;
-    right: 25px;
+    top: 333px;
+    right: 145px;
     width: 80px;
     float: left;
     display: block;
@@ -411,4 +411,18 @@ body {
     width: 164px;
     /*float: left;*/
     top: 323px;
+}
+
+.fraction, .top, .bottom {
+    padding: 0 5px;
+}
+
+.fraction {
+    display: inline-block;
+    text-align: center;
+}
+
+.fraction .bottom{
+    border-top: 1px solid #000;
+    display: block;
 }

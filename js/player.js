@@ -230,6 +230,8 @@ var Player = Backbone.Model.extend({
         }
     },
     _takeCardsFromTable: function (cards_from_table) {
+        if (!cards_from_table.length)
+            return false;
         App.get('table').clearTable();
         var x = this.getCards().length * 20 + 60;
         var that = this;
@@ -238,6 +240,8 @@ var Player = Backbone.Model.extend({
             var id = clone_cards.pop();
             x += 30;
             var card = App.get('stage').findOne('#' + cards_from_table[i]);
+            if (!card)
+                return false;
             card.setId(id);
             card.setImage(App.get('backImage'));
             card.name('inverted');

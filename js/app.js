@@ -521,17 +521,17 @@ var AppModel = Backbone.Model.extend({
         var trump_val = this.getTrumpValue();
         var card = this.get('stage').findOne('#' + trump_val);
         if (this.deckIsEmpty()) {
-            if (card) {
-                card.remove();
-                this.get('MyCards').add(card);
-            }
+//            if (card) {
+//                card.remove();
+//                this.get('MyCards').add(card);
+//            }
             this.set('deck_is_empty', true);
             var trump = this.getTrump();
             var trump_mapping = this.getProperty('trump_mapping');
             if (trump_mapping && trump_mapping[trump]) {
                 trump = trump_mapping[trump];
             }
-            this.trigger('show_trump', trump);
+//            this.trigger('show_trump', trump);
             return false;
         }
         else {

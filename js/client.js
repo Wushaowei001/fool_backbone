@@ -243,18 +243,19 @@ function onInit() {
         if (App.get('spectate'))
             return;
         var your_turn = user.isPlayer;
+        var length = client.gameManager.currentRoom.history.length;
+        var last_turn = client.gameManager.currentRoom.history[length - 1];
+        if (last_turn)
+            last_turn = last_turn.turn;
+
         if (your_turn) {
             if (App.get('human'))
                 App.get('human').setCanStep(true);
             else {
-                App.get('deferred_actions').push({can_step: true});
+                App.get('deferred_actions').push({can_step: true});// not used
                 return;
             }
             var cards_for_throw_on_table, cards_for_throw;
-            var length = client.gameManager.currentRoom.history.length;
-            var last_turn = client.gameManager.currentRoom.history[length - 1];
-            if (last_turn)
-                last_turn = last_turn.turn;
 
             if (last_turn && last_turn.turn_type == 'takeCards') {
                 if (App.get('human').noCards()) {
@@ -304,11 +305,11 @@ function onInit() {
                 cards_for_throw_on_table = App.get('table').getCardsForThrow();
                 var allow_throw = App.get('human').getCardsForThrow(cards_for_throw_on_table);
                 if (cards_for_throw_on_table) {
+                    App.get('table').clearCardsForThrow();
                     App.Throw({
                         cards: cards_for_throw_on_table,
                         allow_throw: allow_throw
                     });
-                    App.get('table').clearCardsForThrow();
                     return false;
                 }
                 return;
@@ -361,6 +362,8 @@ function onInit() {
             }
         }
         else {
+            if (last_turn.turn_type == 'throw')
+                return false;
             if (App.get('human') && !App.get('table').getCardsForThrow())
                 App.get('human').setCanStep(false);
             else {
@@ -502,6 +505,8 @@ function onInit() {
 //        if (App.get('spectate')) {
 
         var state = {};
+        state.table_state = {};
+        state.table_state.human_attack = false;
         var player;
 
         var human = App.get('human');
@@ -534,8 +539,9 @@ function onInit() {
             }
             if (game[i].turn) {
                 var turn = game[i].turn;
+                var is_my_turn = game[i].user.userId == humanId;
                 state.table_state = turn.state.table_state;
-                state.table_state.human_attack = game[i].user.userId == humanId && state.table_state.human_attack;
+                state.table_state.human_attack = is_my_turn && turn.state.table_state.human_attack;
                 player = game[i].user.userId == humanId ? human : opponent;
                 prefix = player.get('prefix_for_cards');
                 if (turn.turn_type == 'takeCards') {
@@ -551,7 +557,7 @@ function onInit() {
                     continue;
                 }
                 if (turn.turn_type == 'addToPile') {
-                    state.table_state = null;
+                    state.table_state = {};
                     continue;
                 }
                 if (turn.card)
@@ -566,10 +572,9 @@ function onInit() {
         App.set('deck_remain', state.deck_remain);
         App.renderTrump();
         App.renderDeck(true);
-        human.renderCards();
+        human.renderCards(true);
         opponent.renderCards();
         if (state.table_state) {
-
             App.get('table').setState(state.table_state);
             App.get('table').render();
         }

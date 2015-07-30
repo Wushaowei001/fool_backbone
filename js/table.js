@@ -29,8 +29,8 @@ var Table = function () {
     var that = this;
 
     this.setState = function (state) {
-        that.all_cards.cards = cloner.clone(state.cards);
-        that.all_cards.cards_for_throw = cloner.clone(state.cards_for_throw);
+        that.all_cards.cards = state.cards != undefined ? cloner.clone(state.cards) : [];
+        that.all_cards.cards_for_throw = state.cards_for_throw != undefined ? cloner.clone(state.cards_for_throw) : [];
         that.human_attack = state.human_attack;
     };
 
@@ -255,6 +255,8 @@ var Table = function () {
     };
 
     this.getCards = function (from_table) {
+        if (!that.all_cards || !that.all_cards.cards)
+            return false;
         var all_cards = that.all_cards.cards.slice('');
 
         var cards = all_cards.map(function (obj) {
