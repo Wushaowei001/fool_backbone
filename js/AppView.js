@@ -472,16 +472,16 @@ var AppView = Backbone.View.extend({
         this.$score.show();
         if (score) {
             this.$score.find('span').text(score);
-            var split = this.$score.html().split("/");
-            if (split.length == 2) {
-                this.$score.html('' +
-                    '<span class="top">'
-                    + split[0] +
-                    '</span>' +
-                    '<span class="bottom">'
-                    + split[1] +
-                    '</span>');
-            }
+//            var split = this.$score.html().split("/");
+//            if (split.length == 2) {
+//                this.$score.html('' +
+//                    '<span class="top">'
+//                    + split[0] +
+//                    '</span>' +
+//                    '<span class="bottom">'
+//                    + split[1] +
+//                    '</span>');
+//            }
         }
     },
     showMyName: function (name) {

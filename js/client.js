@@ -3,9 +3,9 @@ LogicGame.init(onInit);
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
     window.client = new Client({
-//        https: true,
-//        domain: 'logic-games.spb.ru',
-        domain: 'localhost',
+        https: true,
+        domain: 'logic-games.spb.ru',
+//        domain: 'localhost',
         game: 'fool',
         port: 8028,
         resultDialogDelay: 1000,
@@ -362,8 +362,10 @@ function onInit() {
             }
         }
         else {
-            if (last_turn.turn_type == 'throw')
+            if (last_turn && last_turn.turn_type == 'throw') {
+                App.get('human').unBindCards();
                 return false;
+            }
             if (App.get('human') && !App.get('table').getCardsForThrow())
                 App.get('human').setCanStep(false);
             else {
