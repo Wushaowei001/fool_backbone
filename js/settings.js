@@ -80,7 +80,7 @@ var Settings = {
         for_pile: {
             tooltip: {
                 x: 650,
-                y: 330,
+                y: 190,
                 opacity: 0.75
             },
             tag: {
@@ -138,6 +138,14 @@ var Settings = {
     interval_actions: {
         throw: {
             time: 5 // in sec
+        }
+    },
+    decks: {
+        default: {
+            count: 36
+        },
+        deck_52: {
+            count: 52
         }
     }
 };

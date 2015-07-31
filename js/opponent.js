@@ -53,7 +53,6 @@ var Opponent = Player.extend({
 
     bindCard: function (card) {
         card.on('click tap', function () {
-            console.log('click tap');
             this._activateLastTakenCards();
         }.bind(this));
     },

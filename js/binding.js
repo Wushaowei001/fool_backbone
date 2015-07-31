@@ -60,9 +60,9 @@ $(function () {
 
     $('#showDescription').on('click', function () {
         $('#Description').show();
-    })
+    });
 
-    $('#tbLeaveSpectate').on('click', function(){
+    $('#tbLeaveSpectate').on('click', function () {
         client.gameManager.leaveGame();
     });
 
@@ -99,20 +99,22 @@ $(function () {
         App.get('game_with_comp').history.moveForward();
     });
 
-    $('#mode_36_cards').on('click', function () {
-        $('.modes').removeClass('activeSelector');
-        $(this).addClass('activeSelector');
-        App.setMode('default');
-        client.setMode('default');
-        if (App.get('game_with_comp'))
+    $('.game_with_comp #default').on('click', function () {
+        if (App.canStart()) {
+            App.set('mode_cards_count', 'default');
+            client.setMode('default');
+        }
+        if (App.get('game_with_comp')) {
             App.start(true);
+        }
     });
-    $('#mode_52_cards').on('click', function () {
-        $('.modes').removeClass('activeSelector');
-        $(this).addClass('activeSelector');
-        App.setMode('deck_52');
-        client.setMode('deck_52');
-        if (App.get('game_with_comp'))
+    $('.game_with_comp #deck_52').on('click', function () {
+        if (App.canStart()) {
+            App.set('mode_cards_count', 'deck_52');
+            client.setMode('deck_52');
+        }
+        if (App.get('game_with_comp')) {
             App.start(true);
+        }
     });
 });

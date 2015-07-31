@@ -40,6 +40,9 @@ var AppView = Backbone.View.extend({
 
         this.listenTo(App, 'start', this.onStart);
         this.listenTo(App, 'default_screen', this.showDefaultScreen);
+        this.listenTo(App, 'change_mode_cards_count', function (mode) {
+            this.changeModeCardsCount(mode);
+        });
         this.listenTo(App, 'comp_step_first', function (first) {
             this.onCompStepFirst(first)
         });
@@ -111,7 +114,9 @@ var AppView = Backbone.View.extend({
             this.unBlockUI();
         });
         this.listenTo(App, 'leave_spectate', this.showButtonsForGameWithComp);
-        this.listenTo(App, 'join_spectate', this.onSpectate);
+        this.listenTo(App, 'join_spectate', function (mode) {
+            this.onSpectate(mode)
+        });
         this.listenTo(App, 'timer_for_throw_tick', function (count) {
             this.$timer_for_throw.text(count);
         });
@@ -173,6 +178,12 @@ var AppView = Backbone.View.extend({
         if (name) {
             this.$myName.text(name);
         }
+    },
+    changeModeCardsCount: function (mode) {
+        console.log(mode);
+        $('.modes').removeClass('activeSelector');
+        $('.spectate_game #' + mode).addClass('activeSelector');
+        $('.game_with_comp #' + mode).addClass('activeSelector');
     },
     endThrow: function () {
         App.endThrow();
@@ -236,9 +247,6 @@ var AppView = Backbone.View.extend({
         this.listenTo(App.get('opponent'), 'draw', this.onDraw);
         this.listenTo(App.get('opponent'), 'take_cards', this.onOpponentTakeCards);
     },
-//    onAfterLogin: function () {
-//        this.showDefaultScreen();
-//    },
     onBeaten: function (css_class) {
         if (css_class)
             this.$beaten.addClass(css_class);
@@ -289,7 +297,6 @@ var AppView = Backbone.View.extend({
         this.$winMessage.hide();
         this.$looseMessage.hide();
         this.$drawMessage.hide();
-//        $('#timer').hide();
         $('#repControls').hide();
         $('#trump #trump_icon').removeClass('s d h c');
         this.$trump.hide();
@@ -304,21 +311,7 @@ var AppView = Backbone.View.extend({
         this.$canThrow.hide();
 
         this.$nameAndRating.show();
-//        this.$myName.text(client.getPlayer().userName);
-//        this.$myRating.text(client.getPlayer().getRank());
-
-        var mode = App.get('mode_cards_count');
-        $('.modes').removeClass('activeSelector');
-        switch (mode) {
-            case 36:
-                $('#mode_36_cards').addClass('activeSelector');
-                break;
-            case 52:
-                $('#mode_52_cards').addClass('activeSelector');
-                break;
-        }
         this.showMyName(App.get('my_name'));
-
     },
     onCompStepFirst: function (first) {
         if (first) {
@@ -462,7 +455,8 @@ var AppView = Backbone.View.extend({
         $('.controlPanelLayout .real_game').hide();
         $('.controlPanelLayout .spectate_game').show();
     },
-    onSpectate: function () {
+    onSpectate: function (mode) {
+        this.changeModeCardsCount(mode);
         this.showButtonsForSpectate();
         this.hideDefaultScreen();
         this.$nameAndRating.show();
@@ -472,16 +466,6 @@ var AppView = Backbone.View.extend({
         this.$score.show();
         if (score) {
             this.$score.find('span').text(score);
-//            var split = this.$score.html().split("/");
-//            if (split.length == 2) {
-//                this.$score.html('' +
-//                    '<span class="top">'
-//                    + split[0] +
-//                    '</span>' +
-//                    '<span class="bottom">'
-//                    + split[1] +
-//                    '</span>');
-//            }
         }
     },
     showMyName: function (name) {

@@ -258,7 +258,7 @@ body {
     color: #FFF;
     float: left;
     display: inline-block;
-    max-width: 160px;
+    max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -266,9 +266,9 @@ body {
 
 #my_rating, #opponent_rating {
     color: #CCC;
-    width: 53px;
-    display: inline-block;
-    font-size: 11pt;
+    font-size: 8pt;
+    top: -10px;
+    position: relative;
 }
 
 #beaten, #opponent_take_cards, #threw, #nothing_to_beat, #taken {
@@ -375,19 +375,20 @@ body {
 }
 
 .name_and_rating {
-    width: 225px;
+    width: 130px;
+    font-size: 14px;
 }
 
 .name_and_rating.opponent {
     position: absolute;
     right: 0;
-    top: 235px;
+    top: 283px;
 }
 
 .name_and_rating.my {
     position: absolute;
     right: 0;
-    top: 426px;
+    top: 383px;
     /*width: 202px;*/
 }
 
@@ -400,10 +401,9 @@ body {
 
 #score {
     position: absolute;
-    top: 333px;
-    right: 145px;
+    top: 332px;
+    right: 50px;
     width: 80px;
-    float: left;
     display: block;
 }
 

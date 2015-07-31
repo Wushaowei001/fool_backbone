@@ -1,6 +1,6 @@
 var Table = function () {
     this.human_attack = null;
-    this.INTERVAL_BETWEEN_CARDS = 3;
+    this.INTERVAL_BETWEEN_CARDS = 1;
     this.POS_FOR_CARDS_OPPONENT = App.getDeckCoords().y + 40;
     this.POS_FOR_CARDS_OVER_OPPONENT = App.getDeckCoords().y - 90;
     this.POS_FOR_CARDS = App.getDeckCoords().y - 40;
@@ -88,45 +88,20 @@ var Table = function () {
         var x = that.LEFT_POSITION_START;
         var y = that.human_attack ? that.POS_FOR_CARDS : that.POS_FOR_CARDS_OPPONENT;
         var zIndex;
-        var count = all_cards.length;
         for (var i in all_cards) {
             var id = all_cards[i].id;
-            if (i > 2) {
-                y = that.human_attack ? Settings.table.for_bottom.second_line : Settings.table.for_opponent.second_line;
-                x = that.LEFT_POSITION_START + (App.get('card_width') + that.INTERVAL_BETWEEN_CARDS) * (i - 3);
-            }
-            else {
-                x = that.LEFT_POSITION_START + (App.get('card_width') + that.INTERVAL_BETWEEN_CARDS) * i;
-                y = that.human_attack ? Settings.table.for_bottom.first_line : Settings.table.for_opponent.first_line;
-            }
-
-//            y = that.human_attack ? that.POS_FOR_CARDS : that.POS_FOR_CARDS_OPPONENT;
+            y = that.human_attack ? that.POS_FOR_CARDS : that.POS_FOR_CARDS_OPPONENT;
             zIndex = renderCard_(id, x, y);
             if (all_cards[i].over) {
-                y = y - 30;
-//                y = that.human_attack ? that.POS_FOR_CARDS_OVER_OPPONENT : that.POS_FOR_CARDS_OVER;
+                y = that.human_attack ? that.POS_FOR_CARDS_OVER_OPPONENT : that.POS_FOR_CARDS_OVER;
                 renderCard_(all_cards[i].over, x, y, zIndex + 1);
             }
-//            x = x + App.get('card_width') + that.INTERVAL_BETWEEN_CARDS;
+            x = x + Settings.cards.width + that.INTERVAL_BETWEEN_CARDS;
         }
         var cards_for_throw = that.all_cards.cards_for_throw;
-        if (cards_for_throw) {
-//            count += cards_for_throw.length;
-
-        }
         for (var i in cards_for_throw) {
-            if (count > 2) {
-                y = that.human_attack ? Settings.table.for_bottom.second_line : Settings.table.for_opponent.second_line;
-                x = that.LEFT_POSITION_START + (App.get('card_width') + that.INTERVAL_BETWEEN_CARDS) * (count - 3);
-            }
-            else {
-                y = that.human_attack ? Settings.table.for_bottom.first_line : Settings.table.for_opponent.first_line;
-                x = that.LEFT_POSITION_START + (App.get('card_width') + that.INTERVAL_BETWEEN_CARDS) * (count);
-            }
-            renderCard_(cards_for_throw[i], x, y);
-            count++;
-//            renderCard_(cards_for_throw[i], x, that.POS_FOR_CARDS);
-//            x = x + App.get('card_width') + that.INTERVAL_BETWEEN_CARDS;
+            renderCard_(cards_for_throw[i], x, that.POS_FOR_CARDS);
+            x = x + Settings.cards.width + that.INTERVAL_BETWEEN_CARDS;
         }
     };
 

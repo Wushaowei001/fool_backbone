@@ -72,7 +72,7 @@ var AppModel = Backbone.Model.extend({
         without_update_history: false,
         settings: null,
         new_game_started: false,
-        mode_cards_count: 36,
+        mode_cards_count: 'default',
         MAX_COUNT_CARDS: 52,
         images: {},
         awaiting_opponent_cards: [],
@@ -134,9 +134,14 @@ var AppModel = Backbone.Model.extend({
         });
         this.on('change:spectate', function (self) {
             if (self.changed.spectate)
-                this.trigger('join_spectate');
-            else
+                this.trigger('join_spectate', self.changed.spectate);
+            else {
                 this.trigger('leave_spectate');
+                this.trigger('change_mode_cards_count', this.get('mode_cards_count'));
+            }
+        });
+        this.on('change:mode_cards_count', function (self) {
+            this.trigger('change_mode_cards_count', self.changed.mode_cards_count);
         });
     },
 
@@ -307,7 +312,7 @@ var AppModel = Backbone.Model.extend({
     getPileCoords: function () {
         return {
             x: this.get('game_area').width - this.get('card_width') - 40,
-            y: this.get('game_area').height / 2 - this.get('card_height') / 2
+            y: this.get('game_area').height / 2 - this.get('card_height') * 2
         }
     },
     getImgUrlByCardId: function (card_id) {
@@ -354,10 +359,10 @@ var AppModel = Backbone.Model.extend({
     getMinCardValue: function () {
         var value;
         switch (this.get('mode_cards_count')) {
-            case 36:
+            case 'default':
                 value = 6;
                 break;
-            case 52:
+            case 'deck_52':
                 value = 2;
                 break;
         }
@@ -729,18 +734,6 @@ var AppModel = Backbone.Model.extend({
                 fn();
         }.bind(this), time);
     },
-    setMode: function (mode) {
-        switch (mode) {
-            case 'default':
-                this.set('mode_cards_count', 36);
-//                this.mode_cards_count = 36;
-                break;
-            case 'deck_52':
-                this.set('mode_cards_count', 52);
-//                this.mode_cards_count = 52;
-                break;
-        }
-    },
     setProperty: function (property, value) {
         this.get('settings').set(property, value);
     },
@@ -792,11 +785,12 @@ var AppModel = Backbone.Model.extend({
             onStart();
         }
         this.trigger('after:start');
+        return true;
     },
-    startSpectate: function (user1, user2) {
+    startSpectate: function (user1, user2, mode) {
         App.reset();
         this.initGameStartTime();
-        this.set('spectate', true);
+        this.set('spectate', mode);
         App.set('human', new Opponent(Settings.bottom_opponent));
         App.set('opponent', new Opponent(Settings.opponent));
         this.setUsersId(user1.userId, user2.userId);

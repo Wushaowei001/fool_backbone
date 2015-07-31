@@ -106,12 +106,15 @@
                     </td>
                     <td id="tbPrev" class="cpButton" style="opacity: 0.35">Ход назад</td>
                     <td id="tbNext" class="cpButton" style="opacity: 0.35">Ход вперед</td>
-                    <td id="mode_36_cards" class="cpButton cpNormal nonSelectable activeSelector modes">Стандарт</td>
-                    <td id="mode_52_cards" class="cpButton cpNormal nonSelectable modes">52 карты</td>
+                    <td id="default" class="cpButton cpNormal nonSelectable activeSelector modes">Стандарт</td>
+                    <td id="deck_52" class="cpButton cpNormal nonSelectable modes">52 карты</td>
                     <td id="tbNewGame" class="cpButton cpNormal nonSelectable">Новая игра</td>
                 </tr>
                 <tr class="spectate_game" style="display: none">
-                    <td id="tbLeaveSpectate" class="cpButton cpNormal">Выйти из режима просмотра</td>
+                    <td id="tbLeaveSpectate" class="cpButton cpNormal">Покинуть режим просмотра</td>
+                    <td id="default" class="cpButton cpNormal nonSelectable activeSelector modes">Стандарт</td>
+                    <td id="deck_52" class="cpButton cpNormal nonSelectable modes">52 карты</td>
+                    <td id="tbNewGame" class="cpButton cpNormal nonSelectable">Новая игра</td>
                 </tr>
                 </tbody>
             </table>
@@ -144,7 +147,7 @@
             <!--</div>-->
             <div id="score" style="display: none">
                 Счет:&nbsp;
-                <span class="fraction" style="float: right;">
+                <span style="float: right;">
 
                 </span>
             </div>
@@ -168,13 +171,15 @@
             </div>
             <div class="name_and_rating opponent">
                 <div id="opponent_name"></div>
-                &nbsp;
-                <div id="opponent_rating"></div>
+                <sup>
+                    <small id="opponent_rating"></small>
+                </sup>
             </div>
             <div class="name_and_rating my">
                 <div id="my_name" style="display: none"></div>
-                &nbsp;
-                <div id="my_rating"></div>
+                <sup>
+                    <small id="my_rating"></small>
+                </sup>
             </div>
             <div id="beaten" style="display: none; width: 100px;" class="center_in_field">Бито!</div>
             <div id="threw" style="display: none; width: 100px;" class="center_in_field">Подкинул</div>

@@ -1,5 +1,6 @@
 var GameWithComputer = function () {
-    var count = App.get('mode_cards_count');
+    var mode = App.get('mode_cards_count');
+    var count = Settings.decks[mode].count;
 
     var deck = new Deck(count);
 

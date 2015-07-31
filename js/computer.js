@@ -27,6 +27,11 @@ var Computer = Player.extend({
 
         this.trigger('cards_added', true);
     },
+    bindCard: function (card) {
+        card.on('click tap', function () {
+            this._activateLastTakenCards();
+        }.bind(this));
+    },
     getCards: function () {
         return this.get('_cards');
     },

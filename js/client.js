@@ -87,6 +87,7 @@ function onInit() {
         var you = client.getPlayer();
         App.applyClientSettings(client.settings);
         App.set('my_name', you.userName);
+        App.set('my_rating', you.getRank());
         App.initStage();
         App.renderDeck();
         App.trigger('after:login');
@@ -108,7 +109,7 @@ function onInit() {
         App.setUsersId(humanId, opponentId);
         if (spectate) {
             // spectate mode begin
-            App.startSpectate(players[0], players[1]);
+            App.startSpectate(players[0], players[1], data.mode);
         }
     });
 
@@ -138,9 +139,9 @@ function onInit() {
             App.set('opponent_rating', opponent_rating);
         };
         if (App.get('spectate') || spectate) {
-            my_score = data.score[players[1].userId];
-            my_rating = players[1].getRank();
-            App.startSpectate(players[0], players[1]);
+            my_score = data.score[players[0].userId];
+            my_rating = players[0].getRank();
+            App.startSpectate(players[0], players[1], data.inviteData.mode);
             App.setTrump(data.inviteData.trumpVal);
             App.renderTrump();
             init_name_ratings_and_score();
@@ -149,7 +150,7 @@ function onInit() {
         App.setTrump(data.inviteData.trumpVal);
         var round_start = function () {
 
-            App.setMode(data.inviteData.mode);
+            App.set('mode_cards_count', data.inviteData.mode);
 
             App.applyTrumMapping();
             App.start(false, function () {
