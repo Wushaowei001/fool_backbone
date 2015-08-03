@@ -96,12 +96,12 @@ var Table = function () {
                 y = that.human_attack ? that.POS_FOR_CARDS_OVER_OPPONENT : that.POS_FOR_CARDS_OVER;
                 renderCard_(all_cards[i].over, x, y, zIndex + 1);
             }
-            x = x + Settings.cards.width + that.INTERVAL_BETWEEN_CARDS;
+            x = x + Config.cards.width + that.INTERVAL_BETWEEN_CARDS;
         }
         var cards_for_throw = that.all_cards.cards_for_throw;
         for (var i in cards_for_throw) {
             renderCard_(cards_for_throw[i], x, that.POS_FOR_CARDS);
-            x = x + Settings.cards.width + that.INTERVAL_BETWEEN_CARDS;
+            x = x + Config.cards.width + that.INTERVAL_BETWEEN_CARDS;
         }
     };
 

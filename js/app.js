@@ -149,8 +149,8 @@ var AppModel = Backbone.Model.extend({
     },
     addCardToLayer: function (id, inverted, onload) {
         var card = new Konva.Image({
-            width: Settings.cards.width,
-            height: Settings.cards.height,
+            width: Config.cards.width,
+            height: Config.cards.height,
             id: id,
             rotation: 0
         });
@@ -632,7 +632,7 @@ var AppModel = Backbone.Model.extend({
     renderFromHistory: function (history) {
         this.clearCardsLayer();
         this.initGameStartTime();
-        this.set('opponent', new Computer(Settings.opponent));
+        this.set('opponent', new Computer(Config.opponent));
         this.get('human').setCards(history.human_cards);
         this.get('opponent').setCards(history.opponent_cards);
         this.get('table').setState(history.table_state);
@@ -660,8 +660,8 @@ var AppModel = Backbone.Model.extend({
         var cards = this.get('stage').find('.' + name);
         for (var i = 0; i < cards.length; i++) {
             cards[i].setImage(image);
-            cards[i].height(Settings.cards.height);
-            cards[i].width(Settings.cards.width);
+            cards[i].height(Config.cards.height);
+            cards[i].width(Config.cards.width);
         }
         this.get('stage').draw();
     },
@@ -745,7 +745,7 @@ var AppModel = Backbone.Model.extend({
 
         this.trigger('before_start');
         this.reset();
-        this.set('human', new Human(Settings.human));
+        this.set('human', new Human(Config.human));
 
         if (with_comp) {
 
@@ -755,7 +755,7 @@ var AppModel = Backbone.Model.extend({
             var lastCard = this.get('game_with_comp').getLastCard();
             this.setTrump(lastCard);
             this.applyTrumMapping();
-            this.set('opponent', new Computer(Settings.opponent));
+            this.set('opponent', new Computer(Config.opponent));
             this.renderTrump();
 
             this.get('game_with_comp').history.disablePrev();
@@ -779,7 +779,7 @@ var AppModel = Backbone.Model.extend({
             this.trigger('play_with_opponent');
             this.set('game_with_comp', null);
 
-            this.set('opponent', new Opponent(Settings.opponent));
+            this.set('opponent', new Opponent(Config.opponent));
         }
         if (onStart) {
             onStart();
@@ -791,8 +791,8 @@ var AppModel = Backbone.Model.extend({
         App.reset();
         this.initGameStartTime();
         this.set('spectate', mode);
-        App.set('human', new Opponent(Settings.bottom_opponent));
-        App.set('opponent', new Opponent(Settings.opponent));
+        App.set('human', new Opponent(Config.bottom_opponent));
+        App.set('opponent', new Opponent(Config.opponent));
         this.setUsersId(user1.userId, user2.userId);
         App.set('my_name', user1.userName);
         App.set('opponent_name', user2.userName);
@@ -809,7 +809,7 @@ var AppModel = Backbone.Model.extend({
 //        this.loadImages(
 //            function (percent) {
 //                loadTextShow();
-//                this.renderKonvaTimer(percent, false, Settings.loader);
+//                this.renderKonvaTimer(percent, false, Config.loader);
 //            },
 //            function () {
 //                loadTextHide();

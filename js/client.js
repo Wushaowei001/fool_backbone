@@ -3,9 +3,9 @@ LogicGame.init(onInit);
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
     window.client = new Client({
-        https: true,
-        domain: 'logic-games.spb.ru',
-//        domain: 'localhost',
+        https: false,
+//        domain: 'logic-games.spb.ru',
+        domain: 'localhost',
         game: 'fool',
         port: 8028,
         resultDialogDelay: 1000,
@@ -169,8 +169,8 @@ function onInit() {
                 });
 //                App.reset();
 //                App.set({
-//                    human: new Human(Settings.human),
-//                    opponent: new Opponent(Settings.opponent)
+//                    human: new Human(Config.human),
+//                    opponent: new Opponent(Config.opponent)
 //                })
             }
 //            App.set('game_load', true);
@@ -275,7 +275,7 @@ function onInit() {
                             App.get('human').unBindCards();
                             App.get('human').bindCardsForThrow(cards_for_throw, count);
                             if (!Util.countDown.actionInProgress('timer_for_throw')) {
-                                Util.countDown.go(Settings.interval_actions.throw.time,
+                                Util.countDown.go(Config.interval_actions.throw.time,
                                     function (count) {
                                         App.trigger('timer_for_throw_tick', count);
                                     }, function () {
@@ -447,7 +447,7 @@ function onInit() {
             App.trigger('my_timer_tick', data.userTimeS);
         else
             App.trigger('opponent_timer_tick', data.userTimeS);
-        App.renderKonvaTimer(data.userTimePer, is_opponent, Settings.timer);
+        App.renderKonvaTimer(data.userTimePer, is_opponent, Config.timer);
     });
 
     client.historyManager.on('game_load', function (game) {
@@ -457,7 +457,7 @@ function onInit() {
         if (!App.get('game_with_comp'))
             return false;
         App.reset();
-        App.opponent = new Opponent(Settings.player);
+        App.opponent = new Opponent(Config.player);
         $('#repControls').show();
         $('#tbLeaveReview').show();
         $('#tbPrev').hide();
@@ -492,8 +492,8 @@ function onInit() {
             App.MyCards.destroy();
             App.MyCards = new Konva.Layer();
             App.stage.add(App.MyCards);
-            App.human = new Human(Settings.player);
-            App.opponent = new Opponent(Settings.player);
+            App.human = new Human(Config.player);
+            App.opponent = new Opponent(Config.player);
             App.table.clearTable();
             App.history.disablePrev();
         };

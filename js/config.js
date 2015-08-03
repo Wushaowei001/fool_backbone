@@ -1,4 +1,4 @@
-var Settings = {
+var Config = {
     cards: {
         height: 96,
         width: 71

@@ -140,7 +140,7 @@ var AppView = Backbone.View.extend({
     beforeMyStep: function (phrase) {
         console.log('beforeMyStep');
         if (!phrase)
-            phrase = Settings.text.attack_phrase;
+            phrase = Config.text.attack_phrase;
         this.$myStepText.show().find('span').text(phrase);
         this.$opponentStepText.hide();
         this.hideActionButtons();
@@ -272,7 +272,7 @@ var AppView = Backbone.View.extend({
     onEndThrow: function () {
         this.throwButtonHide();
         this.canThrowMessageHide();
-        this.beforeMyStep(Settings.text.attack_phrase);
+        this.beforeMyStep(Config.text.attack_phrase);
     },
     myStepTextHide: function () {
         this.$myStepText.hide();
@@ -280,7 +280,7 @@ var AppView = Backbone.View.extend({
     onAddToPile: function () {
         this.myStepTextHide();
         if (!localStorage.getItem('tooltip_for_pile_showed')) {
-            App.renderTooltip(Settings.tooltips.for_pile);
+            App.renderTooltip(Config.tooltips.for_pile);
             localStorage.setItem('tooltip_for_pile_showed', true);
         }
     },
@@ -318,13 +318,13 @@ var AppView = Backbone.View.extend({
             this.beforeOpponentStep();
         }
         else
-            this.beforeMyStep(Settings.text.attack_phrase);
+            this.beforeMyStep(Config.text.attack_phrase);
     },
     onPlayWithComp: function () {
         this.$score.hide();
         this.$nameAndRating.show();
         this.showButtonsForGameWithComp();
-        this.$opponentName.text(Settings.text.computer_name);
+        this.$opponentName.text(Config.text.computer_name);
         this.$opponentRating.text('');
         this.$switchGame.hide();
         this.initializeHistoryStepButtons();
@@ -336,12 +336,12 @@ var AppView = Backbone.View.extend({
     },
     onRenderFromHistory: function (human_attack, table_not_empty) {
         if (human_attack || human_attack === null) {
-            this.beforeMyStep(Settings.text.attack_phrase);
+            this.beforeMyStep(Config.text.attack_phrase);
             if (table_not_empty)
                 this.$putToPile.show();
         }
         else {
-            this.beforeMyStep(Settings.text.protect_phrase);
+            this.beforeMyStep(Config.text.protect_phrase);
             this.$takeCards.show();
         }
     },
@@ -357,7 +357,7 @@ var AppView = Backbone.View.extend({
         this.$drawMessage.show();
     },
     onCanTakeCards: function () {
-        this.beforeMyStep(Settings.text.protect_phrase);
+        this.beforeMyStep(Config.text.protect_phrase);
         this.$takeCards.show();
     },
     onTakeCards: function () {
@@ -377,7 +377,7 @@ var AppView = Backbone.View.extend({
 
     },
     onCanPutToPile: function () {
-        this.beforeMyStep(Settings.text.attack_phrase);
+        this.beforeMyStep(Config.text.attack_phrase);
         this.$putToPile.show();
     },
     onMoveBack: function () {
@@ -406,7 +406,7 @@ var AppView = Backbone.View.extend({
     onOpponentTakeCards: function () {
         this.temporaryBlockUI(2000);
         if (!localStorage.getItem('tooltip_for_taken_cards_showed')) {
-            App.renderTooltip(Settings.tooltips.for_taken_cards);
+            App.renderTooltip(Config.tooltips.for_taken_cards);
             localStorage.setItem('tooltip_for_taken_cards_showed', true);
         }
     },
