@@ -2,12 +2,12 @@ LogicGame.init(onInit);
 
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
+    var mode = 'local';
     window.client = new Client({
-        https: false,
-//        domain: 'logic-games.spb.ru',
-        domain: 'localhost',
+        https: Config.client[mode].https,
+        domain: Config.client[mode].domain,
         game: 'fool',
-        port: 8028,
+        port: Config.client[mode].port,
         resultDialogDelay: 1000,
         reload: true,
         autoShowProfile: true,
@@ -451,7 +451,28 @@ function onInit() {
     });
 
     client.historyManager.on('game_load', function (game) {
+        console.log('historyManager game_load');
         console.log(game);
+        App.trigger('history_load');
+        var players = game.players;
+        for (var i in players) {
+            if (players[i].isPlayer)
+                App.set({
+                    humanId: players[i].userId,
+                    my_name: players[i].userName
+                });
+            else
+                App.set({
+                    opponent_name: players[i].userName
+                });
+        }
+        App.reset();
+        App.setTrump(game.initData.inviteData.trumpVal);
+        App.set({
+            human: new Human(Config.human),
+            opponent: new Opponent(Config.opponent)
+        });
+        App.renderFromHistory(game.history);
 
         return false;
         if (!App.get('game_with_comp'))
@@ -505,83 +526,7 @@ function onInit() {
 
     client.gameManager.on('game_load', function (game) {
         console.log(game);
-//        if (App.get('spectate')) {
-
-        var state = {};
-        state.table_state = {};
-        state.table_state.human_attack = false;
-        var player;
-
-        var human = App.get('human');
-        var opponent = App.get('opponent');
-        var my_name = App.get('my_name');
-        var opponent_name = App.get('opponent_name');
-        var humanId = App.get('humanId');
-        var prefix;
-
-        for (var i in game) {
-            if (game[i].event) {
-                var event = game[i].event;
-                if (event.type == 'addCards' && event.target) {
-                    var is_opponent = event.target.userId != humanId;
-
-                    if (event.cards && event.cards.length && !event.for && !is_opponent) {
-                        if (App.get('spectate')) {
-                            prefix = human.get('prefix_for_cards');
-                            human.addCards(event.cards.length, prefix, true);
-                        }
-                        else
-                            human.setCards(human.getCards().concat(event.cards));
-                    }
-                    if (event.opponent_cards && !is_opponent) {
-                        opponent.addCards(event.opponent_cards, false, true);
-                    }
-                    if (event.cardsRemain || event.cardsRemain === 0)
-                        state.deck_remain = event.cardsRemain;
-                }
-            }
-            if (game[i].turn) {
-                var turn = game[i].turn;
-                var is_my_turn = game[i].user.userId == humanId;
-                state.table_state = turn.state.table_state;
-                state.table_state.human_attack = is_my_turn && turn.state.table_state.human_attack;
-                player = game[i].user.userId == humanId ? human : opponent;
-                prefix = player.get('prefix_for_cards');
-                if (turn.turn_type == 'takeCards') {
-                    if (App.get('spectate')) {
-                        player.addCards(turn.cards.length, prefix, true);
-                    }
-                    else {
-                        if (game[i].user.userId == humanId)
-                            human.setCards(human.getCards().concat(turn.cards));
-                        else
-                            opponent.addCards(turn.cards.length, false, true);
-                    }
-                    continue;
-                }
-                if (turn.turn_type == 'addToPile') {
-                    state.table_state = {};
-                    continue;
-                }
-                if (turn.card)
-                    player.removeCard(turn.card);
-                if (turn.cards) {
-                    for (var j in turn.cards) {
-                        player.removeCard(turn.cards[j]);
-                    }
-                }
-            }
-        }
-        App.set('deck_remain', state.deck_remain);
-        App.renderTrump();
-        App.renderDeck(true);
-        human.renderCards(true);
-        opponent.renderCards();
-        if (state.table_state) {
-            App.get('table').setState(state.table_state);
-            App.get('table').render();
-        }
-//        }
+        App.renderFromHistory(game);
     });
 //
     client.on('settings_changed', function (data) {

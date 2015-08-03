@@ -1,4 +1,21 @@
 var Config = {
+    client: {
+        local:{
+            https: false,
+            domain: 'localhost',
+            port: 8028
+        },
+        test: {
+            https: false,
+            domain: 'logic-games.spb.ru',
+            port: 8128
+        },
+        real: {
+            https: true,
+            domain: 'logic-games.spb.ru',
+            port: 8028
+        }
+    },
     cards: {
         height: 96,
         width: 71

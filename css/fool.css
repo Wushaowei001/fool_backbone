@@ -301,7 +301,7 @@ body {
     display: inline-block;
 }
 
-#repControls {
+#historyLoadControls {
     position: absolute;
     left: 444px;
     top: 150px;
@@ -309,7 +309,7 @@ body {
     opacity: 0.9;
 }
 
-#pause_spectate_game.playing {
+#history_play_stop.playing {
     background-color: rgb(247, 247, 145);
 }
 

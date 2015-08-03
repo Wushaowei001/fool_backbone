@@ -29,13 +29,13 @@ var Table = function () {
     var that = this;
 
     this.setState = function (state) {
-        that.all_cards.cards = state.cards != undefined ? cloner.clone(state.cards) : [];
-        that.all_cards.cards_for_throw = state.cards_for_throw != undefined ? cloner.clone(state.cards_for_throw) : [];
+        that.all_cards.cards = state.cards != undefined ? Util.cloner.clone(state.cards) : [];
+        that.all_cards.cards_for_throw = state.cards_for_throw != undefined ? Util.cloner.clone(state.cards_for_throw) : [];
         that.human_attack = state.human_attack;
     };
 
     this.getState = function () {
-        var state = cloner.clone(that.all_cards);
+        var state = Util.cloner.clone(that.all_cards);
         state.human_attack = that.human_attack;
         return state;
     };

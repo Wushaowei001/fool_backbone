@@ -5,7 +5,10 @@ var AppView = Backbone.View.extend({
         'click #take_cards': 'takeCards',
         'click #put_tu_pile': 'putToPile',
         'click #tbNewGame': 'playWithComp',// do not working
-        'click #end_throw': 'endThrow'
+        'click #end_throw': 'endThrow',
+        'click #history_move_back': 'onHistoryMoveBack',
+        'click #history_play_stop': 'onHistoryPlayStop',
+        'click #history_move_forward': 'onHistoryMoveForward'
     },
     initialize: function () {
         this.$myStepText = this.$('#my_step_text');
@@ -36,6 +39,7 @@ var AppView = Backbone.View.extend({
         this.$timer_for_throw = this.$('#timer_for_throw');
         this.$my_timer = this.$('#my_timer');
         this.$opponent_timer = this.$('#opponent_timer');
+        this.$historyLoadControls = this.$('#historyLoadControls');
 
 
         this.listenTo(App, 'start', this.onStart);
@@ -97,9 +101,9 @@ var AppView = Backbone.View.extend({
         this.listenTo(App, 'deck_is_empty show_trump', function (trump) {
             this.showTrumpValueOnDeck(trump)
         });
-        this.listenTo(App, 'moveBack', this.onMoveBack);
-        this.listenTo(App, 'moveForward', this.onMoveForward);
-        this.listenTo(App, 'renderFromHistory', function (human_attack, table_not_empty) {
+        this.listenTo(App, 'internal_history:moveBack', this.onMoveBack);
+        this.listenTo(App, 'internal_history:moveForward', this.onMoveForward);
+        this.listenTo(App, 'renderFromInternalHistory', function (human_attack, table_not_empty) {
             this.onRenderFromHistory(human_attack, table_not_empty);
         });
         this.listenTo(App, 'table:addToPile', this.onAddToPile);
@@ -129,6 +133,11 @@ var AppView = Backbone.View.extend({
         this.listenTo(App, 'opponent_timer_tick', function (time) {
             this.$opponent_timer.show().text('(' + time + ')');
         });
+        this.listenTo(App, 'history_load', this.onHistoryLoad);
+        this.listenTo(App, 'history:play', this.onHistoryPlay);
+        this.listenTo(App, 'history:stop', this.onHistoryStop);
+        this.listenTo(App, 'history:moveBack', this.onHistoryMoveBack);
+        this.listenTo(App, 'history:moveForward', this.onHistoryMoveForward);
 
         App.setGameArea(
             {
@@ -247,6 +256,13 @@ var AppView = Backbone.View.extend({
         this.listenTo(App.get('opponent'), 'draw', this.onDraw);
         this.listenTo(App.get('opponent'), 'take_cards', this.onOpponentTakeCards);
     },
+    onAddToPile: function () {
+        this.myStepTextHide();
+        if (!localStorage.getItem('tooltip_for_pile_showed')) {
+            App.renderTooltip(Config.tooltips.for_pile);
+            localStorage.setItem('tooltip_for_pile_showed', true);
+        }
+    },
     onBeaten: function (css_class) {
         if (css_class)
             this.$beaten.addClass(css_class);
@@ -255,36 +271,6 @@ var AppView = Backbone.View.extend({
             if (css_class)
                 this.$beaten.removeClass(css_class);
         }.bind(this));
-    },
-    onEndGame: function () {
-        $('#my_step_text').hide();
-//        $('#opponent_step_text').hide();
-        $('#take_cards').hide();
-        $('#put_tu_pile').hide();
-        $('#timer').hide();
-        $('#deck_remain').hide();
-        $('#end_throw').hide();
-        $('#can_throw').hide();
-        this.$my_timer.hide().text('');
-        this.$opponent_timer.hide().text('');
-        this.hideActionButtons();
-    },
-    onEndThrow: function () {
-        this.throwButtonHide();
-        this.canThrowMessageHide();
-        this.beforeMyStep(Config.text.attack_phrase);
-    },
-    myStepTextHide: function () {
-        this.$myStepText.hide();
-    },
-    onAddToPile: function () {
-        this.myStepTextHide();
-        if (!localStorage.getItem('tooltip_for_pile_showed')) {
-            App.renderTooltip(Config.tooltips.for_pile);
-            localStorage.setItem('tooltip_for_pile_showed', true);
-        }
-    },
-    onStart: function () {
     },
     onBeforeStart: function () {
         console.log('onBeforeStart');
@@ -313,12 +299,51 @@ var AppView = Backbone.View.extend({
         this.$nameAndRating.show();
         this.showMyName(App.get('my_name'));
     },
+    onCanPutToPile: function () {
+        this.beforeMyStep(Config.text.attack_phrase);
+        this.$putToPile.show();
+    },
+    onCanTakeCards: function () {
+        this.beforeMyStep(Config.text.protect_phrase);
+        this.$takeCards.show();
+    },
     onCompStepFirst: function (first) {
         if (first) {
             this.beforeOpponentStep();
         }
         else
             this.beforeMyStep(Config.text.attack_phrase);
+    },
+    onDraw: function () {
+        this.$drawMessage.show();
+    },
+    onEndGame: function () {
+        $('#my_step_text').hide();
+//        $('#opponent_step_text').hide();
+        $('#take_cards').hide();
+        $('#put_tu_pile').hide();
+        $('#timer').hide();
+        $('#deck_remain').hide();
+        $('#end_throw').hide();
+        $('#can_throw').hide();
+        this.$my_timer.hide().text('');
+        this.$opponent_timer.hide().text('');
+        this.hideActionButtons();
+    },
+    onEndThrow: function () {
+        this.throwButtonHide();
+        this.canThrowMessageHide();
+        this.beforeMyStep(Config.text.attack_phrase);
+    },
+    onHistoryLoad: function () {
+        this.hideDefaultScreen();
+        this.$historyLoadControls.show();
+    },
+    myStepTextHide: function () {
+        this.$myStepText.hide();
+    },
+
+    onStart: function () {
     },
     onPlayWithComp: function () {
         this.$score.hide();
@@ -353,13 +378,6 @@ var AppView = Backbone.View.extend({
         this.$myStepText.hide();
         this.$opponentStepText.hide();
     },
-    onDraw: function () {
-        this.$drawMessage.show();
-    },
-    onCanTakeCards: function () {
-        this.beforeMyStep(Config.text.protect_phrase);
-        this.$takeCards.show();
-    },
     onTakeCards: function () {
 //        this.$opponentTakeCards.fadeIn(300);
 //        this.$opponentTakeCards.fadeOut(4000);
@@ -376,10 +394,7 @@ var AppView = Backbone.View.extend({
     onOpponentTakeCards: function () {
 
     },
-    onCanPutToPile: function () {
-        this.beforeMyStep(Config.text.attack_phrase);
-        this.$putToPile.show();
-    },
+
     onMoveBack: function () {
         this.hideActionButtons();
         this.myStepTextHide();

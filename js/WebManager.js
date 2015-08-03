@@ -40,7 +40,7 @@ var WebManager = Backbone.Model.extend({
     doTurn: function (turn) {
         turn.state = {
 //            opponent_cards: cloner.clone(App.get('opponent').getCards()),
-            table_state: cloner.clone(App.get('table').getState())
+            table_state: Util.cloner.clone(App.get('table').getState())
 //            trump_value: App.getTrumpValue()
 //            deck_remain: App.get('deck_remain')
         };

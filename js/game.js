@@ -23,7 +23,7 @@ var GameWithComputer = function () {
     };
 
     this.setDeck = function (new_deck) {
-        deck = cloner.clone(new_deck);
+        deck = Util.cloner.clone(new_deck);
     };
 
     this.removeCardsFromBegin = function (cards) {
@@ -54,11 +54,11 @@ var GameWithComputer = function () {
                 this.disableNext();
             }
             this.list.push({
-                human_cards: cloner.clone(App.get('human').getCards()),
-                opponent_cards: cloner.clone(App.get('opponent').getCards()),
-                table_state: cloner.clone(App.get('table').getState()),
+                human_cards: Util.cloner.clone(App.get('human').getCards()),
+                opponent_cards: Util.cloner.clone(App.get('opponent').getCards()),
+                table_state: Util.cloner.clone(App.get('table').getState()),
                 trump_value: App.getTrumpValue(),
-                deck: cloner.clone(self.getDeck())
+                deck: Util.cloner.clone(self.getDeck())
             });
             if (this.index == null)
                 this.index = 0;
@@ -71,18 +71,18 @@ var GameWithComputer = function () {
             this.list = this.list.slice(0, this.index + 1);
         },
         moveBack: function () {
-            App.trigger('moveBack');
+            App.trigger('internal_history:moveBack');
             if (this.index > 0) {
-                App.renderFromHistory(cloner.clone(this.list[--this.index]));
+                App.renderFromInternalHistory(Util.cloner.clone(this.list[--this.index]));
                 this.enableNext();
             }
             if (this.index == 0)
                 this.disablePrev();
         },
         moveForward: function () {
-            App.trigger('moveForward');
+            App.trigger('internal_history:moveForward');
             if (this.index + 1 < this.list.length) {
-                App.renderFromHistory(cloner.clone(this.list[++this.index]));
+                App.renderFromInternalHistory(Util.cloner.clone(this.list[++this.index]));
                 this.enablePrev();
                 if (this.index == this.list.length - 1)
                     this.disableNext();
