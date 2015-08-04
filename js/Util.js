@@ -2,6 +2,7 @@ var Util = {
     countDown: {
         countDownsInProgress: [],
         countDownsToStop: [],
+        finals: {},
         go: function (count, onStep, onFinal, name) {
             if (!_.contains(this.countDownsInProgress, name))
                 this.countDownsInProgress.push(name);
@@ -10,6 +11,7 @@ var Util = {
                 this.countDownsInProgress = _.without(this.countDownsInProgress, name);
                 return;
             }
+            this.finals.name = onFinal;
             onStep(count);
             if (count == 0) {
                 this.countDownsInProgress = _.without(this.countDownsInProgress, name);
@@ -27,7 +29,7 @@ var Util = {
         },
         stop: function (name) {
             this.countDownsToStop.push(name);
-            App.trigger('timer_for_throw_stop');
+            this.finals[name]();
         }
     },
     cloner: {

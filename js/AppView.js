@@ -40,6 +40,9 @@ var AppView = Backbone.View.extend({
         this.$my_timer = this.$('#my_timer');
         this.$opponent_timer = this.$('#opponent_timer');
         this.$historyLoadControls = this.$('#historyLoadControls');
+        this.$historyMoveBack = this.$('#history_move_back');
+        this.$historyMoveForward = this.$('#history_move_forward');
+        this.$historyPlayStop = this.$('#history_play_stop');
 
 
         this.listenTo(App, 'start', this.onStart);
@@ -338,6 +341,44 @@ var AppView = Backbone.View.extend({
     onHistoryLoad: function () {
         this.hideDefaultScreen();
         this.$historyLoadControls.show();
+    },
+    onHistoryMoveBack: function () {
+        if (!this.$historyMoveBack.hasClass('disable')) {
+            this.$historyMoveForward.removeClass('disable');
+            this.$historyPlayStop.removeClass('disable');
+            this.listenTo(App.get('history'), 'cursor_at_the_beginning', function () {
+                this.$historyMoveBack.addClass('disable');
+                this.$historyMoveForward.removeClass('disable');
+                this.$historyPlayStop.removeClass('disable');
+            }.bind(this));
+            this.listenTo(App.get('history'), 'cursor_at_the_end', function () {
+                this.$historyMoveForward.addClass('disable');
+                this.$historyPlayStop.addClass('disable');
+                this.$historyMoveBack.removeClass('disable');
+            }.bind(this));
+            this.listenTo(App.get('history'), 'play_history_stop', function () {
+                this.$historyPlayStop.removeClass('playing');
+            }.bind(this));
+            this.listenTo(App.get('history'), 'play_history_tick', function () {
+                this.$historyMoveBack.removeClass('disable');
+            }.bind(this));
+            App.get('history').moveBack();
+        }
+    },
+    onHistoryMoveForward: function () {
+        if (!this.$historyMoveForward.hasClass('disable')) {
+            this.$historyMoveBack.removeClass('disable');
+            App.get('history').moveForward();
+        }
+    },
+    onHistoryPlayStop: function () {
+        if (this.$historyPlayStop.hasClass('playing')) {
+            App.get('history').stop();
+        }
+        else {
+            App.get('history').play();
+        }
+        this.$historyPlayStop.toggleClass('playing');
     },
     myStepTextHide: function () {
         this.$myStepText.hide();

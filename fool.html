@@ -31,6 +31,7 @@
     <script src="js/binding.js"></script>
     <script src="js/table.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/settings.js"></script>
     <script src="js/client_local.js"></script>
     <script src="js/client.js"></script>
     <script src="js/AppView.js"></script>
@@ -127,12 +128,12 @@
 
             </div>
             <div id="historyLoadControls" style="display: none;">
-                <img style="cursor: pointer; opacity: 0.6;" title="Предыдущий ход" src="img/icon_prev.png"
-                     id="history_move_back" class="disable">
-                <img style="cursor: pointer; opacity: 1;" title="Старт/Пауза"
-                     src="img/icon_play.png" id="history_play_stop">
-                <img style="cursor: pointer; opacity: 1;" title="Следующий ход" src="img/icon_next.png"
-                     id="history_move_forward">
+                <img title="Предыдущий ход" src="img/icon_prev.png"
+                     id="history_move_back">
+                <img title="Старт/Пауза"
+                     src="img/icon_play.png" id="history_play_stop" class="disable">
+                <img title="Следующий ход" src="img/icon_next.png"
+                     id="history_move_forward" class="disable">
             </div>
             <div id="win_message" style="display: none">Вы победили!</div>
             <div id="loose_message" style="display: none">Вы проиграли!</div>

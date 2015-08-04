@@ -25,6 +25,7 @@ var Table = function () {
         cards: [],
         cards_for_throw: []
     };
+    this.without_animation = false;
 
     var that = this;
 
@@ -32,11 +33,13 @@ var Table = function () {
         that.all_cards.cards = state.cards != undefined ? Util.cloner.clone(state.cards) : [];
         that.all_cards.cards_for_throw = state.cards_for_throw != undefined ? Util.cloner.clone(state.cards_for_throw) : [];
         that.human_attack = state.human_attack;
+        that.without_animation = state.without_animation != undefined ? state.without_animation : false
     };
 
     this.getState = function () {
         var state = Util.cloner.clone(that.all_cards);
         state.human_attack = that.human_attack;
+        state.without_animation = that.without_animation;
         return state;
     };
 
@@ -198,7 +201,7 @@ var Table = function () {
         var render = function () {
             card.setImage(App.getImageById(id));
             App.get('stage').draw();
-            if (App.get('without_animation')) {
+            if (that.getState().without_animation) {
                 card.setX(x);
                 card.setY(y);
                 card.setRotation(0);

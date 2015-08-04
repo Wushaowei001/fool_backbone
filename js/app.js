@@ -1,59 +1,3 @@
-var SettingObj = Backbone.Model.extend({
-    defaults: {
-        back_image: null,
-        card_design: null,
-        sort: null,
-        trump_mapping: null,
-        step: null
-    },
-    initialize: function () {
-        this.on('change', function (p) {
-            console.log(p.changed);
-        });
-        this.on('change:back_image', function () {
-            App.changeBackImage();
-        });
-        this.on('change:card_design', function () {
-            App.trigger('load_images_start');
-            App.loadImages(
-                function () {
-                    loadTextShow();
-                },
-                function () {
-                    loadTextHide();
-                    App.trigger('load_images_end');
-                    if (App.get('human')) {
-                        App.get('human').updateCardImages(function () {
-                            App.renderTrump();
-                            if (App.get('table').getCards())
-                                App.get('table').render();
-                        });
-                    }
-                });
-        });
-        this.on('change:sort', function () {
-            if (App.get('human')) {
-                App.get('human').renderCards();
-            }
-        });
-        this.on('change:trump_mapping', function () {
-            if (App.get('human')) {
-                App.get('human').updateCardImages();
-                App.renderTrump();
-                App.get('table').updateCardImages();
-                App.get('table').renderLastPileIfVisible();
-                if (App.get('opponent'))
-                    App.get('opponent').renderLastTakenCardsIfVisible();
-            }
-        });
-        this.on('change:step', function () {
-            if (App.get('human')) {
-                App.get('human').unBindCards();
-                App.get('human').bindCards();
-            }
-        });
-    }
-});
 var AppModel = Backbone.Model.extend({
     defaults: {
         app_name: 'fool',
@@ -86,7 +30,7 @@ var AppModel = Backbone.Model.extend({
         deck_is_empty: null,
         deck_remain: null,
         spectate: null,
-        deferred_actions: [],
+        deferred_actions: []
     },
 
     initialize: function () {
@@ -190,6 +134,7 @@ var AppModel = Backbone.Model.extend({
     endThrow: function () {
         if (Util.countDown.actionInProgress('timer_for_throw')) {
             Util.countDown.stop('timer_for_throw');
+            return;
         }
         App.get('human').unBindCards();
         App.get('human').bindCards();
@@ -656,7 +601,7 @@ var AppModel = Backbone.Model.extend({
             history.table_state.cards.length
         );
     },
-    renderFromHistory: function (history) {
+    renderFromHistory: function (history, without_animation) {
         var human = App.get('human');
         var opponent = App.get('opponent');
         var my_name = App.get('my_name');
@@ -664,7 +609,7 @@ var AppModel = Backbone.Model.extend({
         var humanId = App.get('humanId');
         var prefix;
 
-        var state = {};
+        var history_list = [];
         var table_state = {};
         var deck_remain;
         table_state.human_attack = false;
@@ -677,11 +622,10 @@ var AppModel = Backbone.Model.extend({
                 opponent_cards: Util.cloner.clone(opponent.getCards()),
                 table_state: Util.cloner.clone(table_state)
             };
-            this.get('history').push(obj);
+            history_list.push(obj);
         }.bind(this);
 
         for (var i in history) {
-            state = {};
             if (history[i].event) {
                 var event = history[i].event;
                 if (event.type == 'addCards') {
@@ -689,7 +633,7 @@ var AppModel = Backbone.Model.extend({
                         continue;
                     var is_opponent = event.target.userId != humanId;
 
-                    if (event.for || is_opponent)
+                    if (event.for || is_opponent || (!event.cards && !event.opponent_cards))
                         continue;
 
                     if (event.cards && event.cards.length && !event.for && !is_opponent) {
@@ -742,15 +686,47 @@ var AppModel = Backbone.Model.extend({
             }
             pushToHistory();
         }
-        App.set('deck_remain', deck_remain);
+        this.renderFromState({
+            deck_remain: deck_remain,
+            table_state: table_state
+        }, without_animation);
+//        App.set('deck_remain', deck_remain);
+//        App.renderTrump();
+//        App.renderDeck(true);
+//        human.renderCards(true);
+//        opponent.renderCards();
+//        if (table_state) {
+//            App.get('table').setState(table_state);
+//            App.get('table').render();
+//        }
+        this.set('history', new History({list: history_list}));
+        this.listenTo(this.get('history'), 'data_from_history', function (state) {
+            if (state) {
+                this.clearCardsLayer();
+                this.renderFromState(state, true);
+            }
+            console.log(state);
+        }.bind(this));
+    },
+    renderFromState: function (state, without_animation) {
+        if (state.deck_remain) {
+            App.set('deck_remain', state.deck_remain);
+        }
+        if (state.table_state) {
+            state.table_state.without_animation = without_animation;
+            App.get('table').setState(state.table_state);
+        }
+        if (state.human_cards) {
+            App.get('human').setCards(state.human_cards);
+        }
+        if (state.opponent_cards) {
+            App.get('opponent').setCards(state.opponent_cards);
+        }
         App.renderTrump();
         App.renderDeck(true);
-        human.renderCards(true);
-        opponent.renderCards();
-        if (table_state) {
-            App.get('table').setState(table_state);
-            App.get('table').render();
-        }
+        App.get('human').renderCards(without_animation);
+        App.get('opponent').renderCards(without_animation);
+        App.get('table').render();
     },
     renderCardsByClassName: function (name, image) {
         var cards = this.get('stage').find('.' + name);

@@ -291,7 +291,7 @@ body {
     left: 239px;
 }
 
-#timer_for_throw{
+#timer_for_throw {
     left: 400px;
 }
 
@@ -309,9 +309,23 @@ body {
     opacity: 0.9;
 }
 
+#historyLoadControls img {
+    cursor: pointer;
+    opacity: 1;
+}
+
+#historyLoadControls img.disable {
+    opacity: 0.6;
+    cursor: default;
+}
+
 #history_play_stop.playing {
     background-color: rgb(247, 247, 145);
 }
+
+/*#historyLoadControls #history_play_stop {*/
+/*background-image: url("fool/img/icon_play.png");*/
+/*}*/
 
 .cpButton.disable {
     opacity: 0.35;
@@ -422,7 +436,7 @@ body {
     text-align: center;
 }
 
-.fraction .bottom{
+.fraction .bottom {
     border-top: 1px solid #000;
     display: block;
 }

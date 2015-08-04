@@ -472,7 +472,7 @@ function onInit() {
             human: new Human(Config.human),
             opponent: new Opponent(Config.opponent)
         });
-        App.renderFromHistory(game.history);
+        App.renderFromHistory(game.history, true);
 
         return false;
         if (!App.get('game_with_comp'))
@@ -526,7 +526,7 @@ function onInit() {
 
     client.gameManager.on('game_load', function (game) {
         console.log(game);
-        App.renderFromHistory(game);
+        App.renderFromHistory(game, false);
     });
 //
     client.on('settings_changed', function (data) {
