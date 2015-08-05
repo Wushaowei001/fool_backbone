@@ -298,6 +298,7 @@ var AppView = Backbone.View.extend({
         this.$switchGame.hide();
         this.$endThrow.hide();
         this.$canThrow.hide();
+        this.$historyLoadControls.hide();
 
         this.$nameAndRating.show();
         this.showMyName(App.get('my_name'));
@@ -340,7 +341,12 @@ var AppView = Backbone.View.extend({
     },
     onHistoryLoad: function () {
         this.hideDefaultScreen();
+        this.$nameAndRating.show();
+        this.showMyName();
         this.$historyLoadControls.show();
+        this.$historyMoveBack.removeClass('disable');
+        this.$historyMoveForward.addClass('disable');
+        this.$historyPlayStop.addClass('disable');
     },
     onHistoryMoveBack: function () {
         if (!this.$historyMoveBack.hasClass('disable')) {
@@ -377,8 +383,8 @@ var AppView = Backbone.View.extend({
         }
         else {
             App.get('history').play();
+            this.$historyPlayStop.addClass('playing');
         }
-        this.$historyPlayStop.toggleClass('playing');
     },
     myStepTextHide: function () {
         this.$myStepText.hide();
@@ -432,10 +438,6 @@ var AppView = Backbone.View.extend({
                 this.$taken.removeClass(css_class);
         }.bind(this));
     },
-    onOpponentTakeCards: function () {
-
-    },
-
     onMoveBack: function () {
         this.hideActionButtons();
         this.myStepTextHide();
@@ -515,13 +517,23 @@ var AppView = Backbone.View.extend({
         this.changeModeCardsCount(mode);
         this.showButtonsForSpectate();
         this.hideDefaultScreen();
+        this.$historyLoadControls.hide();
+        this.$opponentStepText.hide();
         this.$nameAndRating.show();
         this.showMyName();
     },
     showScore: function (score) {
         this.$score.show();
         if (score) {
-            this.$score.find('span').text(score);
+            var $span = this.$score.find('span');
+            $span.text(score);
+            var split = $span.html().split("/");
+            if (split.length == 2) {
+                $span.html(
+                    '<span class="top">' + split[0] + '</span>' +
+                        '<span class="bottom">' + split[1] + '</span>'
+                );
+            }
         }
     },
     showMyName: function (name) {

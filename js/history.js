@@ -43,10 +43,17 @@ var History = Backbone.Model.extend({
                 }.bind(this),
                 function () {
                     this.trigger('play_history_stop');
-                }.bind(this));
+                }.bind(this),
+                'play_history'
+            );
         }
     },
     stop: function () {
         Util.countDown.stop('play_history');
+    },
+    getLastItem: function () {
+        var list = this.get('list');
+        var length = list.length;
+        return list[length - 1];
     }
 });

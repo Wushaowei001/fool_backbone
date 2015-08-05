@@ -87,6 +87,17 @@ var AppModel = Backbone.Model.extend({
         this.on('change:mode_cards_count', function (self) {
             this.trigger('change_mode_cards_count', self.changed.mode_cards_count);
         });
+        this.on('change:history', function (self) {
+            if (this.get('history')) {
+                this.listenTo(this.get('history'), 'data_from_history', function (state) {
+                    if (state) {
+                        this.clearCardsLayer();
+                        this.renderFromState(state, true);
+                    }
+                    console.log(state);
+                }.bind(this));
+            }
+        });
     },
 
     addCardSound: function () {
@@ -341,6 +352,104 @@ var AppModel = Backbone.Model.extend({
     initGameStartTime: function () {
         this.set('new_game_started', Date.now());
 //        this.new_game_started = Date.now();
+    },
+    initHistory: function (history) {
+        var human = App.get('human');
+        var opponent = App.get('opponent');
+        var my_name = App.get('my_name');
+        var opponent_name = App.get('opponent_name');
+        var humanId = App.get('humanId');
+        var prefix;
+
+        var history_list = [];
+        var table_state = {};
+        var deck_remain;
+        table_state.human_attack = false;
+        var player;
+
+        var pushToHistory = function () {
+            if (table_state && table_state.cards_for_throw)
+                table_state.cards_for_throw = null;
+            var obj = {
+                deck_remain: deck_remain,
+                human_cards: Util.cloner.clone(human.getCards()),
+                opponent_cards: Util.cloner.clone(opponent.getCards()),
+                table_state: Util.cloner.clone(table_state)
+            };
+            history_list.push(obj);
+        }.bind(this);
+
+        for (var i in history) {
+            if (history[i].event) {
+                var event = history[i].event;
+                if (event.type == 'addCards') {
+                    if (!event.target)
+                        continue;
+                    var is_opponent = event.target.userId != humanId;
+
+                    if (event.for || (is_opponent && !App.get('not_my_story'))
+                        || (!event.cards && !event.opponent_cards))
+                        continue;
+                    if (event.opponent_cards && App.get('not_my_story'))
+                        continue;
+
+                    if (event.cards && event.cards.length && !event.for && !is_opponent) {
+                        if (App.get('spectate')) {
+                            prefix = human.get('prefix_for_cards');
+                            // in spectate case human == Opponent class
+                            human.addCards(event.cards.length, prefix, true);
+                        }
+                        else
+                            human.setCards(human.getCards().concat(event.cards));
+                    }
+                    if (event.opponent_cards && !is_opponent && !App.get('not_my_story')) {
+                        opponent.addCards(event.opponent_cards, false, true);
+                    }
+                    // for not my history
+                    if (is_opponent && App.get('not_my_story') && event.cards) {
+                        opponent.setCards(opponent.getCards().concat(event.cards));
+                    }
+                    if (event.cardsRemain || event.cardsRemain === 0)
+                        deck_remain = event.cardsRemain;
+                }
+            }
+            if (history[i].turn) {
+                var turn = history[i].turn;
+                var is_my_turn = history[i].user.userId == humanId;
+                table_state = turn.state.table_state;
+                table_state.human_attack = is_my_turn ?
+                    turn.state.table_state.human_attack : !turn.state.table_state.human_attack;
+                player = history[i].user.userId == humanId ? human : opponent;
+                prefix = player.get('prefix_for_cards');
+                if (turn.turn_type == 'takeCards') {
+                    if (App.get('spectate')) {
+                        player.addCards(turn.cards.length, prefix, true);
+                    }
+                    else {
+                        if (history[i].user.userId == humanId)
+                            human.setCards(human.getCards().concat(turn.cards));
+                        else
+                            opponent.addCards(turn.cards.length, false, true);
+                    }
+                    pushToHistory();
+                    continue;
+                }
+                if (turn.turn_type == 'addToPile') {
+                    table_state = {};
+                    pushToHistory();
+                    continue;
+                }
+                if (turn.card)
+                    player.removeCard(turn.card);
+                if (turn.cards) {
+                    for (var j in turn.cards) {
+                        player.removeCard(turn.cards[j]);
+                    }
+                }
+            }
+            pushToHistory();
+        }
+        this.set('history', new History({list: history_list}));
     },
     liftPossibleCards: function (without_hiding, cards) {
         if (!cards)
@@ -602,111 +711,9 @@ var AppModel = Backbone.Model.extend({
         );
     },
     renderFromHistory: function (history, without_animation) {
-        var human = App.get('human');
-        var opponent = App.get('opponent');
-        var my_name = App.get('my_name');
-        var opponent_name = App.get('opponent_name');
-        var humanId = App.get('humanId');
-        var prefix;
-
-        var history_list = [];
-        var table_state = {};
-        var deck_remain;
-        table_state.human_attack = false;
-        var player;
-
-        var pushToHistory = function () {
-            var obj = {
-                deck_remain: deck_remain,
-                human_cards: Util.cloner.clone(human.getCards()),
-                opponent_cards: Util.cloner.clone(opponent.getCards()),
-                table_state: Util.cloner.clone(table_state)
-            };
-            history_list.push(obj);
-        }.bind(this);
-
-        for (var i in history) {
-            if (history[i].event) {
-                var event = history[i].event;
-                if (event.type == 'addCards') {
-                    if (!event.target)
-                        continue;
-                    var is_opponent = event.target.userId != humanId;
-
-                    if (event.for || is_opponent || (!event.cards && !event.opponent_cards))
-                        continue;
-
-                    if (event.cards && event.cards.length && !event.for && !is_opponent) {
-                        if (App.get('spectate')) {
-                            prefix = human.get('prefix_for_cards');
-                            human.addCards(event.cards.length, prefix, true);
-                        }
-                        else
-                            human.setCards(human.getCards().concat(event.cards));
-                    }
-                    if (event.opponent_cards && !is_opponent) {
-                        opponent.addCards(event.opponent_cards, false, true);
-                    }
-                    if (event.cardsRemain || event.cardsRemain === 0)
-                        deck_remain = event.cardsRemain;
-                }
-            }
-            if (history[i].turn) {
-                var turn = history[i].turn;
-                var is_my_turn = history[i].user.userId == humanId;
-                table_state = turn.state.table_state;
-                table_state.human_attack = is_my_turn && turn.state.table_state.human_attack;
-                player = history[i].user.userId == humanId ? human : opponent;
-                prefix = player.get('prefix_for_cards');
-                if (turn.turn_type == 'takeCards') {
-                    if (App.get('spectate')) {
-                        player.addCards(turn.cards.length, prefix, true);
-                    }
-                    else {
-                        if (history[i].user.userId == humanId)
-                            human.setCards(human.getCards().concat(turn.cards));
-                        else
-                            opponent.addCards(turn.cards.length, false, true);
-                    }
-                    pushToHistory();
-                    continue;
-                }
-                if (turn.turn_type == 'addToPile') {
-                    table_state = {};
-                    pushToHistory();
-                    continue;
-                }
-                if (turn.card)
-                    player.removeCard(turn.card);
-                if (turn.cards) {
-                    for (var j in turn.cards) {
-                        player.removeCard(turn.cards[j]);
-                    }
-                }
-            }
-            pushToHistory();
-        }
-        this.renderFromState({
-            deck_remain: deck_remain,
-            table_state: table_state
-        }, without_animation);
-//        App.set('deck_remain', deck_remain);
-//        App.renderTrump();
-//        App.renderDeck(true);
-//        human.renderCards(true);
-//        opponent.renderCards();
-//        if (table_state) {
-//            App.get('table').setState(table_state);
-//            App.get('table').render();
-//        }
-        this.set('history', new History({list: history_list}));
-        this.listenTo(this.get('history'), 'data_from_history', function (state) {
-            if (state) {
-                this.clearCardsLayer();
-                this.renderFromState(state, true);
-            }
-            console.log(state);
-        }.bind(this));
+        this.initHistory(history);
+        var lastState = this.get('history').getLastItem();
+        this.renderFromState(lastState, without_animation);
     },
     renderFromState: function (state, without_animation) {
         if (state.deck_remain) {
@@ -774,7 +781,8 @@ var AppModel = Backbone.Model.extend({
                 deck_remain: null,
                 spectate: null,
                 deferred_actions: [],
-                history: []
+                history: null,
+                not_my_story: false
             }
         );
         this.get('stage').add(this.get('MyCards'));

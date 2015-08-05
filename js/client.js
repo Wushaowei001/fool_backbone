@@ -133,7 +133,7 @@ function onInit() {
             }
         }
         var init_name_ratings_and_score = function () {
-            App.set('score', my_score + ':' + opponent_score);
+            App.set('score', my_score + '/' + opponent_score);
             App.set('opponent_name', opponent_name);
             App.set('my_rating', my_rating);
             App.set('opponent_rating', opponent_rating);
@@ -454,23 +454,42 @@ function onInit() {
         console.log('historyManager game_load');
         console.log(game);
         App.trigger('history_load');
-        var players = game.players;
-        for (var i in players) {
-            if (players[i].isPlayer)
-                App.set({
-                    humanId: players[i].userId,
-                    my_name: players[i].userName
-                });
-            else
-                App.set({
-                    opponent_name: players[i].userName
-                });
-        }
         App.reset();
         App.setTrump(game.initData.inviteData.trumpVal);
+        var players = game.players;
+        var not_my_story = true;
+        var historyUserId = client.historyManager.userId;
+        if (client.getPlayer().userId == historyUserId) {
+            not_my_story = false;
+        }
         App.set({
-            human: new Human(Config.human),
-            opponent: new Opponent(Config.opponent)
+            not_my_story: not_my_story,
+            humanId: historyUserId,
+            my_name: game.userData[historyUserId].userName
+        });
+        for (var i in players) {
+            if (players[i].userId != historyUserId) {
+                App.set({
+                    opponentId: players[i].userId,
+                    opponent_name: players[i].userName
+                });
+            }
+        }
+        if (not_my_story) {
+            App.set({
+                human: new Human(Config.opponent),
+                opponent: new Human(Config.human)
+            });
+        }
+        else {
+            App.set({
+                human: new Human(Config.human),
+                opponent: new Opponent(Config.opponent)
+            });
+        }
+        var score = JSON.parse(game.score);
+        App.set({
+            score: score[+App.get('opponentId')] + '/' + score[+App.get('humanId')]
         });
         App.renderFromHistory(game.history, true);
 

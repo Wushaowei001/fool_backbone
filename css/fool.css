@@ -415,19 +415,19 @@ body {
 
 #score {
     position: absolute;
-    top: 332px;
-    right: 50px;
+    top: 314px;
+    right: 70px;
     width: 80px;
     display: block;
+    font-size: 17pt;
 }
 
 #opponent_step_text {
     width: 164px;
-    /*float: left;*/
     top: 323px;
 }
 
-.fraction, .top, .bottom {
+.fraction .top, .fraction .bottom {
     padding: 0 5px;
 }
 
@@ -437,6 +437,6 @@ body {
 }
 
 .fraction .bottom {
-    border-top: 1px solid #000;
+    border-top: 1px solid #ffffff;
     display: block;
 }

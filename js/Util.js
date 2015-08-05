@@ -4,14 +4,15 @@ var Util = {
         countDownsToStop: [],
         finals: {},
         go: function (count, onStep, onFinal, name) {
-            if (!_.contains(this.countDownsInProgress, name))
-                this.countDownsInProgress.push(name);
             if (_.contains(this.countDownsToStop, name)) {
                 this.countDownsToStop = _.without(this.countDownsToStop, name);
                 this.countDownsInProgress = _.without(this.countDownsInProgress, name);
                 return;
             }
-            this.finals.name = onFinal;
+            if (!_.contains(this.countDownsInProgress, name))
+                this.countDownsInProgress.push(name);
+
+            this.finals[name] = onFinal;
             onStep(count);
             if (count == 0) {
                 this.countDownsInProgress = _.without(this.countDownsInProgress, name);
@@ -29,6 +30,7 @@ var Util = {
         },
         stop: function (name) {
             this.countDownsToStop.push(name);
+            this.countDownsInProgress = _.without(this.countDownsInProgress, name);
             this.finals[name]();
         }
     },
