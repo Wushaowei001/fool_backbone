@@ -419,20 +419,35 @@ var AppModel = Backbone.Model.extend({
                 table_state = turn.state.table_state;
                 table_state.human_attack = is_my_turn ?
                     turn.state.table_state.human_attack : !turn.state.table_state.human_attack;
-                player = history[i].user.userId == humanId ? human : opponent;
+                player = is_my_turn ? human : opponent;
                 prefix = player.get('prefix_for_cards');
                 if (turn.turn_type == 'takeCards') {
                     if (App.get('spectate')) {
                         player.addCards(turn.cards.length, prefix, true);
                     }
                     else {
-                        if (history[i].user.userId == humanId)
+                        if (is_my_turn)
                             human.setCards(human.getCards().concat(turn.cards));
-                        else
-                            opponent.addCards(turn.cards.length, false, true);
+                        else {
+                            if (App.get('not_my_story')) {
+                                opponent.setCards(opponent.getCards().concat(turn.cards));
+                            }
+                            else {
+                                opponent.addCards(turn.cards.length, false, true);
+                            }
+                        }
                     }
                     pushToHistory();
                     continue;
+                }
+                if (turn.turn_type == 'throw') {
+                    table_state.cards = [];
+                    for (var i in turn.cards) {
+                        table_state.cards.push({
+                            id: turn.cards[i],
+                            over: ''
+                        })
+                    }
                 }
                 if (turn.turn_type == 'addToPile') {
                     table_state = {};
