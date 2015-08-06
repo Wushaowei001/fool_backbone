@@ -100,6 +100,11 @@ var AppModel = Backbone.Model.extend({
                     console.log(state);
                 }.bind(this));
             }
+            else {
+                if (Util.countDown.actionInProgress('play_history')) {
+                    Util.countDown.stop('play_history');
+                }
+            }
         });
         this.on('change:game_with_comp', function () {
             if (this.get('game_with_comp') != null) {
@@ -789,6 +794,8 @@ var AppModel = Backbone.Model.extend({
             this.get('opponent').destroy();
         if (this.get('webManager'))
             this.get('webManager').destroy();
+        if (this.get('history'))
+            this.get('history').destroy();
         this.set(
             {
                 MyCards: new Konva.Layer(),

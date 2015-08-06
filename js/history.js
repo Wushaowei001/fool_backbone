@@ -18,9 +18,13 @@ var History = Backbone.Model.extend({
             }
             this.trigger('data_from_history', this.get('list')[index]);
         }.bind(this));
-        if (Util.countDown.actionInProgress('play_history')) {
-            Util.countDown.stop('play_history');
-        }
+        this.on('destroy', function () {
+            this.off();
+            this.stopListening();
+            if (Util.countDown.actionInProgress('play_history')) {
+                Util.countDown.stop('play_history');
+            }
+        });
     },
     moveBack: function () {
         var index = this.get('index');

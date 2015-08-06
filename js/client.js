@@ -2,7 +2,7 @@ LogicGame.init(onInit);
 
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
-    var mode = 'real';
+    var mode = 'local';
     window.client = new Client({
         https: Config.client[mode].https,
         domain: Config.client[mode].domain,

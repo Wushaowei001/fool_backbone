@@ -119,7 +119,7 @@ var Human = Player.extend({
         }
         if (App.get('table').getCards() && !App.get('view_only') && !App.get('without_animation')) {
             if (!App.get('table').getCardForBeat() && !App.get('table').getCardsForThrow() && !this.getCardsForThrow()) {
-//                App.get('human').setCanStep(false);
+                App.get('human').setCanStep(false); // because user can step before add to pile
                 App.trigger('beaten');
                 App.safeTimeOutAction(800, function () {
                     App.get('table').addToPile();
