@@ -389,7 +389,7 @@ body {
 }
 
 .name_and_rating {
-    width: 130px;
+    width: 135px;
     font-size: 14px;
 }
 
@@ -439,4 +439,10 @@ body {
 .fraction .bottom {
     border-top: 1px solid #ffffff;
     display: block;
+}
+
+#result_of_history {
+    position: absolute;
+    right: 46px;
+    top: 409px;
 }

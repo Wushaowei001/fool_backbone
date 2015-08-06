@@ -2,7 +2,7 @@ LogicGame.init(onInit);
 
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
-    var mode = 'test';
+    var mode = 'real';
     window.client = new Client({
         https: Config.client[mode].https,
         domain: Config.client[mode].domain,
@@ -84,6 +84,7 @@ function onInit() {
 
     client.on('login', function (data) {
         console.log('main;', 'login', data.userId, data.userName);
+        new ClientManager();
         var you = client.getPlayer();
         App.applyClientSettings(client.settings);
         App.set('my_name', you.userName);
@@ -118,13 +119,14 @@ function onInit() {
         console.log(data);
         var players = data.players;
         var opponent_name = null;
-        var my_rating, opponent_rating, score, my_score, opponent_score;
+        var my_rating, opponent_rating, score, my_score, my_name, opponent_score;
         var spectate = true;
         for (var i in players) {
             if (players[i].isPlayer) {
                 spectate = false;
                 my_rating = players[i].getRank();
                 my_score = data.score[players[i].userId];
+                my_name = players[i].userName;
             }
             else {
                 opponent_name = players[i].userName;
@@ -135,6 +137,7 @@ function onInit() {
         var init_name_ratings_and_score = function () {
             App.set('score', my_score + '/' + opponent_score);
             App.set('opponent_name', opponent_name);
+            App.set('my_name', my_name);
             App.set('my_rating', my_rating);
             App.set('opponent_rating', opponent_rating);
         };
@@ -159,6 +162,7 @@ function onInit() {
                 App.get('human').setCanStep(data.first == client.getPlayer());
                 init_name_ratings_and_score();
             });
+            App.set('in_round', true);
         };
 
         if (data.loading) {
@@ -415,6 +419,7 @@ function onInit() {
 
     client.gameManager.on('round_end', function (data) {
         App.end();
+        App.set('in_round', false);
         $('#gameArea .real_game .cpButton').each(function () {
             if (this.id != 'tbLeave')
                 $(this).addClass('disable');
@@ -453,15 +458,27 @@ function onInit() {
     client.historyManager.on('game_load', function (game) {
         console.log('historyManager game_load');
         console.log(game);
-        App.trigger('history_load');
+
+        if (App.get('spectate') || App.get('in_round'))
+            return false;
+
+        var historyUserId = client.historyManager.userId;
+        var myId = client.getPlayer().userId;
+        var historyResult;
+        if (game.winner == null)
+            historyResult = Config.text.history.draw;
+        else {
+            if (+game.winner.userId == +historyUserId)
+                historyResult = Config.text.history.win;
+            else
+                historyResult = Config.text.history.loose;
+        }
+        App.trigger('history_load', historyResult);
         App.reset();
         App.setTrump(game.initData.inviteData.trumpVal);
         var players = game.players;
-        var not_my_story = true;
-        var historyUserId = client.historyManager.userId;
-        if (client.getPlayer().userId == historyUserId) {
-            not_my_story = false;
-        }
+        var not_my_story = myId != historyUserId;
+
         App.set({
             not_my_story: not_my_story,
             humanId: historyUserId,
@@ -477,8 +494,8 @@ function onInit() {
         }
         if (not_my_story) {
             App.set({
-                human: new Human(Config.opponent),
-                opponent: new Human(Config.human)
+                human: new Human(Config.human),
+                opponent: new Human(Config.opponent)
             });
         }
         else {
@@ -488,8 +505,11 @@ function onInit() {
             });
         }
         var score = JSON.parse(game.score);
+        var mode = game.mode;
         App.set({
-            score: score[+App.get('opponentId')] + '/' + score[+App.get('humanId')]
+            score: score[+App.get('opponentId')] + '/' + score[+App.get('humanId')],
+            my_rating: game.userData[App.get('humanId')][mode].rank,
+            opponent_rating: game.userData[App.get('opponentId')][mode].rank
         });
         App.renderFromHistory(game.history, true);
 

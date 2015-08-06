@@ -7,9 +7,17 @@ var AppView = Backbone.View.extend({
         'click #tbNewGame': 'playWithComp',// do not working
         'click #end_throw': 'endThrow',
         'click #history_move_back': 'onHistoryMoveBack',
+        'mousedown #history_move_back': 'onHistoryMoveBackInterval',
+        'mouseleave #history_move_back': 'onHistoryMoveBackStop',
+        'mouseup #history_move_back': 'onHistoryMoveBackStop',
         'click #history_play_stop': 'onHistoryPlayStop',
-        'click #history_move_forward': 'onHistoryMoveForward'
+        'click #history_move_forward': 'onHistoryMoveForward',
+        'mousedown #history_move_forward': 'onHistoryMoveForwardInterval',
+        'mouseleave #history_move_forward': 'onHistoryMoveForwardStop',
+        'mouseup #history_move_forward': 'onHistoryMoveForwardStop'
     },
+    moveBackInterval: null,
+    moveForwardInterval: null,
     initialize: function () {
         this.$myStepText = this.$('#my_step_text');
         this.$opponentStepText = this.$('#opponent_step_text');
@@ -43,6 +51,7 @@ var AppView = Backbone.View.extend({
         this.$historyMoveBack = this.$('#history_move_back');
         this.$historyMoveForward = this.$('#history_move_forward');
         this.$historyPlayStop = this.$('#history_play_stop');
+        this.$resultOfHistory = this.$('#result_of_history');
 
 
         this.listenTo(App, 'start', this.onStart);
@@ -96,6 +105,8 @@ var AppView = Backbone.View.extend({
             this.showOpponentRating(rating);
         });
         this.listenTo(App, 'can_step', function (can) {
+            if (can == null)
+                return;
             if (can)
                 this.beforeMyStep();
             else
@@ -136,7 +147,9 @@ var AppView = Backbone.View.extend({
         this.listenTo(App, 'opponent_timer_tick', function (time) {
             this.$opponent_timer.show().text('(' + time + ')');
         });
-        this.listenTo(App, 'history_load', this.onHistoryLoad);
+        this.listenTo(App, 'history_load', function (result) {
+            this.onHistoryLoad(result);
+        });
         this.listenTo(App, 'history:play', this.onHistoryPlay);
         this.listenTo(App, 'history:stop', this.onHistoryStop);
         this.listenTo(App, 'history:moveBack', this.onHistoryMoveBack);
@@ -277,28 +290,14 @@ var AppView = Backbone.View.extend({
     },
     onBeforeStart: function () {
         console.log('onBeforeStart');
-        this.$myStepText.hide();
-        this.$opponentStepText.hide();
+        this.reset();
 
-        this.$takeCards.hide();
-        this.$putToPile.hide();
-
-        this.$winMessage.hide();
-        this.$looseMessage.hide();
-        this.$drawMessage.hide();
-        $('#repControls').hide();
-        $('#trump #trump_icon').removeClass('s d h c');
-        this.$trump.hide();
         $('#gameArea .real_game .cpButton').each(function () {
             if (this.id != 'tbLeave')
                 $(this).removeClass('disable');
         });
         this.$deckRemain.show();
         $('#deck_remain .count').text('');
-        this.$switchGame.hide();
-        this.$endThrow.hide();
-        this.$canThrow.hide();
-        this.$historyLoadControls.hide();
 
         this.$nameAndRating.show();
         this.showMyName(App.get('my_name'));
@@ -323,7 +322,7 @@ var AppView = Backbone.View.extend({
     },
     onEndGame: function () {
         $('#my_step_text').hide();
-//        $('#opponent_step_text').hide();
+        $('#opponent_step_text').hide();
         $('#take_cards').hide();
         $('#put_tu_pile').hide();
         $('#timer').hide();
@@ -339,10 +338,11 @@ var AppView = Backbone.View.extend({
         this.canThrowMessageHide();
         this.beforeMyStep(Config.text.attack_phrase);
     },
-    onHistoryLoad: function () {
-        this.hideDefaultScreen();
+    onHistoryLoad: function (result) {
+        this.reset();
         this.$nameAndRating.show();
         this.showMyName();
+        this.showResultOfHistory(result);
         this.$historyLoadControls.show();
         this.$historyMoveBack.removeClass('disable');
         this.$historyMoveForward.addClass('disable');
@@ -368,14 +368,34 @@ var AppView = Backbone.View.extend({
             this.listenTo(App.get('history'), 'play_history_tick', function () {
                 this.$historyMoveBack.removeClass('disable');
             }.bind(this));
-            App.get('history').moveBack();
+            App.get('history').moveBack().stop();
         }
+    },
+    onHistoryMoveBackInterval: function () {
+        if (!this.$historyMoveBack.hasClass('disable')) {
+            this.moveBackInterval = setInterval(function () {
+                this.onHistoryMoveBack();
+            }.bind(this), Config.interval_actions.moveBackInterval.time);
+        }
+    },
+    onHistoryMoveBackStop: function () {
+        clearInterval(this.moveBackInterval);
     },
     onHistoryMoveForward: function () {
         if (!this.$historyMoveForward.hasClass('disable')) {
             this.$historyMoveBack.removeClass('disable');
-            App.get('history').moveForward();
+            App.get('history').moveForward().stop();
         }
+    },
+    onHistoryMoveForwardInterval: function () {
+        if (!this.$historyMoveForward.hasClass('disable')) {
+            this.moveForwardInterval = setInterval(function () {
+                this.onHistoryMoveForward();
+            }.bind(this), Config.interval_actions.moveForwardInterval.time);
+        }
+    },
+    onHistoryMoveForwardStop: function () {
+        clearInterval(this.moveForwardInterval);
     },
     onHistoryPlayStop: function () {
         if (this.$historyPlayStop.hasClass('playing')) {
@@ -475,6 +495,28 @@ var AppView = Backbone.View.extend({
     putToPile: function () {
         App.putToPile();
     },
+    reset: function () {
+        this.hideActionButtons();
+        this.hideDefaultScreen();
+        this.$myStepText.hide();
+        this.$opponentStepText.hide();
+        this.$takeCards.hide();
+        this.$putToPile.hide();
+        this.$winMessage.hide();
+        this.$looseMessage.hide();
+        this.$drawMessage.hide();
+        $('#repControls').hide();
+        $('#trump #trump_icon').removeClass('s d h c');
+        this.$trump.hide();
+
+        this.$deckRemain.show();
+        $('#deck_remain .count').text('');
+        this.$switchGame.hide();
+        this.$endThrow.hide();
+        this.$canThrow.hide();
+        this.$historyLoadControls.hide();
+        this.$resultOfHistory.hide();
+    },
     showDefaultScreen: function () {
         this.myStepTextHide();
         this.$opponentStepText.hide();
@@ -514,11 +556,12 @@ var AppView = Backbone.View.extend({
         $('.controlPanelLayout .spectate_game').show();
     },
     onSpectate: function (mode) {
+        this.reset();
         this.changeModeCardsCount(mode);
         this.showButtonsForSpectate();
-        this.hideDefaultScreen();
-        this.$historyLoadControls.hide();
-        this.$opponentStepText.hide();
+//        this.hideDefaultScreen();
+//        this.$historyLoadControls.hide();
+//        this.$opponentStepText.hide();
         this.$nameAndRating.show();
         this.showMyName();
     },
@@ -558,6 +601,12 @@ var AppView = Backbone.View.extend({
         this.$opponentRating.show();
         if (rating) {
             this.$opponentRating.text(rating);
+        }
+    },
+    showResultOfHistory: function (result) {
+        this.$resultOfHistory.show();
+        if (result) {
+            this.$resultOfHistory.text(result);
         }
     },
     takeCards: function () {

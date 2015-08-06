@@ -36,6 +36,7 @@
     <script src="js/client.js"></script>
     <script src="js/AppView.js"></script>
     <script src="js/WebManager.js"></script>
+    <script src="js/ClientManager.js"></script>
     <script src="js/Util.js"></script>
 </head>
 <body>
@@ -115,7 +116,6 @@
                     <td id="tbLeaveSpectate" class="cpButton cpNormal">Покинуть режим просмотра</td>
                     <td id="default" class="cpButton cpNormal nonSelectable activeSelector modes">Стандарт</td>
                     <td id="deck_52" class="cpButton cpNormal nonSelectable modes">52 карты</td>
-                    <td id="tbNewGame" class="cpButton cpNormal nonSelectable">Новая игра</td>
                 </tr>
                 </tbody>
             </table>
@@ -181,6 +181,7 @@
                     <small id="my_rating"></small>
                 </sup>
             </div>
+            <div id="result_of_history" style="display: none"></div>
             <div id="beaten" style="display: none; width: 100px;" class="center_in_field">Бито!</div>
             <div id="threw" style="display: none; width: 100px;" class="center_in_field">Подкинул</div>
             <div id="opponent_take_cards" style="display: none; width: 211px;" class="center_in_field">Соперник взял

@@ -1,6 +1,6 @@
 var Config = {
     client: {
-        local:{
+        local: {
             https: false,
             domain: 'localhost',
             port: 8028
@@ -150,11 +150,22 @@ var Config = {
     text: {
         attack_phrase: 'Ваш ход',
         protect_phrase: 'Ваш ход',
-        computer_name: 'Компьютер'
+        computer_name: 'Компьютер',
+        history: {
+            win: 'Победа',
+            loose: 'Поражение',
+            draw: 'Ничья'
+        }
     },
     interval_actions: {
         throw: {
             time: 5 // in sec
+        },
+        moveBackInterval: {
+            time: 100 // milliseconds
+        },
+        moveForwardInterval: {
+            time: 100 // milliseconds
         }
     },
     decks: {

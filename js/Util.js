@@ -29,6 +29,8 @@ var Util = {
             return _.indexOf(this.countDownsInProgress, name) != -1;
         },
         stop: function (name) {
+            if (!this.actionInProgress(name))
+                return;
             this.countDownsToStop.push(name);
             this.countDownsInProgress = _.without(this.countDownsInProgress, name);
             this.finals[name]();

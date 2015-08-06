@@ -30,7 +30,8 @@ var AppModel = Backbone.Model.extend({
         deck_is_empty: null,
         deck_remain: null,
         spectate: null,
-        deferred_actions: []
+        deferred_actions: [],
+        in_round: false
     },
 
     initialize: function () {
@@ -54,6 +55,8 @@ var AppModel = Backbone.Model.extend({
             this.trigger('opponent_rating_changed', self.changed.opponent_rating);
         });
         this.on('change:can_step', function (self) {
+            if (this.get('can_step') == null)
+                return;
             this.trigger('can_step', self.changed.can_step);
         });
 
@@ -96,6 +99,11 @@ var AppModel = Backbone.Model.extend({
                     }
                     console.log(state);
                 }.bind(this));
+            }
+        });
+        this.on('change:game_with_comp', function () {
+            if (this.get('game_with_comp') != null) {
+                this.trigger('game_with_comp_started');
             }
         });
     },
@@ -245,7 +253,7 @@ var AppModel = Backbone.Model.extend({
         this.get('stage').draw();
     },
     deckIsEmpty: function () {
-        return this.get('deck_remain') == 0;
+        return this.get('deck_remain') == 0 || this.get('deck_is_empty');
 //        return this.get('game_with_comp') ? this.get('game_with_comp').deckIsEmpty() : this.get('deck_is_empty');
     },
     destroyKonvaById: function (id) {
@@ -600,7 +608,9 @@ var AppModel = Backbone.Model.extend({
 //                this.get('MyCards').add(card);
 //            }
             this.set('deck_is_empty', true);
+
             var trump = this.getTrump();
+            this.get('Trump').destroy();
             var trump_mapping = this.getProperty('trump_mapping');
             if (trump_mapping && trump_mapping[trump]) {
                 trump = trump_mapping[trump];
@@ -726,13 +736,15 @@ var AppModel = Backbone.Model.extend({
         );
     },
     renderFromHistory: function (history, without_animation) {
+        this.initGameStartTime(); // if user play with computer
         this.initHistory(history);
         var lastState = this.get('history').getLastItem();
         this.renderFromState(lastState, without_animation);
     },
     renderFromState: function (state, without_animation) {
-        if (state.deck_remain) {
+        if (state.deck_remain != undefined) {
             App.set('deck_remain', state.deck_remain);
+            App.set('deck_is_empty', state.deck_remain == 0);
         }
         if (state.table_state) {
             state.table_state.without_animation = without_animation;
@@ -744,8 +756,8 @@ var AppModel = Backbone.Model.extend({
         if (state.opponent_cards) {
             App.get('opponent').setCards(state.opponent_cards);
         }
-        App.renderTrump();
         App.renderDeck(true);
+        App.renderTrump();
         App.get('human').renderCards(without_animation);
         App.get('opponent').renderCards(without_animation);
         App.get('table').render();
