@@ -97,7 +97,7 @@ var Config = {
         for_pile: {
             tooltip: {
                 x: 650,
-                y: 190,
+                y: 340,
                 opacity: 0.75
             },
             tag: {
@@ -162,10 +162,12 @@ var Config = {
             time: 5 // in sec
         },
         moveBackInterval: {
-            time: 100 // milliseconds
+            interval: 100, // milliseconds
+            timeout: 1000
         },
         moveForwardInterval: {
-            time: 100 // milliseconds
+            interval: 100, // milliseconds
+            timeout: 1000
         }
     },
     decks: {

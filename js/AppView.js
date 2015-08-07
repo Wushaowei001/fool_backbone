@@ -1,5 +1,5 @@
 var AppView = Backbone.View.extend({
-    el: '#field',
+    el: '#gameArea',
     events: {
         'click #switch_game a': 'playWithComp',
         'click #take_cards': 'takeCards',
@@ -7,18 +7,31 @@ var AppView = Backbone.View.extend({
         'click #tbNewGame': 'playWithComp',// do not working
         'click #end_throw': 'endThrow',
         'click #history_move_back': 'onHistoryMoveBack',
-        'mousedown #history_move_back': 'onHistoryMoveBackInterval',
-        'mouseleave #history_move_back': 'onHistoryMoveBackStop',
-        'mouseup #history_move_back': 'onHistoryMoveBackStop',
-        'click #history_play_stop': 'onHistoryPlayStop',
-        'click #history_move_forward': 'onHistoryMoveForward',
-        'mousedown #history_move_forward': 'onHistoryMoveForwardInterval',
-        'mouseleave #history_move_forward': 'onHistoryMoveForwardStop',
-        'mouseup #history_move_forward': 'onHistoryMoveForwardStop'
+        'click #tbPrev': 'onPrev',
+        'mousedown #tbPrev': 'onPrevDown',
+        'mouseleave #tbPrev': 'stopMoveBack',
+        'mouseup #tbPrev': 'stopMoveBack',
+
+        'click #tbNext': 'onNext',
+        'mousedown #tbNext': 'onNextDown',
+        'mouseleave #tbNext': 'stopMoveForward',
+        'mouseup #tbNext': 'stopMoveForward'
+//        'mousedown #history_move_back': 'onHistoryMoveBackInterval',
+//        'mouseleave #history_move_back': 'onHistoryMoveBackStop',
+//        'mouseup #history_move_back': 'onHistoryMoveBackStop',
+//        'click #history_play_stop': 'onHistoryPlayStop',
+//        'click #history_move_forward': 'onHistoryMoveForward',
+//        'mousedown #history_move_forward': 'onHistoryMoveForwardInterval',
+//        'mouseleave #history_move_forward': 'onHistoryMoveForwardStop',
+//        'mouseup #history_move_forward': 'onHistoryMoveForwardStop'
     },
+    moveBackTimeOutId: null,
+    moveForwardTimeOutId: null,
     moveBackInterval: null,
     moveForwardInterval: null,
     initialize: function () {
+        this.$prev = this.$('#tbPrev');
+        this.$next = this.$('#tbNext');
         this.$myStepText = this.$('#my_step_text');
         this.$opponentStepText = this.$('#opponent_step_text');
         this.$winMessage = this.$('#win_message');
@@ -147,13 +160,22 @@ var AppView = Backbone.View.extend({
         this.listenTo(App, 'opponent_timer_tick', function (time) {
             this.$opponent_timer.show().text('(' + time + ')');
         });
-        this.listenTo(App, 'history_load', function (result) {
-            this.onHistoryLoad(result);
+        this.listenTo(App, 'history_load_start', this.onHistoryLoadStart);
+        this.listenTo(App, 'history_load_end', function (result) {
+            this.onHistoryLoadEnd(result);
         });
-        this.listenTo(App, 'history:play', this.onHistoryPlay);
-        this.listenTo(App, 'history:stop', this.onHistoryStop);
-        this.listenTo(App, 'history:moveBack', this.onHistoryMoveBack);
-        this.listenTo(App, 'history:moveForward', this.onHistoryMoveForward);
+        this.listenTo(App, 'local_history_disableNext', function () {
+            this.$next.addClass('disable');
+        });
+        this.listenTo(App, 'local_history_disablePrev', function () {
+            this.$prev.addClass('disable');
+        });
+        this.listenTo(App, 'local_history_enableNext', function () {
+            this.$next.removeClass('disable');
+        });
+        this.listenTo(App, 'local_history_enablePrev', function () {
+            this.$prev.removeClass('disable');
+        });
 
         App.setGameArea(
             {
@@ -239,31 +261,6 @@ var AppView = Backbone.View.extend({
         this.$score.find('span').text('');
         this.$score.hide();
     },
-    initializeHistoryStepButtons: function () {
-        App.get('game_with_comp').history.disableNext = function () {
-            console.log('disableNext ');
-
-            $('#tbNext').css('opacity', '0.6').
-                addClass('disable');
-        };
-
-        App.get('game_with_comp').history.disablePrev = function () {
-            console.log('disablePrev ');
-
-            $('#tbPrev').css('opacity', '0.6').
-                addClass('disable');
-        };
-
-        App.get('game_with_comp').history.enableNext = function () {
-            $('#tbNext').css('opacity', '1').
-                removeClass('disable');
-        };
-
-        App.get('game_with_comp').history.enablePrev = function () {
-            $('#tbPrev').css('opacity', '1').
-                removeClass('disable');
-        };
-    },
     onAfterStart: function () {
         this.listenTo(App.get('human'), 'before_my_step', this.beforeMyStep);
         this.listenTo(App.get('human'), 'before_opponent_step', this.beforeOpponentStep);
@@ -321,14 +318,14 @@ var AppView = Backbone.View.extend({
         this.$drawMessage.show();
     },
     onEndGame: function () {
-        $('#my_step_text').hide();
-        $('#opponent_step_text').hide();
-        $('#take_cards').hide();
-        $('#put_tu_pile').hide();
-        $('#timer').hide();
-        $('#deck_remain').hide();
-        $('#end_throw').hide();
-        $('#can_throw').hide();
+        console.log('onEndGame');
+        this.$myStepText.hide();
+        this.$opponentStepText.hide();
+        this.$takeCards.hide();
+        this.$putToPile.hide();
+        this.$endThrow.hide();
+        this.$canThrow.hide();
+        this.$deckRemain.hide();
         this.$my_timer.hide().text('');
         this.$opponent_timer.hide().text('');
         this.hideActionButtons();
@@ -338,36 +335,85 @@ var AppView = Backbone.View.extend({
         this.canThrowMessageHide();
         this.beforeMyStep(Config.text.attack_phrase);
     },
-    onHistoryLoad: function (result) {
+    onPrev: function () {
+        if (this.$prev.hasClass('disable'))
+            return false;
+        if (App.get('game_with_comp') && App.get('game_with_comp').history) {
+            App.get('game_with_comp').history.moveBack();
+        }
+        else {
+            this.$next.removeClass('disable');
+            App.get('history').moveBack();
+        }
+    },
+    onPrevDown: function () {
+        this.moveBackTimeOutId = setTimeout(function () {
+            this.moveBackInterval = setInterval(function () {
+                App.get('history').moveBack();
+            }.bind(this), Config.interval_actions.moveBackInterval.interval);
+        }.bind(this), Config.interval_actions.moveBackInterval.timeout);
+    },
+    onNext: function () {
+        if (this.$next.hasClass('disable'))
+            return;
+        if (App.get('game_with_comp') && App.get('game_with_comp').history) {
+            App.get('game_with_comp').history.moveForward();
+        }
+        else {
+            this.$prev.removeClass('disable');
+            App.get('history').moveForward();
+        }
+    },
+    onNextDown: function () {
+        this.moveForwardTimeOutId = setTimeout(function () {
+            this.moveForwardInterval = setInterval(function () {
+                App.get('history').moveForward();
+            }.bind(this), Config.interval_actions.moveForwardInterval.interval);
+        }.bind(this), Config.interval_actions.moveForwardInterval.timeout);
+    },
+    onHistoryLoadStart: function () {
         this.reset();
+    },
+    onHistoryLoadEnd: function (result) {
         this.$nameAndRating.show();
         this.showMyName();
         this.showResultOfHistory(result);
-        this.$historyLoadControls.show();
-        this.$historyMoveBack.removeClass('disable');
-        this.$historyMoveForward.addClass('disable');
-        this.$historyPlayStop.addClass('disable');
+//        this.$historyLoadControls.show();
+        this.$prev.removeClass('disable');
+        this.$next.addClass('disable');
+//        this.$historyPlayStop.addClass('disable');
+        this.stopListening(false, 'cursor_at_the_beginning cursor_at_the_end');
+        this.listenTo(App.get('history'), 'cursor_at_the_beginning', function () {
+            this.$prev.addClass('disable');
+            this.$next.removeClass('disable');
+//            this.$historyPlayStop.removeClass('disable');
+        }.bind(this));
+        this.listenTo(App.get('history'), 'cursor_at_the_end', function () {
+            this.$next.addClass('disable');
+//            this.$historyPlayStop.addClass('disable');
+            this.$prev.removeClass('disable');
+        }.bind(this));
     },
     onHistoryMoveBack: function () {
         if (!this.$historyMoveBack.hasClass('disable')) {
             this.$historyMoveForward.removeClass('disable');
             this.$historyPlayStop.removeClass('disable');
-            this.listenTo(App.get('history'), 'cursor_at_the_beginning', function () {
-                this.$historyMoveBack.addClass('disable');
-                this.$historyMoveForward.removeClass('disable');
-                this.$historyPlayStop.removeClass('disable');
-            }.bind(this));
-            this.listenTo(App.get('history'), 'cursor_at_the_end', function () {
-                this.$historyMoveForward.addClass('disable');
-                this.$historyPlayStop.addClass('disable');
-                this.$historyMoveBack.removeClass('disable');
-            }.bind(this));
-            this.listenTo(App.get('history'), 'play_history_stop', function () {
-                this.$historyPlayStop.removeClass('playing');
-            }.bind(this));
-            this.listenTo(App.get('history'), 'play_history_tick', function () {
-                this.$historyMoveBack.removeClass('disable');
-            }.bind(this));
+//            this.listenTo(App.get('history'), 'cursor_at_the_beginning', function () {
+//                this.$historyMoveBack.addClass('disable');
+//                this.$historyMoveForward.removeClass('disable');
+//                this.$historyPlayStop.removeClass('disable');
+//            }.bind(this));
+//            this.listenTo(App.get('history'), 'cursor_at_the_end', function () {
+//                this.$historyMoveForward.addClass('disable');
+//                this.$historyPlayStop.addClass('disable');
+//                this.$historyMoveBack.removeClass('disable');
+//            }.bind(this));
+//            this.listenTo(App.get('history'), 'play_history_stop', function () {
+//                this.$historyPlayStop.removeClass('playing');
+//            }.bind(this));
+//            this.listenTo(App.get('history'), 'play_history_tick', function () {
+//                this.$historyMoveBack.removeClass('disable');
+//            }.bind(this));
             App.get('history').moveBack().stop();
         }
     },
@@ -419,7 +465,7 @@ var AppView = Backbone.View.extend({
         this.$opponentName.text(Config.text.computer_name);
         this.$opponentRating.text('');
         this.$switchGame.hide();
-        this.initializeHistoryStepButtons();
+//        this.initializeHistoryStepButtons();
     },
     onPlayWithOpponent: function () {
         this.showScore();
@@ -496,6 +542,7 @@ var AppView = Backbone.View.extend({
         App.putToPile();
     },
     reset: function () {
+        console.log('reset!!!');
         this.hideActionButtons();
         this.hideDefaultScreen();
         this.$myStepText.hide();
@@ -547,13 +594,21 @@ var AppView = Backbone.View.extend({
         $('.controlPanel .game_with_comp td').each(function () {
             $(this).removeClass('disable');
         });
-        $('#tbPrev').addClass('disable').show();
-        $('#tbNext').addClass('disable').show();
+        this.$prev.addClass('disable');
+        this.$next.addClass('disable');
     },
     showButtonsForSpectate: function () {
         $('.controlPanelLayout .game_with_comp').hide();
         $('.controlPanelLayout .real_game').hide();
         $('.controlPanelLayout .spectate_game').show();
+    },
+    stopMoveBack: function () {
+        clearInterval(this.moveBackInterval);
+        clearTimeout(this.moveBackTimeOutId);
+    },
+    stopMoveForward: function () {
+        clearInterval(this.moveForwardInterval);
+        clearTimeout(this.moveForwardTimeOutId);
     },
     onSpectate: function (mode) {
         this.reset();
@@ -570,13 +625,13 @@ var AppView = Backbone.View.extend({
         if (score) {
             var $span = this.$score.find('span');
             $span.text(score);
-            var split = $span.html().split("/");
-            if (split.length == 2) {
-                $span.html(
-                    '<span class="top">' + split[0] + '</span>' +
-                        '<span class="bottom">' + split[1] + '</span>'
-                );
-            }
+//            var split = $span.html().split("/");
+//            if (split.length == 2) {
+//                $span.html(
+//                    '<span class="top">' + split[0] + '</span>' +
+//                        '<span class="bottom">' + split[1] + '</span>'
+//                );
+//            }
         }
     },
     showMyName: function (name) {
@@ -626,14 +681,11 @@ var AppView = Backbone.View.extend({
         $('#blocker').remove();
     },
     updateDeckRemains: function (count) {
-//        if (!count) {
-//            if (App.get('game_with_comp'))
-//                var count = App.get('game_with_comp').remainsInDeck();
-//        }
+        console.log('updateDeckRemains: ' + count);
         if (count === 0)
-            $('#deck_remain').hide();
+            this.$deckRemain.hide();
         else
-            $('#deck_remain').show();
+            this.$deckRemain.show();
         $('#deck_remain .count').text(count);
     }
 });

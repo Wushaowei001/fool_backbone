@@ -396,13 +396,13 @@ body {
 .name_and_rating.opponent {
     position: absolute;
     right: 0;
-    top: 283px;
+    top: 236px;
 }
 
 .name_and_rating.my {
     position: absolute;
     right: 0;
-    top: 383px;
+    top: 420px;
     /*width: 202px;*/
 }
 
@@ -415,11 +415,15 @@ body {
 
 #score {
     position: absolute;
-    top: 314px;
-    right: 70px;
-    width: 80px;
+    top: 450px;
+    right: 25px;
+    width: 96px;
     display: block;
+}
+#score span{
     font-size: 17pt;
+    position: relative;
+    top: -6px;
 }
 
 #opponent_step_text {
@@ -444,5 +448,5 @@ body {
 #result_of_history {
     position: absolute;
     right: 46px;
-    top: 409px;
+    top: 480px;
 }

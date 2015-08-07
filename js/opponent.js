@@ -15,6 +15,12 @@ var Opponent = Player.extend({
         this.on('change', function (p) {
             console.log(p.changed);
         });
+        this.on('change:lastTakenCards', function () {
+            if (this.get('lastTakenCards'))
+                this.renderLastTakenCardsIfVisible();
+            else
+                this._super('_destroyLastTakenCards');
+        });
     },
     getCards: function () {
         return this.get('_cards');
@@ -59,8 +65,16 @@ var Opponent = Player.extend({
 
     takeCardsFromTable: function (cards_from_table, through_throw) {
         if (!through_throw) {
-            this._super('_destroyLastTakenCards');
-            this.set('lastTakenCards', App.get('table').getState());
+            this.set('lastTakenCards', App.get('table').getState(true));
+        }
+        else {
+            var lastTakenCards = Util.cloner.clone(this.get('lastTakenCards'));
+            for (var i in cards_from_table) {
+                lastTakenCards.cards.push({
+                    id: cards_from_table[i]
+                })
+            }
+            this.set('lastTakenCards', lastTakenCards);
         }
         var cards = [];
         var id;
@@ -68,7 +82,6 @@ var Opponent = Player.extend({
             id = this.calculateId();
             this.setCards(this.getCards().concat(id));
         }
-
         App.get('table').clearTable();
         if (App.get('without_animation'))
             return false;

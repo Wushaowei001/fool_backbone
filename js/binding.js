@@ -85,19 +85,24 @@ $(function () {
         App.start(true);
     });
 
-    $('#gameArea').on('click', '#tbPrev', function () {
+//    $('#gameArea').on('click', '#tbPrev', function () {
+//
+//        if ($('#tbPrev').hasClass('disable'))
+//            return false;
+//        if (App.get('game_with_comp') && App.get('game_with_comp').history) {
+//            App.get('game_with_comp').history.moveBack();
+//        }
+//        else {
+//
+//        }
+//
+//    });
 
-        if ($('#tbPrev').hasClass('disable'))
-            return false;
-        App.get('game_with_comp').history.moveBack();
-
-    });
-
-    $('#gameArea').on('click', '#tbNext', function () {
-        if ($('#tbNext').hasClass('disable'))
-            return false;
-        App.get('game_with_comp').history.moveForward();
-    });
+//    $('#gameArea').on('click', '#tbNext', function () {
+//        if ($('#tbNext').hasClass('disable'))
+//            return false;
+//        App.get('game_with_comp').history.moveForward();
+//    });
 
     $('.game_with_comp #default').on('click', function () {
         if (App.canStart()) {

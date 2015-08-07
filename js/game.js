@@ -113,12 +113,16 @@ var GameWithComputer = function () {
 
         },
         disableNext: function () {
+            App.trigger('local_history_disableNext');
         },
         disablePrev: function () {
+            App.trigger('local_history_disablePrev');
         },
         enableNext: function () {
+            App.trigger('local_history_enableNext');
         },
         enablePrev: function () {
+            App.trigger('local_history_enablePrev');
         }
     };
 

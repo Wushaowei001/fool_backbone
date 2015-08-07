@@ -2,7 +2,7 @@ LogicGame.init(onInit);
 
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
-    var mode = 'local';
+    var mode = 'real';
     window.client = new Client({
         https: Config.client[mode].https,
         domain: Config.client[mode].domain,
@@ -135,7 +135,7 @@ function onInit() {
             }
         }
         var init_name_ratings_and_score = function () {
-            App.set('score', my_score + '/' + opponent_score);
+            App.set('score', my_score + ':' + opponent_score);
             App.set('opponent_name', opponent_name);
             App.set('my_name', my_name);
             App.set('my_rating', my_rating);
@@ -473,7 +473,7 @@ function onInit() {
             else
                 historyResult = Config.text.history.loose;
         }
-        App.trigger('history_load', historyResult);
+        App.trigger('history_load_start');
         App.reset();
         App.setTrump(game.initData.inviteData.trumpVal);
         var players = game.players;
@@ -507,11 +507,12 @@ function onInit() {
         var score = JSON.parse(game.score);
         var mode = game.mode;
         App.set({
-            score: score[+App.get('opponentId')] + '/' + score[+App.get('humanId')],
+            score: score[+App.get('opponentId')] + ':' + score[+App.get('humanId')],
             my_rating: game.userData[App.get('humanId')][mode].rank,
             opponent_rating: game.userData[App.get('opponentId')][mode].rank
         });
         App.renderFromHistory(game.history, true);
+        App.trigger('history_load_end', historyResult);
 
         return false;
         if (!App.get('game_with_comp'))

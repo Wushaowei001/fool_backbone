@@ -281,7 +281,7 @@ var AppModel = Backbone.Model.extend({
     getPileCoords: function () {
         return {
             x: this.get('game_area').width - this.get('card_width') - 40,
-            y: this.get('game_area').height / 2 - this.get('card_height') * 2
+            y: this.get('game_area').height / 2 - this.get('card_height') / 2
         }
     },
     getImgUrlByCardId: function (card_id) {
@@ -816,7 +816,8 @@ var AppModel = Backbone.Model.extend({
                 spectate: null,
                 deferred_actions: [],
                 history: null,
-                not_my_story: false
+                not_my_story: false,
+                game_with_comp: null
             }
         );
         this.get('stage').add(this.get('MyCards'));

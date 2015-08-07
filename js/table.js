@@ -36,8 +36,10 @@ var Table = function () {
         that.without_animation = state.without_animation != undefined ? state.without_animation : false
     };
 
-    this.getState = function () {
+    this.getState = function (without_cards_for_throw) {
         var state = Util.cloner.clone(that.all_cards);
+        if (without_cards_for_throw)
+            state.cards_for_throw = null;
         state.human_attack = that.human_attack;
         state.without_animation = that.without_animation;
         return state;

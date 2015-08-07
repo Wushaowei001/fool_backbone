@@ -36,6 +36,7 @@ var Player = Backbone.Model.extend({
                 }
             }
         }
+        this.set('lastTakenCards', null);
         this._destroyLastTakenCards();
     },
     _sortBySuit: function (cards) {
@@ -356,15 +357,23 @@ var Player = Backbone.Model.extend({
     },
     _activateLastTakenCards: function (cards) {
         if (this.get('TakenCardsLayer')) {
-            if (this.get('TakenCardsLayer').isVisible())
-                this.get('TakenCardsLayer').hide();
-            else
-                this.get('TakenCardsLayer').show();
-            App.get('stage').draw();
-            return false;
+            this.get('TakenCardsLayer').destroy();
+            this.set('TakenCardsLayer', null);
+            return;
         }
-
         this._renderLastTakenCards();
+
+
+//        if (this.get('TakenCardsLayer')) {
+//            if (this.get('TakenCardsLayer').isVisible())
+//                this.get('TakenCardsLayer').hide();
+//            else
+//                this.get('TakenCardsLayer').show();
+//            App.get('stage').draw();
+//            return false;
+//        }
+
+
     },
     _renderLastTakenCards: function () {
         var cards = this.get('lastTakenCards');
@@ -381,12 +390,12 @@ var Player = Backbone.Model.extend({
         App.trigger('renderLastTakenCards');
     },
     _renderLastTakenCardsIfVisible: function () {
-        if (App.get('TakenCardsLayer') && App.get('TakenCardsLayer').isVisible()) {
+        if (this.get('TakenCardsLayer')) {
             this._renderLastTakenCards();
         }
     },
     _destroyLastTakenCards: function () {
-        this.set('lastTakenCards', null);
+//        this.set('lastTakenCards', null);
         if (this.get('TakenCardsLayer')) {
             this.get('TakenCardsLayer').destroy();
             this.set('TakenCardsLayer', null);
