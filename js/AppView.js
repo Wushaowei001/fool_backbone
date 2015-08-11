@@ -112,7 +112,7 @@ var AppView = Backbone.View.extend({
             this.showOpponentName(name);
         });
         this.listenTo(App, 'my_rating_changed', function (rating) {
-            this.showMyRating(rating);
+            this.changeMyRating(rating);
         });
         this.listenTo(App, 'opponent_rating_changed', function (rating) {
             this.showOpponentRating(rating);
@@ -648,6 +648,11 @@ var AppView = Backbone.View.extend({
     },
     showMyRating: function (rating) {
         this.$myRating.show();
+        if (rating) {
+            this.$myRating.text(rating);
+        }
+    },
+    changeMyRating: function(rating){
         if (rating) {
             this.$myRating.text(rating);
         }

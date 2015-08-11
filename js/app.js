@@ -40,6 +40,10 @@ var AppModel = Backbone.Model.extend({
         this.set('imgs_url', this.get('base_url') + '/img/');
         this.set('imgs_cards_url', this.get('imgs_url') + '/cards/');
         this.set('imgs_simple_cards_url', this.get('imgs_url') + '/simple_cards/');
+        this.set('imgs_sprite', this.get('imgs_url') + '/sprites/cards_sprite.png');
+        this.set('simple_imgs_sprite', this.get('imgs_url') + '/sprites/simple_cards_sprite.png');
+        this.set('imgs_sprite_color', this.get('imgs_url') + '/sprites/simple_cards_sprite_color.png');
+
         this.set('imgs_backs_url', this.get('imgs_url') + '/deck/');
 
         this.on('change:score', function (self) {
@@ -115,22 +119,27 @@ var AppModel = Backbone.Model.extend({
 
     addCardSound: function () {
     },
-    addCardToLayer: function (id, inverted, onload) {
+    addCardToLayer: function (attributeObject, inverted, onload) {
+        var id = attributeObject.id;
         var card = new Konva.Image({
             width: Config.cards.width,
             height: Config.cards.height,
             id: id,
             rotation: 0
         });
-        this.get('MyCards').add(card);
+
         if (inverted) {
-            card.setImage(this.get('backImage'));
-            card.name('inverted');
+            card.setAttrs({
+                image: this.get('backImage'),
+                name: 'inverted',
+                crop: {x: 0, y: 0, width: 0, height: 0} // important
+            });
         }
         else {
-            card.setImage(this.getImageById(id));
-            this.get('MyCards').draw();
+            card = this.getImageById(id).clone(attributeObject);
         }
+        this.get('MyCards').add(card);
+        this.get('MyCards').draw();
         return card;
     },
     addToPileSound: function () {
@@ -312,6 +321,23 @@ var AppModel = Backbone.Model.extend({
                 url = this.get('imgs_cards_url');
         }
         return url + card_id + '.png';
+    },
+    getSpriteUrlByType: function (type) {
+        var url;
+        switch (type) {
+            case 'base':
+                url = this.get('imgs_sprite');
+                break;
+            case 'simple':
+                url = this.get('simple_imgs_sprite');
+                break;
+            case 'color':
+                url = this.get('imgs_sprite_color');
+                break;
+            default:
+                url = this.get('imgs_sprite');
+        }
+        return url;
     },
     getImageById: function (id) {
         var suit = id[0];
@@ -504,7 +530,7 @@ var AppModel = Backbone.Model.extend({
         }
     },
     loadImages: function (onstep, onload) {
-        var begin = 2, end = 14;
+        var begin = Config.cards.min_value, end = Config.cards.max_value;
         var count = 0;
         for (var i = begin; i <= end; i++) {
             for (var j in this.get('sequence')) {
@@ -524,6 +550,48 @@ var AppModel = Backbone.Model.extend({
                     }.bind(this));
             }
         }
+    },
+    loadImages2: function (type) {
+        console.log(type);
+        App.trigger('load_images_start');
+        var min = Config.cards.min_value;
+        var max = Config.cards.max_value;
+        var BigImage = new Image();
+        var x = 0, y = 0;
+        var width = Config.cards.width;
+        var stroke_width = Config.cards.stroke_width;
+        var height = Config.cards.height;
+        BigImage.src = this.getSpriteUrlByType(type);
+        BigImage.onload = function () {
+            for (var i = max; i >= min; i--) {
+                y = 0;
+                for (var j in this.get('sequence')) {
+                    var id = this.get('sequence')[j] + i;
+                    this.get('images')[id] = new Konva.Image({
+                        image: BigImage,
+                        width: width,
+                        height: height,
+                        cropHeight: height,
+                        cropWidth: width,
+                        cropX: x,
+                        cropY: y,
+                        stroke: 'black',
+                        strokeWidth: stroke_width
+                    });
+                    y += height;
+                }
+                x += width;
+            }
+            App.trigger('load_images_end');
+            if (App.get('human')) {
+                App.get('human').updateCardImages(function () {
+                    App.renderTrump();
+                    if (App.get('table').getCards())
+                        App.get('table').render();
+                });
+            }
+            App.get('stage').draw();
+        }.bind(this);
     },
     loadImageByID: function (id, onload) {
         var CurrentCard = new Image();
@@ -606,7 +674,7 @@ var AppModel = Backbone.Model.extend({
     },
     renderTrump: function () {
         var trump_val = this.getTrumpValue();
-        var card = this.get('stage').findOne('#' + trump_val);
+        var already_on_table = this.get('stage').findOne('#' + trump_val) != undefined;
         if (this.deckIsEmpty()) {
 //            if (card) {
 //                card.remove();
@@ -627,16 +695,23 @@ var AppModel = Backbone.Model.extend({
             this.set('deck_is_empty', false);
 //            this.trigger('deck_is_not_empty');
         }
+        var card = this.getImageById(trump_val).clone({
+            x: Config.trump.x,
+            y: App.getDeckCoords().y + 15,
+            id: trump_val,
+            rotation: 90
+        });
+        console.log(card);
+        if (!already_on_table) {
+//            card = new Konva.Image({
+//                x: 136,
+//                y: this.getDeckCoords().y + 15,
+//                width: this.get('card_width'),
+//                height: this.get('card_height'),
+//                id: trump_val,
+//                rotation: 90
+//            });
 
-        if (!card) {
-            card = new Konva.Image({
-                x: 136,
-                y: this.getDeckCoords().y + 15,
-                width: this.get('card_width'),
-                height: this.get('card_height'),
-                id: trump_val,
-                rotation: 90
-            });
             this.get('MyCards').add(card);
             this.get('Trump').add(card);
             this.get('stage').add(this.get('Trump'));
@@ -644,13 +719,16 @@ var AppModel = Backbone.Model.extend({
             this.get('stage').draw();
         }
         else {
-            card.setX(140);
-            card.setRotation(90);
-            card.setY(this.getDeckCoords().y + 15);
+//            card = this.getImageById(trump_val).clone({
+//
+//            });
+//            card.setX(136);
+//            card.setRotation(90);
+//            card.setY(this.getDeckCoords().y + 15);
             this.get('Trump').add(card);
             this.get('stage').draw();
         }
-        card.setImage(this.getImageById(trump_val));
+//        card.setImage(this.getImageById(trump_val));
         this.get('stage').draw();
     },
     renderTooltip: function (settings) {
@@ -711,7 +789,7 @@ var AppModel = Backbone.Model.extend({
                 rect.fill(config.color);
             }
         }
-        this.get('stage').draw();
+        this.get('TimerLayer').batchDraw();
     },
     renderFromInternalHistory: function (history) {
         this.clearCardsLayer();
@@ -940,10 +1018,15 @@ var AppModel = Backbone.Model.extend({
 //            }.bind(this));
     },
     updateCardImage: function (card, id) {
-        console.log(card);
         if (card) {
-            card.setImage(this.getImageById(id));
+            var clone_card = this.getImageById(id).clone();
+
+            card.setAttrs({
+                image: clone_card.getImage(),
+                crop: clone_card.crop()
+            });
             this.get('stage').draw();
+            return card;
         }
     },
     win: function () {

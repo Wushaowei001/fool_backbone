@@ -14,22 +14,22 @@ var SettingObj = Backbone.Model.extend({
             App.changeBackImage();
         });
         this.on('change:card_design', function () {
-            App.trigger('load_images_start');
-            App.loadImages(
-                function () {
-                    loadTextShow();
-                },
-                function () {
-                    loadTextHide();
-                    App.trigger('load_images_end');
-                    if (App.get('human')) {
-                        App.get('human').updateCardImages(function () {
-                            App.renderTrump();
-                            if (App.get('table').getCards())
-                                App.get('table').render();
-                        });
-                    }
-                });
+//            App.trigger('load_images_start');
+            App.loadImages2(this.get('card_design'));
+//                function () {
+//                    loadTextShow();
+//                },
+//                function () {
+//                    loadTextHide();
+//                    App.trigger('load_images_end');
+//                    if (App.get('human')) {
+//                        App.get('human').updateCardImages(function () {
+//                            App.renderTrump();
+//                            if (App.get('table').getCards())
+//                                App.get('table').render();
+//                        });
+//                    }
+//                });
         });
         this.on('change:sort', function () {
             if (App.get('human')) {

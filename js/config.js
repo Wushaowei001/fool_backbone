@@ -18,7 +18,10 @@ var Config = {
     },
     cards: {
         height: 96,
-        width: 71
+        width: 71,
+        min_value: 2,
+        max_value: 14,
+        stroke_width: 1
     },
     player: {
         MAX_COUNT_CARDS: 6,
@@ -177,5 +180,8 @@ var Config = {
         deck_52: {
             count: 52
         }
+    },
+    trump: {
+        x: 136
     }
 };

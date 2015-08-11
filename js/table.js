@@ -178,11 +178,20 @@ var Table = function () {
         var card_from_pile = App.get('stage').findOne('#' + id);
         var zIndex = card_from_pile ? card_from_pile.getZIndex() : 1;
 
-        var card = new Konva.Image({
+//        var card = new Konva.Image({
+//            x: x,
+//            y: y,
+//            zIndex: zIndex,
+//            image: App.getImageById(id),
+//            width: that.SMALL_CARD_WIDTH,
+//            height: that.SMALL_CARD_HEIGHT,
+//            name: 'smallCard'
+//        });
+
+        var card = App.getImageById(id).clone({
             x: x,
             y: y,
             zIndex: zIndex,
-            image: App.getImageById(id),
             width: that.SMALL_CARD_WIDTH,
             height: that.SMALL_CARD_HEIGHT,
             name: 'smallCard'
@@ -193,15 +202,24 @@ var Table = function () {
 
     var renderCard_ = function (id, x, y, zIndex) {
         var card = App.get('stage').findOne('#' + id);
-        if (!card) {
-            card = App.addCardToLayer(id);
+        var attributeObject = {
+            id: id,
+            rotation: 0
+        };
+        if (card) {
+            attributeObject.x = card.getX();
+            attributeObject.y = card.getY();
+            card.remove();
         }
+
+        card = App.addCardToLayer(attributeObject);
+
         if (!zIndex)
             zIndex = card.getZIndex();
         else
             card.setZIndex(zIndex);
         var render = function () {
-            card.setImage(App.getImageById(id));
+//            card.setImage(App.getImageById(id));
             App.get('stage').draw();
             if (that.getState().without_animation) {
                 card.setX(x);
@@ -315,13 +333,19 @@ var Table = function () {
         for (var i in cards) {
 
             var id = cards[i];
-            var card = App.get('stage').findOne('#' + id).setImage(App.get('backImage'));
+            var card = App.get('stage').findOne('#' + id);
+            console.log(card.parent);
 
             card.on('click', function () {
                 that.toggleLastPile();
             });
 
-            card.addName('inverted');
+            card.setAttrs({
+                image: App.get('backImage'),
+                name: 'inverted',
+                crop: {x: 0, y: 0, width: 0, height: 0} // important
+            });
+            card.strokeEnabled(false); // because stroke already on image
 
             var rotation = -Math.floor(Math.random() * 30);
 //            rotation = rotation % 2 == 0 ? rotation + 90: rotation;

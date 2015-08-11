@@ -108,13 +108,13 @@
                     </td>
                     <td id="tbPrev" class="cpButton disable">Ход назад</td>
                     <td id="tbNext" class="cpButton disable">Ход вперед</td>
-                    <td id="default" class="cpButton cpNormal nonSelectable activeSelector modes">Стандарт</td>
+                    <td id="default" class="cpButton cpNormal nonSelectable activeSelector modes">Стандарт (36карт)</td>
                     <td id="deck_52" class="cpButton cpNormal nonSelectable modes">52 карты</td>
                     <td id="tbNewGame" class="cpButton cpNormal nonSelectable">Новая игра</td>
                 </tr>
                 <tr class="spectate_game" style="display: none">
                     <td id="tbLeaveSpectate" class="cpButton cpNormal">Покинуть режим просмотра</td>
-                    <td id="default" class="cpButton cpNormal nonSelectable activeSelector modes">Стандарт</td>
+                    <td id="default" class="cpButton cpNormal nonSelectable activeSelector modes">Стандарт (36карт)</td>
                     <td id="deck_52" class="cpButton cpNormal nonSelectable modes">52 карты</td>
                 </tr>
                 </tbody>
@@ -174,7 +174,7 @@
                     <small id="opponent_rating"></small>
                 </sup>
             </div>
-            <div class="name_and_rating my">
+            <div class="name_and_rating my" style="display: none">
                 <div id="my_name" style="display: none"></div>
                 <sup>
                     <small id="my_rating"></small>
@@ -252,6 +252,10 @@
         <label>
             <input type="radio" name="card_design" value="simple">
             Упрощенное
+        </label>
+        <label>
+            <input type="radio" name="card_design" value="color">
+            4-x цветное
         </label>
     </div>
 

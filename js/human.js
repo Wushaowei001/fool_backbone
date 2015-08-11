@@ -216,9 +216,11 @@ var Human = Player.extend({
     turnCards: function (cards) {
         for (var i in cards) {
             var id = cards[i];
-            var card = App.addCardToLayer(id);
-            card.setX(20);
-            card.setY(App.getDeckCoords().y);
+            App.addCardToLayer({
+                id: id,
+                x: 20,
+                y: App.getDeckCoords().y
+            });
         }
     },
     addCard: function (id) {

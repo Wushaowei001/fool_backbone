@@ -158,14 +158,17 @@ var Player = Backbone.Model.extend({
             }
             var card = App.get('stage').findOne('#' + id);
             if (!card) {
-                card = App.addCardToLayer(id, opponent);
+                card = App.addCardToLayer({id: id}, opponent);
                 if (opponent)
                     this.bindCard(card);
             }
             else {
                 if (opponent) {
-                    card.setImage(App.get('backImage'));
-                    card.name('inverted');
+                    card.setAttrs({
+                        image: this.get('backImage'),
+                        name: 'inverted',
+                        crop: {x: 0, y: 0, width: 0, height: 0} // important
+                    });
                 }
             }
             card.setZIndex(zIndex);
@@ -243,9 +246,13 @@ var Player = Backbone.Model.extend({
             var card = App.get('stage').findOne('#' + cards_from_table[i]);
             if (!card)
                 return false;
-            card.setId(id);
-            card.setImage(App.get('backImage'));
-            card.name('inverted');
+            card.setAttrs({
+                id: id,
+                image: App.get('backImage'),
+                name: 'inverted',
+                crop: {x: 0, y: 0, width: 0, height: 0} // important
+            });
+            card.strokeEnabled(false); // because stroke already on image
             card.off('click tap');
             card.on('click tap', function () {
                 that._activateLastTakenCards();
