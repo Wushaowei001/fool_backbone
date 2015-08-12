@@ -34,6 +34,11 @@ var Config = {
         LAST_TAKEN_CARDS_Y: 100,
         y: 10,
         x: 170,
+        count_cards_position: {
+            from_first_card: {
+                x: 20
+            }
+        },
         sortable: false,
         bottom_player: false,
         prefix_for_cards: 10
@@ -44,6 +49,11 @@ var Config = {
         LAST_TAKEN_CARDS_Y: 550,
         y: 584,
         x: 170,
+        count_cards_position: {
+            from_first_card: {
+                x: 20
+            }
+        },
         sortable: false,
         bottom_player: true,
         prefix_for_cards: 20
@@ -54,6 +64,11 @@ var Config = {
         LAST_TAKEN_CARDS_Y: 100,
         y: 584,
         x: 170,
+        count_cards_position: {
+            from_first_card: {
+                x: 20
+            }
+        },
         sortable: true,
         bottom_player: true
     },

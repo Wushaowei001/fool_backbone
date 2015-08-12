@@ -76,33 +76,12 @@ $(function () {
         if ($(this).hasClass('disable'))
             return false;
         appView.showButtonsForGameWithComp();
-//        $('#my_step_text').hide();
-//        $('#opponent_step_text').hide();
         client.gameManager.leaveGame();
     });
 
     $('#gameArea').on('click', '#tbLeaveReview', function () {
         App.start(true);
     });
-
-//    $('#gameArea').on('click', '#tbPrev', function () {
-//
-//        if ($('#tbPrev').hasClass('disable'))
-//            return false;
-//        if (App.get('game_with_comp') && App.get('game_with_comp').history) {
-//            App.get('game_with_comp').history.moveBack();
-//        }
-//        else {
-//
-//        }
-//
-//    });
-
-//    $('#gameArea').on('click', '#tbNext', function () {
-//        if ($('#tbNext').hasClass('disable'))
-//            return false;
-//        App.get('game_with_comp').history.moveForward();
-//    });
 
     $('.game_with_comp #default').on('click', function () {
         if (App.canStart()) {

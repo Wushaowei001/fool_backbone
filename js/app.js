@@ -115,6 +115,16 @@ var AppModel = Backbone.Model.extend({
                 this.trigger('game_with_comp_started');
             }
         });
+        this.on('change:human', function () {
+            if (this.get('human')) {
+                this.trigger('new_human');
+            }
+        });
+        this.on('change:opponent', function () {
+            if (this.get('opponent')) {
+                this.trigger('new_opponent');
+            }
+        });
     },
 
     addCardSound: function () {
@@ -792,11 +802,14 @@ var AppModel = Backbone.Model.extend({
         this.get('TimerLayer').batchDraw();
     },
     renderFromInternalHistory: function (history) {
+        var human, opponent;
+        human = this.get('human');
         this.clearCardsLayer();
         this.initGameStartTime();
         this.set('opponent', new Computer(Config.opponent));
-        this.get('human').setCards(history.human_cards);
-        this.get('opponent').setCards(history.opponent_cards);
+        opponent = this.get('opponent');
+        human.setCards(history.human_cards);
+        opponent.setCards(history.opponent_cards);
         this.get('table').setState(history.table_state);
         this.get('game_with_comp').setDeck(history.deck);
 
@@ -808,10 +821,12 @@ var AppModel = Backbone.Model.extend({
 
 //        this.trigger('update_deck_remain');
 
-        this.get('human').renderCards();
-        this.get('opponent').renderCards();
+        human.renderCards();
+        opponent.renderCards();
+        human.trigger('cards_changed', human.getCards().length);
+        opponent.trigger('cards_changed', opponent.getCards().length);
         this.set('without_update_history', true);
-        this.get('human').setCanStep(true);
+        human.setCanStep(true);
         this.set('without_update_history', false);
         this.trigger('renderFromInternalHistory',
             history.table_state.human_attack,
@@ -841,8 +856,12 @@ var AppModel = Backbone.Model.extend({
         }
         App.renderDeck(true);
         App.renderTrump();
-        App.get('human').renderCards(without_animation);
-        App.get('opponent').renderCards(without_animation);
+        var human = this.get('human');
+        var opponent = this.get('opponent');
+        human.renderCards(without_animation);
+        opponent.renderCards(without_animation);
+        human.trigger('cards_changed', human.getCards().length);
+        opponent.trigger('cards_changed', opponent.getCards().length);
         App.get('table').render();
     },
     renderCardsByClassName: function (name, image) {

@@ -65,6 +65,8 @@ var AppView = Backbone.View.extend({
         this.$historyMoveForward = this.$('#history_move_forward');
         this.$historyPlayStop = this.$('#history_play_stop');
         this.$resultOfHistory = this.$('#result_of_history');
+        this.$MyCountCards = $('#my_count_cards');
+        this.$OpponentCountCards = $('#opponent_count_cards');
 
 
         this.listenTo(App, 'start', this.onStart);
@@ -176,7 +178,42 @@ var AppView = Backbone.View.extend({
         this.listenTo(App, 'local_history_enablePrev', function () {
             this.$prev.removeClass('disable');
         });
-
+        this.listenTo(App, 'new_human', function () {
+            this.listenTo(App.get('human'), 'before_my_step', this.beforeMyStep);
+            this.listenTo(App.get('human'), 'before_opponent_step', this.beforeOpponentStep);
+            this.listenTo(App.get('human'), 'win', this.onWinHuman);
+            this.listenTo(App.get('human'), 'cards_changed count_cards_update', function (count) {
+                if (count > 0) {
+                    var offset = Config.human.count_cards_position.from_first_card.x;
+                    var first_card = App.get('stage').findOne('#' + App.get('human').getCards()[0]);
+                    if (!first_card)
+                        return false;
+                    var leftPosition = first_card.getX();
+                    leftPosition -= count > 9 ? offset * 2 : offset;
+                    this.$MyCountCards.text(count).css('left', leftPosition + 'px');
+                }
+                else
+                    this.$MyCountCards.text('');
+            });
+        });
+        this.listenTo(App, 'new_opponent', function () {
+            this.listenTo(App.get('opponent'), 'cards_changed count_cards_update', function (count) {
+                if (count > 0) {
+                    var offset = Config.opponent.count_cards_position.from_first_card.x;
+                    var first_card = App.get('stage').findOne('#' + App.get('opponent').getCards()[0]);
+                    if (!first_card)
+                        return false;
+                    var leftPosition = first_card.getX();
+                    leftPosition -= count > 9 ? offset * 2 : offset;
+                    this.$OpponentCountCards.text(count).css('left', leftPosition + 'px');
+                }
+                else
+                    this.$OpponentCountCards.text('');
+            });
+            this.listenTo(App.get('opponent'), 'win', this.onWinComputer);
+            this.listenTo(App.get('opponent'), 'draw', this.onDraw);
+            this.listenTo(App.get('opponent'), 'take_cards', this.onOpponentTakeCards);
+        });
         App.setGameArea(
             {
                 height: $('#field').height(),
@@ -227,7 +264,6 @@ var AppView = Backbone.View.extend({
         }
     },
     changeModeCardsCount: function (mode) {
-        console.log(mode);
         $('.modes').removeClass('activeSelector');
         $('.spectate_game #' + mode).addClass('activeSelector');
         $('.game_with_comp #' + mode).addClass('activeSelector');
@@ -262,12 +298,6 @@ var AppView = Backbone.View.extend({
         this.$score.hide();
     },
     onAfterStart: function () {
-        this.listenTo(App.get('human'), 'before_my_step', this.beforeMyStep);
-        this.listenTo(App.get('human'), 'before_opponent_step', this.beforeOpponentStep);
-        this.listenTo(App.get('human'), 'win', this.onWinHuman);
-        this.listenTo(App.get('opponent'), 'win', this.onWinComputer);
-        this.listenTo(App.get('opponent'), 'draw', this.onDraw);
-        this.listenTo(App.get('opponent'), 'take_cards', this.onOpponentTakeCards);
     },
     onAddToPile: function () {
         this.myStepTextHide();
@@ -318,17 +348,7 @@ var AppView = Backbone.View.extend({
         this.$drawMessage.show();
     },
     onEndGame: function () {
-        console.log('onEndGame');
-        this.$myStepText.hide();
-        this.$opponentStepText.hide();
-        this.$takeCards.hide();
-        this.$putToPile.hide();
-        this.$endThrow.hide();
-        this.$canThrow.hide();
-        this.$deckRemain.hide();
-        this.$my_timer.hide().text('');
-        this.$opponent_timer.hide().text('');
-        this.hideActionButtons();
+        this.reset();
     },
     onEndThrow: function () {
         this.throwButtonHide();
@@ -563,6 +583,10 @@ var AppView = Backbone.View.extend({
         this.$canThrow.hide();
         this.$historyLoadControls.hide();
         this.$resultOfHistory.hide();
+        this.$MyCountCards.text('');
+        this.$OpponentCountCards.text('');
+        this.$my_timer.hide().text('');
+        this.$opponent_timer.hide().text('');
     },
     showDefaultScreen: function () {
         this.myStepTextHide();
@@ -652,7 +676,7 @@ var AppView = Backbone.View.extend({
             this.$myRating.text(rating);
         }
     },
-    changeMyRating: function(rating){
+    changeMyRating: function (rating) {
         if (rating) {
             this.$myRating.text(rating);
         }
@@ -686,7 +710,6 @@ var AppView = Backbone.View.extend({
         $('#blocker').remove();
     },
     updateDeckRemains: function (count) {
-        console.log('updateDeckRemains: ' + count);
         if (count === 0)
             this.$deckRemain.hide();
         else

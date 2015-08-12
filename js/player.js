@@ -12,8 +12,10 @@ var Player = Backbone.Model.extend({
         };
     },
     setCards: function (cards) {
-        if (cards !== false)
+        if (cards !== false) {
             this.set('_cards', cards);
+
+        }
     },
     animate_cards: function (callback) {
         if (!this.tweens || !this.tweens.length) {
@@ -26,15 +28,12 @@ var Player = Backbone.Model.extend({
         tween.play();
     },
     _removeCard: function (id) {
-        for (var i in this.getCards()) {
-            if (this.getCards()[i] == id) {
-                this.getCards().splice(i, 1);
-                if (App.get('stage')) {
-                    var card = App.get('stage').findOne('#' + id);
-                    if (card)
-                        card.off('click dblclick tap');
-                }
-            }
+        this.set('_cards', _.without(this.getCards(), id));
+        if (App.get('stage')) {
+            this.trigger('cards_changed', this.getCards().length);
+            var card = App.get('stage').findOne('#' + id);
+            if (card)
+                card.off('click dblclick tap');
         }
         this.set('lastTakenCards', null);
         this._destroyLastTakenCards();
@@ -188,7 +187,8 @@ var Player = Backbone.Model.extend({
                     onFinish: function () {
                         if (from_deck)
                             that.animate_cards();
-                    }
+                        this.trigger('count_cards_update', this.getCards().length);
+                    }.bind(this)
                 });
                 tween.play();
             }

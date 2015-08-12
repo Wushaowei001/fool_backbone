@@ -420,7 +420,8 @@ body {
     width: 96px;
     display: block;
 }
-#score span{
+
+#score span {
     font-size: 17pt;
     position: relative;
     top: -6px;
@@ -449,4 +450,14 @@ body {
     position: absolute;
     right: 46px;
     top: 480px;
+}
+
+#my_count_cards, #opponent_count_cards {
+    position: absolute;
+}
+#my_count_cards{
+    bottom: 9px;
+}
+#opponent_count_cards{
+    top: 9px;
 }

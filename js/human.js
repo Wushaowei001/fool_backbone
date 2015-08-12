@@ -1,7 +1,3 @@
-Backbone.Model.prototype._super = function (funcName) {
-    return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
-};
-
 var Human = Player.extend({
     defaults: {
         _cards: [],
@@ -339,6 +335,9 @@ var Human = Player.extend({
                 return true;
         }
         return false;
+    },
+    isLastCard: function (id) {
+        return this.getCards()[this.getCards().length - 1] == id;
     },
     getMinCard: function (card) {
         return this._super('_getMinCard', card);
