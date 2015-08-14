@@ -36,6 +36,29 @@ var Util = {
             this.finals[name]();
         }
     },
+    sequentialActions: {
+        list: [],
+        add: function (action, timeout) {
+            this.list.push(
+                {
+                    action: action,
+                    timeout: timeout
+                }
+            );
+            if (this.list.length == 1) {
+                this.go();
+            }
+        },
+        go: function () {
+            if (this.list.length) {
+                setTimeout(function () {
+                    this.list[0].action();
+                    this.list.shift();
+                    this.go();
+                }.bind(this), this.list[0].timeout)
+            }
+        }
+    },
     cloner: {
         _clone: function _clone(obj) {
             if (obj instanceof Array) {

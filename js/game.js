@@ -153,37 +153,48 @@ var GameWithComputer = function () {
         var cards = [];
         if (computer_first) {
             if (c_need_cards > 0) {
-                cards = self.getCards(c_need_cards);
-                if (cards)
-                    App.get('opponent').addCards(cards);
+
+                Util.sequentialActions.add(function () {
+                    cards = self.getCards(c_need_cards);
+                    if (cards)
+                        App.get('opponent').addCards(cards);
+                }, 500);
             }
             if (h_need_cards > 0) {
-                cards = self.getCards(h_need_cards);
-                if (cards)
-                    App.get('human').addCards(cards, true);
+                Util.sequentialActions.add(function () {
+                    cards = self.getCards(h_need_cards);
+                    if (cards)
+                        App.get('human').addCards(cards, true);
+                }, 500);
             }
         }
         else {
             if (h_need_cards > 0) {
-                cards = self.getCards(h_need_cards);
-                if (cards)
-                    App.get('human').addCards(cards, true);
+                Util.sequentialActions.add(function () {
+                    cards = self.getCards(h_need_cards);
+                    if (cards)
+                        App.get('human').addCards(cards, true);
+                }, 500);
             }
             if (c_need_cards > 0) {
-                cards = self.getCards(c_need_cards);
-                if (cards)
-                    App.get('opponent').addCards(cards)
+                Util.sequentialActions.add(function () {
+                    cards = self.getCards(c_need_cards);
+                    if (cards)
+                        App.get('opponent').addCards(cards)
+                }, 500);
             }
         }
         if (!App.get('without_animation') && h_need_cards <= 0) {
             App.get('human').renderCards();
             App.get('opponent').renderCards();
         }
-        App.set('deck_remain', this.remainsInDeck());
-        //TODO: trigger
-        if (typeof callback == 'function') {
-            callback();
-        }
+        Util.sequentialActions.add(function () {
+            App.set('deck_remain', this.remainsInDeck());
+            //TODO: trigger
+            if (typeof callback == 'function') {
+                callback();
+            }
+        }.bind(this), 500);
     };
 
     this.getLastCard = function () {

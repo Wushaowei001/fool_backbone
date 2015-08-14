@@ -417,8 +417,8 @@ body {
     position: absolute;
     top: 450px;
     right: 25px;
-    width: 96px;
-    display: block;
+    width: 125px;
+    display: inline-flex;
 }
 
 #score span {
@@ -455,9 +455,19 @@ body {
 #my_count_cards, #opponent_count_cards {
     position: absolute;
 }
-#my_count_cards{
+
+#my_count_cards {
     bottom: 9px;
 }
-#opponent_count_cards{
+
+#opponent_count_cards {
     top: 9px;
+}
+
+.iconClose {
+    cursor: pointer;
+    position: absolute;
+    right: 5px;
+    width: 20px;
+    top: 25px;
 }

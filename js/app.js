@@ -436,11 +436,11 @@ var AppModel = Backbone.Model.extend({
                         continue;
                     var is_opponent = event.target.userId != humanId;
 
-                    if (event.for || (is_opponent && !App.get('not_my_story'))
-                        || (!event.cards && !event.opponent_cards))
+                    if (event.for || /*(is_opponent && !App.get('not_my_story'))
+                     || */ !event.cards || event.opponent_cards)
                         continue;
-                    if (event.opponent_cards && App.get('not_my_story'))
-                        continue;
+//                    if (event.opponent_cards && App.get('not_my_story'))
+//                        continue;
 
                     if (event.cards && event.cards.length && !event.for && !is_opponent) {
                         if (App.get('spectate')) {
@@ -451,11 +451,11 @@ var AppModel = Backbone.Model.extend({
                         else
                             human.setCards(human.getCards().concat(event.cards));
                     }
-                    if (event.opponent_cards && !is_opponent && !App.get('not_my_story')) {
-                        opponent.addCards(event.opponent_cards, false, true);
-                    }
+//                    if (event.opponent_cards && !is_opponent && !App.get('not_my_story')) {
+//                        opponent.addCards(event.opponent_cards, false, true);
+//                    }
                     // for not my history
-                    if (is_opponent && App.get('not_my_story') && event.cards) {
+                    if (is_opponent && /*App.get('not_my_story') &&*/ event.cards) {
                         opponent.setCards(opponent.getCards().concat(event.cards));
                     }
                     if (event.cardsRemain || event.cardsRemain === 0)
@@ -478,12 +478,12 @@ var AppModel = Backbone.Model.extend({
                         if (is_my_turn)
                             human.setCards(human.getCards().concat(turn.cards));
                         else {
-                            if (App.get('not_my_story')) {
-                                opponent.setCards(opponent.getCards().concat(turn.cards));
-                            }
-                            else {
-                                opponent.addCards(turn.cards.length, false, true);
-                            }
+//                            if (App.get('not_my_story')) {
+                            opponent.setCards(opponent.getCards().concat(turn.cards));
+//                            }
+//                            else {
+//                                opponent.addCards(turn.cards.length, false, true);
+//                            }
                         }
                     }
                     pushToHistory();
@@ -623,21 +623,25 @@ var AppModel = Backbone.Model.extend({
                 return false;
             this.get('table').addToPile();
 
-            if (!this.get('game_with_comp')) {
-                this.trigger('human:addToPile');
-            }
-            else {
-                this.get('game_with_comp').history.disableMoves();
-                this.get('game_with_comp').addCards(true, function () {
+            Util.sequentialActions.add(function () {
+                if (!this.get('game_with_comp')) {
+                    this.trigger('human:addToPile');
+                }
+                else {
+                    this.get('game_with_comp').history.disableMoves();
+                    this.get('game_with_comp').addCards(false, function () {
 //                    this.trigger('update_deck_remain');
-                }.bind(this));
-            }
-            this.get('human').setCanStep(false);
-            if (this.get('game_with_comp') && !this.get('view_only')) {
-                this.safeTimeOutAction(800, function () {
-                    this.get('opponent').step();
-                }.bind(this));
-            }
+                    }.bind(this));
+                }
+                this.get('human').setCanStep(false);
+                if (this.get('game_with_comp') && !this.get('view_only')) {
+                    this.safeTimeOutAction(800, function () {
+                        this.get('opponent').step();
+                    }.bind(this));
+                }
+            }.bind(this));
+
+
         }
         return false;
     },
@@ -698,7 +702,7 @@ var AppModel = Backbone.Model.extend({
             if (trump_mapping && trump_mapping[trump]) {
                 trump = trump_mapping[trump];
             }
-//            this.trigger('show_trump', trump);
+            this.trigger('show_trump', trump);
             return false;
         }
         else {
@@ -836,8 +840,8 @@ var AppModel = Backbone.Model.extend({
     renderFromHistory: function (history, without_animation) {
         this.initGameStartTime(); // if user play with computer
         this.initHistory(history);
-        var lastState = this.get('history').getLastItem();
-        this.renderFromState(lastState, without_animation);
+        var firstState = this.get('history').getFirstItem();
+        this.renderFromState(firstState, without_animation);
     },
     renderFromState: function (state, without_animation) {
         if (state.deck_remain != undefined) {

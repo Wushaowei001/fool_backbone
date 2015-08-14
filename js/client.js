@@ -159,7 +159,9 @@ function onInit() {
             App.start(false, function () {
                 App.renderTrump();
                 client.gameManager.sendEvent('event', {data: 'getCards'});
-                App.get('human').setCanStep(data.first == client.getPlayer());
+                setTimeout(function () {
+                    App.get('human').setCanStep(data.first == client.getPlayer());
+                }, 1000);
                 init_name_ratings_and_score();
             });
             App.set('in_round', true);
@@ -359,7 +361,11 @@ function onInit() {
                 App.win();
                 return;
             }
-
+            if (last_turn && App.get('human').noCards() && App.deckIsEmpty()) {
+                // win
+                App.win();
+                return;
+            }
             if (App.get('opponent').countCards() == 0 && !App.deckIsEmpty()) {
                 if (App.get('table').human_attack) {
                     App.putToPile();
@@ -390,11 +396,15 @@ function onInit() {
                 }
                 else {
                     if (data.event.target && data.event.target.isPlayer)
-                        App.get('human').addCards(data.event.cards, true);
+                        Util.sequentialActions.add(function () {
+                            App.get('human').addCards(data.event.cards, true);
+                        }, 500);
                 }
             }
             if (data.event.opponent_cards) {
-                App.get('opponent').addCards(data.event.opponent_cards);
+                Util.sequentialActions.add(function () {
+                    App.get('opponent').addCards(data.event.opponent_cards);
+                }, 500);
             }
             if (data.event.deckIsEmpty) {
                 App.set('deck_is_empty', true);
@@ -492,18 +502,22 @@ function onInit() {
                 });
             }
         }
-        if (not_my_story) {
-            App.set({
-                human: new Human(Config.human),
-                opponent: new Human(Config.opponent)
-            });
-        }
-        else {
-            App.set({
-                human: new Human(Config.human),
-                opponent: new Opponent(Config.opponent)
-            });
-        }
+        App.set({
+            human: new Human(Config.human),
+            opponent: new Human(Config.opponent)
+        });
+//        if (not_my_story) {
+//            App.set({
+//                human: new Human(Config.human),
+//                opponent: new Human(Config.opponent)
+//            });
+//        }
+//        else {
+//            App.set({
+//                human: new Human(Config.human),
+//                opponent: new Opponent(Config.opponent)
+//            });
+//        }
         var score = JSON.parse(game.score);
         var mode = game.mode;
         App.set({

@@ -42,7 +42,7 @@ var SettingObj = Backbone.Model.extend({
                 App.renderTrump();
                 App.get('table').updateCardImages();
                 App.get('table').renderLastPileIfVisible();
-                if (App.get('opponent'))
+                if (App.get('opponent') && App.get('opponent') instanceof Opponent)
                     App.get('opponent').renderLastTakenCardsIfVisible();
             }
         });

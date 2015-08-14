@@ -1,16 +1,18 @@
 var History = Backbone.Model.extend({
     defaults: {
         list: [],
-        index: 0
+        index: 0,
+        min_index: 1
     },
     initialize: function (opt) {
         this.set('list', opt.list);
-        this.set('index', opt.list.length - 1);
+//        this.set('index', opt.list.length - 1);
+        this.set('index', this.get('min_index'));
         this.on('change:index', function (self) {
             var index = this.get('index');
             console.log(index);
             var length = this.get('list').length;
-            if (index == 0) {
+            if (index == this.get('min_index')) {
                 this.trigger('cursor_at_the_beginning');
             }
             if (index == length - 1) {
@@ -28,7 +30,7 @@ var History = Backbone.Model.extend({
     },
     moveBack: function () {
         var index = this.get('index');
-        if (index > 0) {
+        if (index > this.get('min_index')) {
             index--;
             this.set('index', index);
         }
@@ -59,6 +61,9 @@ var History = Backbone.Model.extend({
     },
     stop: function () {
         Util.countDown.stop('play_history');
+    },
+    getFirstItem: function () {
+        return this.get('list')[this.get('min_index')];
     },
     getLastItem: function () {
         var list = this.get('list');

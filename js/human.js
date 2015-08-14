@@ -124,7 +124,7 @@ var Human = Player.extend({
                             App.trigger('human:addToPile');
                         }
                         else {
-                            App.get('game_with_comp').addCards(true, function () {
+                            App.get('game_with_comp').addCards(false, function () {
 //                                App.trigger('update_deck_remain');
                             });
                             if (!App.get('view_only')) {

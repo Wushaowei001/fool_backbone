@@ -2,31 +2,50 @@ var App = require('./fool.js');
 
 
 module.exports = {
-    getGameResult: function (room, user, turn) {
-        switch (turn.result) {
-            case 0: // win second player, white
-                for (var i = 0; i < room.players.length; i++) {
-                    if (room.players[i] != user) {
+    getGameResult: function (room, user, turn, type) {
+        switch (type) {
+            case 'timeout':
+                if (type == 'timeout') {
+                    // if user have max timeouts, other win
+                    if (room.data[user.userId].timeouts == room.maxTimeouts) {
                         return {
-                            winner: room.players[i]
+                            winner: room.getOpponent(user),
+                            action: 'timeout'
                         };
-                    }
+                    } else return false;
                 }
                 break;
-            case 1: // win first player, black
-                return {
-                    winner: user
-                };
+            case 'event':
+                if (turn.type) {
+                    return false;
+                }
                 break;
-            case 2: // draw
-                return {
-                    winner: null
-                };
+            case 'turn':
+                switch (turn.result) {
+                    case 0: // win other player
+                        for (var i = 0; i < room.players.length; i++) {
+                            if (room.players[i] != user) {
+                                return {
+                                    winner: room.players[i]
+                                };
+                            }
+                        }
+                        break;
+                    case 1: // win current player
+                        return {
+                            winner: user
+                        };
+                        break;
+                    case 2: // draw
+                        return {
+                            winner: null
+                        };
+                        break;
+                    default: // game isn't end
+                        return false;
+                }
                 break;
-            default:
-                return false;
         }
-        throw new Error('can not compute winner! room:' + room.id + ' result: ' + turn.result);
     },
     setFirst: function (room) {
         if (!room.game.first) return room.owner;

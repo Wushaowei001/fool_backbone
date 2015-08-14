@@ -15,7 +15,8 @@ var AppView = Backbone.View.extend({
         'click #tbNext': 'onNext',
         'mousedown #tbNext': 'onNextDown',
         'mouseleave #tbNext': 'stopMoveForward',
-        'mouseup #tbNext': 'stopMoveForward'
+        'mouseup #tbNext': 'stopMoveForward',
+        'click .previewClose': 'previewClose'
 //        'mousedown #history_move_back': 'onHistoryMoveBackInterval',
 //        'mouseleave #history_move_back': 'onHistoryMoveBackStop',
 //        'mouseup #history_move_back': 'onHistoryMoveBackStop',
@@ -67,6 +68,7 @@ var AppView = Backbone.View.extend({
         this.$resultOfHistory = this.$('#result_of_history');
         this.$MyCountCards = $('#my_count_cards');
         this.$OpponentCountCards = $('#opponent_count_cards');
+        this.$previewClose = $('.previewClose');
 
 
         this.listenTo(App, 'start', this.onStart);
@@ -105,7 +107,8 @@ var AppView = Backbone.View.extend({
         this.listenTo(App, 'play_with_opponent', this.onPlayWithOpponent);
         this.listenTo(App, 'endThrow', this.onEndThrow);
         this.listenTo(App, 'score_changed', function (score) {
-            this.showScore(score)
+            if (score)
+                this.showScore(score)
         });
         this.listenTo(App, 'my_name_changed', function (name) {
             this.changeMyName(name);
@@ -395,12 +398,13 @@ var AppView = Backbone.View.extend({
         this.reset();
     },
     onHistoryLoadEnd: function (result) {
+        this.$previewClose.show();
         this.$nameAndRating.show();
         this.showMyName();
         this.showResultOfHistory(result);
 //        this.$historyLoadControls.show();
-        this.$prev.removeClass('disable');
-        this.$next.addClass('disable');
+        this.$next.removeClass('disable');
+        this.$prev.addClass('disable');
 //        this.$historyPlayStop.addClass('disable');
         this.stopListening(false, 'cursor_at_the_beginning cursor_at_the_end');
         this.listenTo(App.get('history'), 'cursor_at_the_beginning', function () {
@@ -558,6 +562,11 @@ var AppView = Backbone.View.extend({
         console.log('playWithComp');
         App.start(true);
     },
+    previewClose: function () {
+        this.reset();
+        this.showDefaultScreen();
+        App.reset();
+    },
     putToPile: function () {
         App.putToPile();
     },
@@ -587,6 +596,8 @@ var AppView = Backbone.View.extend({
         this.$OpponentCountCards.text('');
         this.$my_timer.hide().text('');
         this.$opponent_timer.hide().text('');
+        this.$previewClose.hide();
+        this.$score.hide();
     },
     showDefaultScreen: function () {
         this.myStepTextHide();
