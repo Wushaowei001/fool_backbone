@@ -4,7 +4,7 @@ module.exports = {
     pingTimeout: 100000,
     pingInterval: 10000,
     logLevel: 1,
-    turnTime: 60,   // user turn time in seconds
+    turnTime: 600,   // user turn time in seconds
     maxTimeouts: 1, // count user timeouts in game to lose
     minTurns: 3,
     ratingElo: true,

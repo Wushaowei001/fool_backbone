@@ -17,6 +17,16 @@ var Player = Backbone.Model.extend({
 
         }
     },
+    _destroyCards: function () {
+        var cards = this.getCards();
+        for (var i in cards) {
+            var card = App.get('stage').findOne('#' + cards[i]);
+            if (card) {
+                card.destroy();
+                App.get('stage').draw();
+            }
+        }
+    },
     animate_cards: function (callback) {
         if (!this.tweens || !this.tweens.length) {
             if (callback && typeof callback === 'function')
@@ -112,9 +122,7 @@ var Player = Backbone.Model.extend({
     },
     _renderCards: function (opponent, without_animation, from_deck) {
         var default_y = this.getCardsCoords().y;
-//        if (opponent)
-//            default_y = App.getOpponentCoords().y;
-//        else {
+
         if (this.get('sortable')) {
             var sort = App.getProperty('sort');
             switch (sort) {
@@ -132,7 +140,6 @@ var Player = Backbone.Model.extend({
             }
         }
 
-//        }
         var interval = 30;
         var x = App.get('game_area').width / 2 - (interval * (this.getCards().length + 1)) / 2;
 
@@ -369,18 +376,6 @@ var Player = Backbone.Model.extend({
             return;
         }
         this._renderLastTakenCards();
-
-
-//        if (this.get('TakenCardsLayer')) {
-//            if (this.get('TakenCardsLayer').isVisible())
-//                this.get('TakenCardsLayer').hide();
-//            else
-//                this.get('TakenCardsLayer').show();
-//            App.get('stage').draw();
-//            return false;
-//        }
-
-
     },
     _renderLastTakenCards: function () {
         var cards = this.get('lastTakenCards');
@@ -402,7 +397,6 @@ var Player = Backbone.Model.extend({
         }
     },
     _destroyLastTakenCards: function () {
-//        this.set('lastTakenCards', null);
         if (this.get('TakenCardsLayer')) {
             this.get('TakenCardsLayer').destroy();
             this.set('TakenCardsLayer', null);

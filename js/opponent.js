@@ -151,5 +151,15 @@ var Opponent = Player.extend({
             this.removeCard(card);
             this._super('_renderCards', true, App.get('without_animation'));
         }
+    },
+
+    showCards: function (cards) {
+        this.setCards(cards);
+        this._super('_renderCards', false, true);
+//        this.renderCards(true);
+    },
+
+    destroyCards: function () {
+        this._super('_destroyCards');
     }
 });

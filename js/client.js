@@ -193,56 +193,68 @@ function onInit() {
 
     client.gameManager.on('turn', function (data) {
         var your_turn;
+        var turn = data.turn;
+        var opponent = App.get('opponent');
+        var human = App.get('human');
         if (App.get('spectate')) {
             your_turn = data.nextPlayer.userId != App.get('humanId');
-            if (data.turn.turn_type == 'takeCards') {
+            if (turn.turn_type == 'takeCards') {
                 if (your_turn)
-                    App.get('human').takeCardsFromTable(data.turn.cards);
+                    human.takeCardsFromTable(turn.cards);
                 else
-                    App.get('opponent').takeCardsFromTable(data.turn.cards);
+                    opponent.takeCardsFromTable(turn.cards);
                 App.trigger('spectate:taken');
                 return;
             }
-            if (data.turn.turn_type == 'addToPile') {
+            if (turn.turn_type == 'addToPile') {
                 App.get('table').addToPile();
                 App.trigger('spectate:beaten');
                 return;
             }
-            if (data.turn.turn_type == 'throw') {
-                var cards = data.turn.cards;
+            if (turn.turn_type == 'throw') {
+                var cards = turn.cards;
                 for (var i in cards) {
                     if (your_turn)
-                        App.get('human').step(cards[i]);
+                        human.step(cards[i]);
                     else
-                        App.get('opponent').step(cards[i]);
+                        opponent.step(cards[i]);
                 }
                 App.trigger('spectate:threw');
                 return;
             }
             if (your_turn)
-                App.get('human').step(data.turn.card);
+                human.step(turn.card);
             else
-                App.get('opponent').step(data.turn.card);
+                opponent.step(turn.card);
             return;
         }
         your_turn = data.user.isPlayer;
-
-        if (!your_turn) {
-            if (data.turn.turn_type == 'takeCards') {
-//                App.temporaryBlockUI(2000);
-                App.get('opponent').takeCardsFromTable(data.turn.cards, data.turn.through_throw);
-                if (App.get('human').noCards()) {
-                    App.win();
-                    return false;
-                }
+        if (your_turn) {
+            if (!turn.turn_type && !turn.automatic_throw) {
+                human.step(turn.card);
             }
-            if (data.turn.turn_type == 'addToPile') {
+            if (typeof turn.result != 'undefined' && turn.opponent_cards.length) {
+                opponent.destroyCards();
+//                App.set('opponent', new Human(Config.opponent));
+                opponent.showCards(turn.opponent_cards);
+            }
+        }
+        else {
+            if (turn.turn_type == 'takeCards') {
+//                App.temporaryBlockUI(2000);
+                opponent.takeCardsFromTable(turn.cards, turn.through_throw);
+//                if (human.noCards()) {
+//                    App.win();
+//                    return false;
+//                }
+            }
+            if (turn.turn_type == 'addToPile') {
                 App.get('table').addToPile();
                 App.trigger('addToPile');
                 return;
             }
 
-            App.get('opponent').step(data.turn.card);
+            opponent.step(turn.card);
         }
     });
 
@@ -265,16 +277,23 @@ function onInit() {
             var cards_for_throw_on_table, cards_for_throw;
 
             if (last_turn && last_turn.turn_type == 'takeCards') {
-                if (App.get('human').noCards()) {
-                    // win
-                    App.win();
-//                    client.gameManager.sendTurn({result: 1});
-                    return;
-                }
+//                if (App.get('human').noCards()) {
+//                    // win
+//                    App.win();
+////                    client.gameManager.sendTurn({result: 1});
+//                    return;
+//                }
                 if (last_turn.allow_throw) {
                     cards_for_throw = App.get('human').getCardsForThrow(last_turn.cards);
                     if (cards_for_throw) {
-                        var count = App.get('opponent').countCards() - last_turn.cards.length * 2;
+                        var count = 0;
+                        var opponent_had_cards_before_take = App.get('opponent').countCards() - last_turn.cards.length + 1;
+                        if (opponent_had_cards_before_take > Config.table.max_count_cards) {
+                            count = Config.table.max_count_cards - (last_turn.cards.length + 1) / 2;
+                        }
+                        else {
+                            count = opponent_had_cards_before_take;
+                        }
                         if (count > 0) {
                             App.trigger('can_throw');
                             App.liftPossibleCards(true, cards_for_throw);
@@ -341,31 +360,32 @@ function onInit() {
                 var card = App.get('table').shiftCardForThrow();
                 App.ThrowTurn({
                     card: card,
-                    last_card: App.get('human').noCards()
+                    last_card: App.get('human').noCards(),
+                    automatic_throw: true
                 });
                 return;
             }
 
-            if (last_turn && last_turn.last_card && App.get('human').noCards()) {
-                // draw
-                App.draw();
-                return;
-            }
-            if (last_turn && last_turn.last_card && !App.get('table').getCardForBeat()) {
-                // loose
-                App.loose();
-                return;
-            }
-            if (last_turn && !last_turn.last_card && App.get('human').noCards()) {
-                // win
-                App.win();
-                return;
-            }
-            if (last_turn && App.get('human').noCards() && App.deckIsEmpty()) {
-                // win
-                App.win();
-                return;
-            }
+//            if (last_turn && last_turn.last_card && App.get('human').noCards()) {
+//                // draw
+//                App.draw();
+//                return;
+//            }
+//            if (last_turn && last_turn.last_card && !App.get('table').getCardForBeat()) {
+//                // loose
+//                App.loose();
+//                return;
+//            }
+//            if (last_turn && !last_turn.last_card && App.get('human').noCards()) {
+//                // win
+//                App.win();
+//                return;
+//            }
+//            if (last_turn && App.get('human').noCards() && App.deckIsEmpty()) {
+//                // win
+//                App.win();
+//                return;
+//            }
             if (App.get('opponent').countCards() == 0 && !App.deckIsEmpty()) {
                 if (App.get('table').human_attack) {
                     App.putToPile();

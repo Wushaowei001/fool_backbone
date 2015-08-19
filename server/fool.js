@@ -1,4 +1,5 @@
 var Deck = require('./deck.js');
+var Player = require('./player');
 
 module.exports = function () {
     var deck, trump;
@@ -61,6 +62,10 @@ module.exports = function () {
         deck = null;
     };
 
+    var initPlayer = function () {
+        return new Player();
+    };
+
     return {
         getTrump: getTrump,
         trump: trump,
@@ -69,6 +74,7 @@ module.exports = function () {
         getDeck: getDeck,
         setMode: setMode,
         iniDeck: iniDeck,
-        createDeck: createDeck
+        createDeck: createDeck,
+        initPlayer: initPlayer
     };
 };

@@ -80,7 +80,8 @@ var Config = {
         for_bottom: {
             first_line: 207,
             second_line: 337
-        }
+        },
+        max_count_cards: 6
     },
     card_stroke_color: 'black',
     timer: {

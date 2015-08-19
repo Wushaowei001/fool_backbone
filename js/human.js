@@ -141,11 +141,6 @@ var Human = Player.extend({
                 if (App.get('table').getCardForBeat() && !App.get('table').human_attack && !this.getMinCard(App.get('table').getCardForBeatID())) {
                     this.unBindCards();
                     App.trigger('nothing_to_beat');
-//                App.temporaryBlockUI(1000);
-//                    $('#take_cards').hide();
-//                    $('#my_step_text').hide();
-//                    $('#nothing_to_beat').fadeIn(300);
-//                    $('#nothing_to_beat').fadeOut(4000);
                     if (!App.get('view_only'))
                         App.safeTimeOutAction(1000, function () {
                             App.humanTakeCards();
@@ -162,6 +157,7 @@ var Human = Player.extend({
         this.bindCards();
     },
     bindCards: function () {
+        this.unBindCards();
         for (var i in this.getCards()) {
             var id = this.get('_cards')[i];
             var card = App.get('stage').findOne('#' + id);
@@ -189,7 +185,21 @@ var Human = Player.extend({
         card.on(action_step + ' dbltap', function () {
             if (!this.canStartStep(id))
                 return false;
-            this.step(id);
+            var last_card = this.noCards();
+            if (!App.get('game_with_comp')) {
+                if (!this.canStep() && !App.get('spectate')) {
+                    this.removeCard(id);
+                    App.get('table').addCardForThrow(id);
+                    return false;
+                }
+                App.trigger('human:step', {
+                    card: id,
+                    last_card: last_card
+                });
+            }
+            else {
+                this.step(id);
+            }
         }.bind(this));
     },
     bindCardForThrow: function (card, id, cards) {
@@ -288,12 +298,7 @@ var Human = Player.extend({
 
         this.removeCard(id);
 
-        if (!this.canStep() && !App.get('spectate')) {
-            App.get('table').addCardForThrow(id);
-            return false;
-        }
-        else
-            App.get('table').addCard(id, this.get('bottom_player'));
+        App.get('table').addCard(id, this.get('bottom_player'));
         if (App.get('spectate'))
             return;
 
@@ -306,14 +311,6 @@ var Human = Player.extend({
             });
         }
 
-        var last_card = App.get('human').noCards();
-        if (!App.get('game_with_comp')) {
-            App.trigger('human:step', {
-                card: id,
-                last_card: last_card
-            });
-        }
-        this.trigger('stepped', {last_card: last_card});
         this.setCanStep(false);
     },
     getCardsForThrow: function (cards) {
