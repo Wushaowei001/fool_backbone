@@ -15,7 +15,7 @@ var SettingObj = Backbone.Model.extend({
         });
         this.on('change:card_design', function () {
 //            App.trigger('load_images_start');
-            App.loadImages2(this.get('card_design'));
+            App.loadSprite(this.get('card_design'));
 //                function () {
 //                    loadTextShow();
 //                },

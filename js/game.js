@@ -137,9 +137,8 @@ var GameWithComputer = function () {
             }
             if (!deck.length) {
                 App.set('deck_is_empty', true);
-                App.get('Deck').destroy();
+                App.renderDeck();
                 App.get('Trump').destroy();
-//                App.showTrumpValueOnDeck();
             }
         }
         if (typeof callback === 'function')
@@ -186,7 +185,7 @@ var GameWithComputer = function () {
         }
         if (!App.get('without_animation') && h_need_cards <= 0) {
             App.get('human').renderCards();
-            App.get('opponent').renderCards();
+            App.get('opponent').renderCards(false);
         }
         Util.sequentialActions.add(function () {
             App.set('deck_remain', this.remainsInDeck());

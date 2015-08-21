@@ -227,8 +227,8 @@ var Player = Backbone.Model.extend({
                 x: 20,
                 y: App.getDeckCoords().y,
                 image: App.get('backImage'),
-                width: App.get('card_width'),
-                height: App.get('card_height'),
+                width: Config.cards.width,
+                height: Config.cards.height,
                 id: id,
                 name: 'inverted',
                 rotation: 0

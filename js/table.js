@@ -6,9 +6,9 @@ var Table = function () {
     this.POS_FOR_CARDS = App.getDeckCoords().y - 40;
     this.POS_FOR_CARDS_OVER = App.getDeckCoords().y + 90;
     this.LEFT_POSITION_START = 160;
-    this.LAST_PILE_LEFT_POSITION = App.getPileCoords().x - App.get('card_width') / 1.5;
-    this.SMALL_CARD_WIDTH = App.get('card_width') / 1.5;
-    this.SMALL_CARD_HEIGHT = App.get('card_height') / 1.5;
+    this.LAST_PILE_LEFT_POSITION = App.getPileCoords().x - Config.cards.width / 1.5;
+    this.SMALL_CARD_WIDTH = Config.cards.width / 1.5;
+    this.SMALL_CARD_HEIGHT = Config.cards.height / 1.5;
     this.LAST_PILE_POS_FOR_CARDS = App.getPileCoords().y + 30;
     this.SMALL_CARD_VERTICAL_INTERVAL = 40;
     this.last_pile = {
@@ -30,27 +30,27 @@ var Table = function () {
     var that = this;
 
     this.setState = function (state) {
-        that.all_cards.cards = state.cards != undefined ? Util.cloner.clone(state.cards) : [];
-        that.all_cards.cards_for_throw = state.cards_for_throw != undefined ? Util.cloner.clone(state.cards_for_throw) : [];
-        that.human_attack = state.human_attack;
-        that.without_animation = state.without_animation != undefined ? state.without_animation : false
+        this.all_cards.cards = state.cards != undefined ? Util.cloner.clone(state.cards) : [];
+        this.all_cards.cards_for_throw = state.cards_for_throw != undefined ? Util.cloner.clone(state.cards_for_throw) : [];
+        this.human_attack = state.human_attack;
+        this.without_animation = state.without_animation != undefined ? state.without_animation : false
     };
 
     this.getState = function (without_cards_for_throw) {
-        var state = Util.cloner.clone(that.all_cards);
+        var state = Util.cloner.clone(this.all_cards);
         if (without_cards_for_throw)
             state.cards_for_throw = null;
-        state.human_attack = that.human_attack;
-        state.without_animation = that.without_animation;
+        state.human_attack = this.human_attack;
+        state.without_animation = this.without_animation;
         return state;
     };
 
     this.getLastState = function () {
-        return that.last_state;
+        return this.last_state;
     };
 
     this.getCardForBeat = function () {
-        var all_cards = that.all_cards.cards;
+        var all_cards = this.all_cards.cards;
         var card = null;
         for (var i in all_cards) {
             if (!all_cards[i].over)
@@ -60,7 +60,7 @@ var Table = function () {
     };
 
     this.getCardForBeatID = function () {
-        var card = that.getCardForBeat();
+        var card = this.getCardForBeat();
         return card ? card.id : false;
     };
 
@@ -71,7 +71,7 @@ var Table = function () {
             this.human_attack = bottom_player;
         }
         if (all_cards.indexOf(id) == -1) {
-            var card_for_beat = that.getCardForBeat();
+            var card_for_beat = this.getCardForBeat();
             if (!card_for_beat) {
                 all_cards.push({id: id, over: ''});
             }
@@ -80,38 +80,38 @@ var Table = function () {
             }
         }
 
-        that.render();
+        this.render();
     };
 
     this.addCardForThrow = function (id) {
-        that.all_cards.cards_for_throw.push(id);
-        that.render();
+        this.all_cards.cards_for_throw.push(id);
+        this.render();
     };
 
     this.render = function () {
-        var all_cards = that.all_cards.cards;
-        var x = that.LEFT_POSITION_START;
-        var y = that.human_attack ? that.POS_FOR_CARDS : that.POS_FOR_CARDS_OPPONENT;
+        var all_cards = this.all_cards.cards;
+        var x = this.LEFT_POSITION_START;
+        var y = this.human_attack ? this.POS_FOR_CARDS : this.POS_FOR_CARDS_OPPONENT;
         var zIndex;
         for (var i in all_cards) {
             var id = all_cards[i].id;
-            y = that.human_attack ? that.POS_FOR_CARDS : that.POS_FOR_CARDS_OPPONENT;
+            y = this.human_attack ? this.POS_FOR_CARDS : this.POS_FOR_CARDS_OPPONENT;
             zIndex = renderCard_(id, x, y);
             if (all_cards[i].over) {
-                y = that.human_attack ? that.POS_FOR_CARDS_OVER_OPPONENT : that.POS_FOR_CARDS_OVER;
+                y = this.human_attack ? this.POS_FOR_CARDS_OVER_OPPONENT : this.POS_FOR_CARDS_OVER;
                 renderCard_(all_cards[i].over, x, y, zIndex + 1);
             }
-            x = x + Config.cards.width + that.INTERVAL_BETWEEN_CARDS;
+            x = x + Config.cards.width + this.INTERVAL_BETWEEN_CARDS;
         }
-        var cards_for_throw = that.all_cards.cards_for_throw;
+        var cards_for_throw = this.all_cards.cards_for_throw;
         for (var i in cards_for_throw) {
-            renderCard_(cards_for_throw[i], x, that.POS_FOR_CARDS);
-            x = x + Config.cards.width + that.INTERVAL_BETWEEN_CARDS;
+            renderCard_(cards_for_throw[i], x, this.POS_FOR_CARDS);
+            x = x + Config.cards.width + this.INTERVAL_BETWEEN_CARDS;
         }
     };
 
     this.renderLastPile = function () {
-        if (!that.last_pile.cards)
+        if (!this.last_pile.cards)
             return false;
         if (App.get('lastPileLayer'))
             App.get('lastPileLayer').destroy();
@@ -119,11 +119,11 @@ var Table = function () {
         App.set('lastPileLayer', lastPileLayer);
         App.get('stage').add(lastPileLayer);
 
-        var x = that.LAST_PILE_LEFT_POSITION -
-            (that.SMALL_CARD_WIDTH + that.INTERVAL_BETWEEN_CARDS)
-                * (that.last_pile.cards.length - 1);
-        var y = that.LAST_PILE_POS_FOR_CARDS;
-        that.renderSmallCards(that.last_pile, x, y, lastPileLayer);
+        var x = this.LAST_PILE_LEFT_POSITION -
+            (this.SMALL_CARD_WIDTH + this.INTERVAL_BETWEEN_CARDS)
+                * (this.last_pile.cards.length - 1);
+        var y = this.LAST_PILE_POS_FOR_CARDS;
+        this.renderSmallCards(this.last_pile, x, y, lastPileLayer);
         App.trigger('table:renderLastPile');
     };
 
@@ -141,15 +141,15 @@ var Table = function () {
             y = top;
             renderSmallCard(id, x, y, layer);
             if (cards[i].over) {
-                y = cards_object.human_attack ? top - that.SMALL_CARD_VERTICAL_INTERVAL : top + that.SMALL_CARD_VERTICAL_INTERVAL;
+                y = cards_object.human_attack ? top - this.SMALL_CARD_VERTICAL_INTERVAL : top + this.SMALL_CARD_VERTICAL_INTERVAL;
                 renderSmallCard(cards[i].over, x, y, layer);
             }
-            x = x + that.SMALL_CARD_WIDTH + that.INTERVAL_BETWEEN_CARDS;
+            x = x + this.SMALL_CARD_WIDTH + this.INTERVAL_BETWEEN_CARDS;
         }
         var cards_for_throw = cards_object.cards_for_throw;
         for (var i in cards_for_throw) {
             renderSmallCard(cards_for_throw[i], x, top, layer);
-            x = x + that.SMALL_CARD_WIDTH + that.INTERVAL_BETWEEN_CARDS;
+            x = x + this.SMALL_CARD_WIDTH + this.INTERVAL_BETWEEN_CARDS;
         }
     };
 
@@ -162,7 +162,7 @@ var Table = function () {
             App.get('stage').draw();
         }
         else {
-            that.renderLastPile();
+            this.renderLastPile();
         }
     };
 
@@ -177,16 +177,6 @@ var Table = function () {
     var renderSmallCard = function (id, x, y, layer) {
         var card_from_pile = App.get('stage').findOne('#' + id);
         var zIndex = card_from_pile ? card_from_pile.getZIndex() : 1;
-
-//        var card = new Konva.Image({
-//            x: x,
-//            y: y,
-//            zIndex: zIndex,
-//            image: App.getImageById(id),
-//            width: that.SMALL_CARD_WIDTH,
-//            height: that.SMALL_CARD_HEIGHT,
-//            name: 'smallCard'
-//        });
 
         var card = App.getImageById(id).clone({
             x: x,
@@ -248,28 +238,28 @@ var Table = function () {
 
     this.addCards = function (cards) {
         for (var i in cards) {
-            that.addCard(cards[i]);
+            this.addCard(cards[i]);
         }
     };
 
     this.getCards = function (from_table) {
-        if (!that.all_cards || !that.all_cards.cards)
+        if (!this.all_cards || !this.all_cards.cards)
             return false;
-        var all_cards = that.all_cards.cards.slice('');
+        var all_cards = this.all_cards.cards.slice('');
 
         var cards = all_cards.map(function (obj) {
             return obj.id;
         });
-        all_cards = cards.concat(that.getCardsOver());
+        all_cards = cards.concat(this.getCardsOver());
         if (from_table) {
-            that.clearTable();
+            this.clearTable();
         }
 
         return all_cards.length ? all_cards : false;
     };
 
     this.getCardsOver = function () {
-        var all_cards = that.all_cards.cards;
+        var all_cards = this.all_cards.cards;
         var cards = [];
         all_cards.map(function (card) {
             if (card.over)
@@ -279,53 +269,53 @@ var Table = function () {
     };
 
     this.getCountCards = function () {
-        return that.all_cards.cards.length;
+        return this.all_cards.cards.length;
     };
 
     this.getCardsForThrow = function () {
-        return that.all_cards.cards_for_throw.length ? that.all_cards.cards_for_throw : false;
+        return this.all_cards.cards_for_throw.length ? this.all_cards.cards_for_throw : false;
     };
 
     this.getCountCardsForThrow = function () {
-        var cards = that.getCardsForThrow();
+        var cards = this.getCardsForThrow();
         return cards ? cards.length : 0;
     };
 
     this.getCountCardsNotYetBeatenWithoutThrow = function () {
-        return that.getCountCards() - that.getCountCardsOver() + that.getCountCardsForThrow();
+        return this.getCountCards() - this.getCountCardsOver() + this.getCountCardsForThrow();
     };
 
     this.getCountCardsNotYetBeatenWithThrow = function () {
-        return that.getCountCards() - that.getCountCardsOver();
+        return this.getCountCards() - this.getCountCardsOver();
     };
 
     this.getCountCardsOver = function () {
-        var cards = that.getCardsOver();
+        var cards = this.getCardsOver();
         return cards ? cards.length : 0;
     };
 
     this.shiftCardForThrow = function () {
-        var id = that.all_cards.cards_for_throw.length ? that.all_cards.cards_for_throw.shift() : false;
+        var id = this.all_cards.cards_for_throw.length ? this.all_cards.cards_for_throw.shift() : false;
         if (id) {
-            that.all_cards.cards.push({id: id, over: ''});
+            this.all_cards.cards.push({id: id, over: ''});
         }
         return id;
     };
     this.clearTable = function () {
-        that.last_state = that.getState();
-        that.human_attack = null;
-        that.all_cards.cards = [];
+        this.last_state = this.getState();
+        this.human_attack = null;
+        this.all_cards.cards = [];
     };
 
     this.clearCardsForThrow = function () {
-        that.all_cards.cards_for_throw = [];
+        this.all_cards.cards_for_throw = [];
     };
 
     this.addToPile = function () {
         App.trigger('table:addToPile');
-        that.destroyLastPile();
-        var cards = that.getCards();
-        that.last_pile = that.getState();
+        this.destroyLastPile();
+        var cards = this.getCards();
+        this.last_pile = this.getState();
 
         if (!App.get('without_animation')) {
             App.addToPileSound();
@@ -368,13 +358,13 @@ var Table = function () {
 
             App.get('MyCards').draw();
         }
-        that.clearTable();
+        this.clearTable();
     };
 
     this.updateCardImages = function () {
-        var cards = that.getCards();
+        var cards = this.getCards();
         if (cards) {
-            cards.concat(that.getCardsForThrow());
+            cards.concat(this.getCardsForThrow());
         }
         App.updateCardImages(cards);
     };

@@ -12,8 +12,8 @@ var Computer = Player.extend({
             this.off();
             this.stopListening();
         });
-        this.on('cards_added take_cards', function (from_deck) {
-            this.renderCards(from_deck);
+        this.on('cards_added take_cards', function (without_animation) {
+            this.renderCards(without_animation);
         }.bind(this));
         this.on('change:_cards', function () {
             console.log(this.get('_cards'));
@@ -25,7 +25,7 @@ var Computer = Player.extend({
 
         this._super('_addCards', cards);
 
-        this.trigger('cards_added', true);
+        this.trigger('cards_added', false);
     },
     bindCard: function (card) {
         card.on('click tap', function () {
@@ -76,8 +76,8 @@ var Computer = Player.extend({
         return this._super('_needCards');
     },
 
-    renderCards: function (from_deck) {
-        this._super('_renderCards', true, false, from_deck);
+    renderCards: function (without_animation) {
+        this._super('_renderCards', true, without_animation);
     },
 
     noCards: function () {

@@ -29,25 +29,13 @@ var WebManager = Backbone.Model.extend({
         this.listenTo(App, 'human:throw_turn', function (obj) {
             this.ThrowTurn(obj);
         });
-        this.listenTo(App, 'win', this.win);
-        this.listenTo(App, 'draw', this.draw);
-        this.listenTo(App, 'loose', this.loose);
     },
     addToPile: function () {
         this.doTurn({turn_type: 'addToPile'});
         client.gameManager.sendEvent('event', {data: 'getCards'});
     },
     doTurn: function (turn) {
-        turn.state = {
-//            opponent_cards: cloner.clone(App.get('opponent').getCards()),
-            table_state: Util.cloner.clone(App.get('table').getState())
-//            trump_value: App.getTrumpValue()
-//            deck_remain: App.get('deck_remain')
-        };
         client.gameManager.sendTurn(turn);
-    },
-    draw: function () {
-        this.doTurn({result: 2});
     },
     endThrow: function (cards) {
         if (cards)
@@ -60,9 +48,6 @@ var WebManager = Backbone.Model.extend({
     getCards: function () {
         client.gameManager.sendEvent('event', {data: 'getCards'});
     },
-    loose: function () {
-        this.doTurn({result: 0});
-    },
     takeCards: function (obj) {
         obj.turn_type = 'takeCards';
         this.doTurn(obj);
@@ -73,8 +58,5 @@ var WebManager = Backbone.Model.extend({
     },
     ThrowTurn: function (obj) {
         this.doTurn(obj);
-    },
-    win: function () {
-        this.doTurn({result: 1});
     }
 });

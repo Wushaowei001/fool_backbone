@@ -16,6 +16,15 @@ module.exports = {
                 }
                 break;
             case 'event':
+                if (turn.data == 'getCards') {
+                    if (room.app.deck.isEmpty()) {
+                        if (room.getOpponent(user).foolPlayer.getCountCards() == 0 && user.foolPlayer.getCountCards() > 0) {
+                            return {
+                                winner: room.getOpponent(user)
+                            }
+                        }
+                    }
+                }
                 if (turn.type) {
                     return false;
                 }
@@ -70,10 +79,15 @@ module.exports = {
             return turn;
         }
         if (turn.turn_type == 'addToPile') {
+            room.app.table.clear();
+            turn.state = {
+                table_state: room.app.table.getState()
+            };
             return turn;
         }
         if (turn.turn_type == 'takeCards') {
-            user.foolPlayer.addCards(turn.cards);
+            user.foolPlayer.addCards(turn.cards, user.userId);
+            room.app.table.clear();
 //            for (var i in turn.cards) {
 //                user.cards.push(turn.cards[i]);
 //            }
@@ -85,6 +99,7 @@ module.exports = {
                         return false;
                 }
                 user.foolPlayer.removeCards(turn.cards);
+                room.app.table.addCards(turn.cards, user.userId);
 //                for (var i in turn.cards) {
 //                    user.cards.pop();
 //                }
@@ -94,6 +109,7 @@ module.exports = {
                     return false;
                 }
                 user.foolPlayer.removeCard(turn.card);
+                room.app.table.addCard(turn.card, user.userId);
             }
 //            user.cards.pop();
         }
@@ -114,6 +130,10 @@ module.exports = {
                 turn.result = 0;
             }
         }
+
+        turn.state = {
+            table_state: room.app.table.getState()
+        };
 
         return turn;
     },
@@ -214,6 +234,7 @@ module.exports = {
         room.app.setMode(mode);
         room.app.iniDeck();
         room.app.deck = room.app.getDeck();
+        room.app.table = room.app.initTable();
         room.inviteData.trumpVal = room.app.getTrump();
         for (var i in room.players) {
             room.players[i].foolPlayer = room.app.initPlayer();

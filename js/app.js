@@ -5,8 +5,6 @@ var AppModel = Backbone.Model.extend({
         human: null,
         opponent: null,
         game_area: {},
-        card_height: 96,
-        card_width: 71,
         game_with_comp: false,
         sequence: ['d', 'c', 'h', 's'],
         wait_when_can_throw: 3000,
@@ -79,6 +77,10 @@ var AppModel = Backbone.Model.extend({
         });
         this.on('change:deck_remain', function (self) {
             this.trigger('update_deck_remain', self.changed.deck_remain);
+            if (this.get('deck_remain') > 0)
+                this.set('deck_is_empty', false);
+            else
+                this.set('deck_is_empty', true);
         });
         this.on('change:my_name', function (self) {
             this.trigger('my_name_changed', self.changed.my_name);
@@ -229,6 +231,12 @@ var AppModel = Backbone.Model.extend({
         var old_game = this.get('new_game_started');
         return (Date.now() - old_game > 1000);
     },
+    calculateCardsForPile: function (remainsInDeck) {
+        var count_all_cards = Config.decks[client.currentMode].count;
+        var cards_on_hands = this.get('human').getCards().length + this.get('opponent').getCards().length;
+        var cards_on_table = this.get('table').getCountCards() + this.get('table').getCountCardsOver();
+        return count_all_cards - (cards_on_hands + cards_on_table + remainsInDeck);
+    },
     changeProperty: function (setting) {
         var value = setting.value;
         if (setting.property == 'trump_mapping') {
@@ -274,6 +282,8 @@ var AppModel = Backbone.Model.extend({
             this.get('TakenCardsLayer').destroy();
         if (this.get('lastPileLayer'))
             this.get('lastPileLayer').destroy();
+//        if (this.get('fictionPileLayer'))
+//            this.get('fictionPileLayer').destroy();
         this.get('stage').draw();
     },
     deckIsEmpty: function () {
@@ -288,19 +298,25 @@ var AppModel = Backbone.Model.extend({
         if (this.get('stage'))
             this.get('stage').destroy();
     },
-    draw: function () {
-        this.trigger('draw');
+    destroyChildren: function (layer) {
+        this.get(layer).destroy();
+        this.get('stage').add(this.get(layer));
+//        for (var i = 0; i < children.length; i++) {
+//            if (_.isObject(children[0])) {
+//                children[0].destroy();
+//            }
+//        }
     },
     getDeckCoords: function () {
         return {
-            y: this.get('game_area').height / 2 - this.get('card_height') / 2,
+            y: this.get('game_area').height / 2 - Config.cards.height / 2,
             x: 10
         };
     },
     getPileCoords: function () {
         return {
-            x: this.get('game_area').width - this.get('card_width') - 40,
-            y: this.get('game_area').height / 2 - this.get('card_height') / 2
+            x: this.get('game_area').width - Config.cards.width - 40,
+            y: this.get('game_area').height / 2 - Config.cards.height / 2
         }
     },
     getImgUrlByCardId: function (card_id) {
@@ -466,8 +482,9 @@ var AppModel = Backbone.Model.extend({
                 var turn = history[i].turn;
                 var is_my_turn = history[i].user.userId == humanId;
                 table_state = turn.state.table_state;
-                table_state.human_attack = is_my_turn ?
-                    turn.state.table_state.human_attack : !turn.state.table_state.human_attack;
+//                var me_attack = turn.state.table_state.attacker == humanId;
+                table_state.human_attack = turn.state.table_state.attacker == humanId;
+//                    me_attack : !turn.state.table_state.human_attack;
                 player = is_my_turn ? human : opponent;
                 prefix = player.get('prefix_for_cards');
                 if (turn.turn_type == 'takeCards') {
@@ -561,7 +578,7 @@ var AppModel = Backbone.Model.extend({
             }
         }
     },
-    loadImages2: function (type) {
+    loadSprite: function (type) {
         console.log(type);
         App.trigger('load_images_start');
         var min = Config.cards.min_value;
@@ -611,9 +628,6 @@ var AppModel = Backbone.Model.extend({
                 onload(id, CurrentCard);
         };
     },
-    loose: function () {
-        this.trigger('loose');
-    },
     putToPile: function () {
         if (!this.get('human').canStep())
             return false;
@@ -645,14 +659,62 @@ var AppModel = Backbone.Model.extend({
         }
         return false;
     },
-    renderDeck: function (if_not_empty) {
-        if (this.get('Deck')) this.get('Deck').destroy();
+    renderDeck: function (forcibly) {
+        if (forcibly && !this.get('Deck')) {
+            this.set('Deck', new Konva.Layer());
+            this.get('stage').add(this.get('Deck'));
+        }
+        var children = this.get('Deck').children;
+        if (forcibly && children.length) {
+            this.destroyChildren('Deck');
+            this.get('Deck').draw();
+        }
+        if (forcibly || (!this.deckIsEmpty() && !children.length)) {
+            var DeckImage = new Image();
+            DeckImage.src = this.getBackImgUrl();
 
-        if (if_not_empty && this.deckIsEmpty()) {
+            DeckImage.onload = function () {
+                var Deck = new Konva.Image({
+                    x: this.getDeckCoords().x,
+                    y: this.getDeckCoords().y,
+                    image: DeckImage,
+                    width: Config.cards.width,
+                    height: Config.cards.height,
+                    id: 'deck'
+                });
+                var DeckAdd = new Konva.Image({
+                    x: this.getDeckCoords().x + 2,
+                    y: this.getDeckCoords().y + 2,
+                    image: DeckImage,
+                    width: Config.cards.width,
+                    height: Config.cards.height,
+                    id: 'deck_add'
+                });
+                this.get('Deck').add(Deck);
+                this.get('Deck').add(DeckAdd);
+                this.get('Deck').setZIndex(99);
+                this.get('Deck').draw();
+                this.set('backImage', DeckImage);
+            }.bind(this);
+        }
+        else {
+            if (this.deckIsEmpty() && children.length) {
+                this.destroyChildren('Deck');
+                this.get('Deck').draw();
+            }
+        }
+        return;
+
+        if (!forcibly && !this.deckIsEmpty()) {
             return false;
         }
 
-        if (this.get('game_with_comp') && if_not_empty &&
+        if (this.get('Deck')) this.get('Deck').destroy();
+
+        if (!forcibly && this.deckIsEmpty())
+            return false;
+
+        if (this.get('game_with_comp') &&
             (this.deckIsEmpty() || this.get('game_with_comp').onlyTrumpRemain())) {
             return false;
         }
@@ -667,16 +729,16 @@ var AppModel = Backbone.Model.extend({
                 x: this.getDeckCoords().x,
                 y: this.getDeckCoords().y,
                 image: DeckImage,
-                width: this.get('card_width'),
-                height: this.get('card_height'),
+                width: Config.cards.width,
+                height: Config.cards.height,
                 id: 'deck'
             });
             var DeckAdd = new Konva.Image({
                 x: this.getDeckCoords().x + 2,
                 y: this.getDeckCoords().y + 2,
                 image: DeckImage,
-                width: this.get('card_width'),
-                height: this.get('card_height'),
+                width: Config.cards.width,
+                height: Config.cards.height,
                 id: 'deck_add'
             });
             this.get('Deck').add(Deck);
@@ -690,10 +752,6 @@ var AppModel = Backbone.Model.extend({
         var trump_val = this.getTrumpValue();
         var already_on_table = this.get('stage').findOne('#' + trump_val) != undefined;
         if (this.deckIsEmpty()) {
-//            if (card) {
-//                card.remove();
-//                this.get('MyCards').add(card);
-//            }
             this.set('deck_is_empty', true);
 
             var trump = this.getTrump();
@@ -707,7 +765,6 @@ var AppModel = Backbone.Model.extend({
         }
         else {
             this.set('deck_is_empty', false);
-//            this.trigger('deck_is_not_empty');
         }
         var card = this.getImageById(trump_val).clone({
             x: Config.trump.x,
@@ -717,15 +774,6 @@ var AppModel = Backbone.Model.extend({
         });
         console.log(card);
         if (!already_on_table) {
-//            card = new Konva.Image({
-//                x: 136,
-//                y: this.getDeckCoords().y + 15,
-//                width: this.get('card_width'),
-//                height: this.get('card_height'),
-//                id: trump_val,
-//                rotation: 90
-//            });
-
             this.get('MyCards').add(card);
             this.get('Trump').add(card);
             this.get('stage').add(this.get('Trump'));
@@ -733,16 +781,9 @@ var AppModel = Backbone.Model.extend({
             this.get('stage').draw();
         }
         else {
-//            card = this.getImageById(trump_val).clone({
-//
-//            });
-//            card.setX(136);
-//            card.setRotation(90);
-//            card.setY(this.getDeckCoords().y + 15);
             this.get('Trump').add(card);
             this.get('stage').draw();
         }
-//        card.setImage(this.getImageById(trump_val));
         this.get('stage').draw();
     },
     renderTooltip: function (settings) {
@@ -806,31 +847,34 @@ var AppModel = Backbone.Model.extend({
         this.get('TimerLayer').batchDraw();
     },
     renderFromInternalHistory: function (history) {
-        var human, opponent;
+        var human, opponent, table, game_with_comp;
         human = this.get('human');
+        table = this.get('table');
+        game_with_comp = this.get('game_with_comp');
         this.clearCardsLayer();
         this.initGameStartTime();
         this.set('opponent', new Computer(Config.opponent));
         opponent = this.get('opponent');
         human.setCards(history.human_cards);
         opponent.setCards(history.opponent_cards);
-        this.get('table').setState(history.table_state);
-        this.get('game_with_comp').setDeck(history.deck);
+        table.setState(history.table_state);
+        game_with_comp.setDeck(history.deck);
 
-        this.renderDeck(true);
-        this.set('deck_remain', this.get('game_with_comp').remainsInDeck());
+        this.set('deck_remain', game_with_comp.remainsInDeck());
+        this.renderDeck();
         this.renderTrump();
 
-        this.get('table').render();
+        table.render();
 
-//        this.trigger('update_deck_remain');
-
-        human.renderCards();
-        opponent.renderCards();
+        human.renderCards(true);
+        opponent.renderCards(true);
         human.trigger('cards_changed', human.getCards().length);
         opponent.trigger('cards_changed', opponent.getCards().length);
         this.set('without_update_history', true);
         human.setCanStep(true);
+        // calculate cards for render pile
+        var count = this.calculateCardsForPile(game_with_comp.remainsInDeck());
+        this.renderFictionPile(count);
         this.set('without_update_history', false);
         this.trigger('renderFromInternalHistory',
             history.table_state.human_attack,
@@ -846,7 +890,6 @@ var AppModel = Backbone.Model.extend({
     renderFromState: function (state, without_animation) {
         if (state.deck_remain != undefined) {
             App.set('deck_remain', state.deck_remain);
-            App.set('deck_is_empty', state.deck_remain == 0);
         }
         if (state.table_state) {
             state.table_state.without_animation = without_animation;
@@ -858,15 +901,53 @@ var AppModel = Backbone.Model.extend({
         if (state.opponent_cards) {
             App.get('opponent').setCards(state.opponent_cards);
         }
-        App.renderDeck(true);
+        App.renderDeck();
         App.renderTrump();
         var human = this.get('human');
         var opponent = this.get('opponent');
+        var table = App.get('table');
         human.renderCards(without_animation);
         opponent.renderCards(without_animation);
         human.trigger('cards_changed', human.getCards().length);
         opponent.trigger('cards_changed', opponent.getCards().length);
-        App.get('table').render();
+        table.render();
+
+        // calculate cards for render pile
+        var count = this.calculateCardsForPile(this.get('deck_remain'));
+        this.renderFictionPile(count);
+    },
+    renderFictionPile: function (count_cards) {
+        if (this.get('fictionPileLayer') && count_cards <= 0) {
+            this.renderFictionPile.count = 0;
+            this.get('fictionPileLayer').destroy();
+            this.get('stage').draw();
+            return;
+        }
+        if (this.renderFictionPile.count == count_cards
+            && this.get('fictionPileLayer') && this.get('fictionPileLayer').children.length)
+            return;
+
+        this.renderFictionPile.count = count_cards;
+
+        if (this.get('fictionPileLayer')) {
+            this.get('fictionPileLayer').destroy();
+        }
+
+        var fictionPileLayer = new Konva.Layer();
+        for (var i = 0; i < count_cards; i++) {
+            var card = new Konva.Image({
+                x: this.getPileCoords().x,
+                y: this.getPileCoords().y,
+                image: this.get('backImage'),
+                width: Config.cards.width,
+                height: Config.cards.height,
+                rotation: -Math.floor(Math.random() * 30)
+            });
+            fictionPileLayer.add(card);
+        }
+        this.set('fictionPileLayer', fictionPileLayer);
+        fictionPileLayer.moveDown();
+        this.get('stage').add(fictionPileLayer);
     },
     renderCardsByClassName: function (name, image) {
         var cards = this.get('stage').find('.' + name);
@@ -887,10 +968,13 @@ var AppModel = Backbone.Model.extend({
             history: null
         });
         this.renderTrump.trump = null;
+        this.renderFictionPile.count = null;
 
         if (this.get('MyCards')) {
             this.get('MyCards').destroy();
         }
+        if (this.get('Deck'))
+            this.get('Deck').destroy();
         if (this.get('opponent'))
             this.get('opponent').destroy();
         if (this.get('webManager'))
@@ -902,6 +986,7 @@ var AppModel = Backbone.Model.extend({
                 MyCards: new Konva.Layer(),
                 Trump: new Konva.Layer(),
                 Throw: new Konva.Layer(),
+                Deck: new Konva.Layer(),
                 PossibleCards: new Konva.Layer(),
                 TimerLayer: new Konva.Layer(),
                 table: new Table(),
@@ -924,7 +1009,8 @@ var AppModel = Backbone.Model.extend({
         this.get('stage').add(this.get('MyCards'));
         this.get('stage').add(this.get('Throw'));
         this.get('stage').add(this.get('TimerLayer'));
-        this.renderDeck();
+        this.get('stage').add(this.get('Deck'));
+        this.renderDeck(true);
     },
 
     setGameArea: function (params) {
@@ -1051,9 +1137,5 @@ var AppModel = Backbone.Model.extend({
             this.get('stage').draw();
             return card;
         }
-    },
-    win: function () {
-        this.trigger('win');
     }
-
 });
