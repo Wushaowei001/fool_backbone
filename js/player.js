@@ -37,6 +37,9 @@ var Player = Backbone.Model.extend({
         var tween = this.tweens.shift();
         tween.play();
     },
+    _cardValuesEquals: function (id1, id2) {
+        return +id1.slice(1) == +id2.slice(1);
+    },
     _removeCard: function (id) {
         this.set('_cards', _.without(this.getCards(), id));
         if (App.get('stage')) {
@@ -200,7 +203,7 @@ var Player = Backbone.Model.extend({
                 tween.play();
             }
             if (this.getCards()[+i + 1] && !opponent) {
-                if (id.slice(1) == this.getCards()[+i + 1].slice(1))
+                if (this._cardValuesEquals(id, this.getCards()[+i + 1]))
                     x += (interval - 10);
                 else
                     x += interval;
@@ -358,7 +361,7 @@ var Player = Backbone.Model.extend({
         var result = [];
         for (var i in cards) {
             for (var j in this.getCards()) {
-                if (this.getCards()[j].slice(1) == cards[i].slice(1)) {
+                if (this._cardValuesEquals(this.getCards()[j], cards[i])) {
                     result.push(this.getCards()[j]);
                 }
             }

@@ -101,4 +101,14 @@ $(function () {
             App.start(true);
         }
     });
+    $('.game_with_comp #transferable').on('click', function () {
+        if (App.canStart()) {
+            App.set('mode_cards_count', 'transferable');
+            client.setMode('transferable');
+            App.set('transferable', true);
+        }
+        if (App.get('game_with_comp')) {
+            App.start(true);
+        }
+    });
 });

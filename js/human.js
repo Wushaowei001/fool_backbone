@@ -40,6 +40,9 @@ var Human = Player.extend({
             this.beforeMyStep();
         }
     },
+    cardValuesEquals: function (id1, id2) {
+        return +id1.slice(1) == +id2.slice(1);
+    },
     canStep: function () {
         return App.get('can_step') && !App.get('spectate');
 //        return this.get('can_step');
@@ -49,18 +52,19 @@ var Human = Player.extend({
             return false;
         if (!this._isMyCard(id))
             return false;
-        var count_cards_on_table = App.get('table').getCountCards() + App.get('table').getCountCardsForThrow();
-        if (App.get('table').human_attack) {
+        var table = App.get('table');
+        var count_cards_on_table = table.getCountCards() + table.getCountCardsForThrow();
+        if (table.human_attack) {
             if (count_cards_on_table == App.get('human').get('MAX_COUNT_CARDS'))
                 return false;
-            if (!App.get('game_with_comp') && App.get('opponent').countCards() == App.get('table').getCountCardsNotYetBeatenWithThrow())
+            if (!App.get('game_with_comp') && App.get('opponent').countCards() == table.getCountCardsNotYetBeatenWithThrow())
                 return false;
 
         }
         if (this.canThrowCard(id))
             return true;
-        var card_on_table = App.get('table').getCardForBeatID();
-        var cards_on_table = App.get('table').getCards();
+        var card_on_table = table.getCardForBeatID();
+        var cards_on_table = table.getCards();
 
         var card_val = +id.slice(1);
         if (card_on_table) {
@@ -80,7 +84,7 @@ var Human = Player.extend({
     canThrowCard: function (card) {
         if (App.get('game_with_comp'))
             return false;
-        if (App.get('table').human_attack) {
+        if (table.human_attack) {
             var cards = App.get('table').getCards();
             for (var i in cards) {
                 if (cards[i].slice(1) == card.slice(1))
@@ -89,6 +93,19 @@ var Human = Player.extend({
             return false;
         }
         return false;
+    },
+    canTransfer: function (id) {
+        if (!App.get('transferable'))
+            return false;
+        var table = App.get('table');
+        if (table.getCountCardsOver())
+            return false;
+        var cards_on_table = table.getCards();
+        for (var i in cards_on_table) {
+            if (!this.cardValuesEquals(id, cards_on_table[i]))
+                return false;
+        }
+        return true;
     },
     unBindCardEvents: function (card) {
         if (card) {
@@ -107,24 +124,26 @@ var Human = Player.extend({
         if (!App.get('view_only') && this.noCards()) {
             return;
         }
-        if (App.get('table').getCardForBeat() && !App.get('view_only') && !App.get('table').human_attack)
+        var table = App.get('table');
+        var game_with_comp = App.get('game_with_comp');
+        if (table.getCardForBeat() && !App.get('view_only') && !table.human_attack)
             App.trigger('can_take_cards');
         else {
-            if (App.get('table').getCards() && !App.get('view_only'))
+            if (table.getCards() && !App.get('view_only'))
                 App.trigger('can_put_to_pile');
         }
-        if (App.get('table').getCards() && !App.get('view_only') && !App.get('without_animation')) {
-            if (!App.get('table').getCardForBeat() && !App.get('table').getCardsForThrow() && !this.getCardsForThrow()) {
+        if (table.getCards() && !App.get('view_only') && !App.get('without_animation')) {
+            if (!table.getCardForBeat() && !table.getCardsForThrow() && !this.getCardsForThrow()) {
                 App.get('human').setCanStep(false); // because user can step before add to pile
                 App.trigger('beaten');
                 App.safeTimeOutAction(800, function () {
-                    App.get('table').addToPile();
+                    table.addToPile();
                     App.safeTimeOutAction(1000, function () {
-                        if (!App.get('game_with_comp')) {
+                        if (!game_with_comp) {
                             App.trigger('human:addToPile');
                         }
                         else {
-                            App.get('game_with_comp').addCards(false, function () {
+                            game_with_comp.addCards(false, function () {
 //                                App.trigger('update_deck_remain');
                             });
                             if (!App.get('view_only')) {
@@ -138,7 +157,7 @@ var Human = Player.extend({
                 return;
             }
             else {
-                if (App.get('table').getCardForBeat() && !App.get('table').human_attack && !this.getMinCard(App.get('table').getCardForBeatID())) {
+                if (table.getCardForBeat() && !table.human_attack && !this.getMinCard(table.getCardForBeatID())) {
                     this.unBindCards();
                     App.trigger('nothing_to_beat');
                     if (!App.get('view_only'))
@@ -149,9 +168,9 @@ var Human = Player.extend({
                 }
             }
         }
-        if (App.get('game_with_comp') && !App.get('without_update_history')) {
+        if (game_with_comp && !App.get('without_update_history')) {
             console.log('UPDATE HISTORY!!!');
-            App.get('game_with_comp').history.update_history();
+            game_with_comp.history.update_history();
             App.set('without_update_history', false);
         }
         this.bindCards();

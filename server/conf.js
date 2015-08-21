@@ -14,7 +14,7 @@ module.exports = {
     spectateEnable: true,   // on/off spectate games
     mode: 'develop', // set developing mode, db isn't required
     penalties: true,
-    gameModes: ['default', 'deck_52'], // game modes, with different history, ratings, games, default is one mode ['default']
+    gameModes: ['default', 'deck_52', 'transferable'], // game modes, with different history, ratings, games, default is one mode ['default']
     modesAlias: {'default': '36 карт', 'deck_52': '52 карты'},
     enableIpGames: false,
     mongo: {

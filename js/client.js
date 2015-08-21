@@ -266,10 +266,7 @@ function onInit() {
         if (your_turn) {
             if (App.get('human'))
                 App.get('human').setCanStep(true);
-            else {
-                App.get('deferred_actions').push({can_step: true});// not used
-                return;
-            }
+
             var cards_for_throw_on_table, cards_for_throw;
 
             if (last_turn && last_turn.turn_type == 'takeCards') {
@@ -368,9 +365,6 @@ function onInit() {
             }
             if (App.get('human') && !App.get('table').getCardsForThrow())
                 App.get('human').setCanStep(false);
-            else {
-                App.get('deferred_actions').push({can_step: false});
-            }
         }
     });
 
@@ -397,7 +391,6 @@ function onInit() {
             }
             if (data.event.deckIsEmpty) {
                 App.set('deck_is_empty', true);
-//                App.empty_deck = true;
                 App.get('Deck').destroy();
                 App.get('Trump').hide();
             }
@@ -406,6 +399,7 @@ function onInit() {
             }
             if (data.event.cardsRemain != undefined) {
                 App.set('deck_remain', data.event.cardsRemain);
+                App.renderTrump();
             }
             if (App.get('human'))
                 App.get('human').renderCards();

@@ -28,7 +28,7 @@ var AppModel = Backbone.Model.extend({
         deck_is_empty: null,
         deck_remain: null,
         spectate: null,
-        deferred_actions: [],
+        transferable: null,
         in_round: false
     },
 
@@ -267,7 +267,7 @@ var AppModel = Backbone.Model.extend({
         BackImage.src = this.getBackImgUrl();
         BackImage.onload = function () {
             this.renderCardsByClassName('inverted', BackImage);
-            this.renderDeck(true);
+            this.renderDeck();
         }.bind(this);
     },
     clear: function () {
@@ -1000,7 +1000,7 @@ var AppModel = Backbone.Model.extend({
                 deck_is_empty: null,
                 deck_remain: null,
                 spectate: null,
-                deferred_actions: [],
+                transferable: null,
                 history: null,
                 not_my_story: false,
                 game_with_comp: null

@@ -34,6 +34,7 @@ module.exports = function () {
     var setMode = function (mode) {
         switch (mode) {
             case 'default':
+            case 'transferable':
                 setDeckCount(36);
                 break;
             case 'deck_52':

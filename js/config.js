@@ -195,6 +195,9 @@ var Config = {
         },
         deck_52: {
             count: 52
+        },
+        transferable: {
+            count: 36
         }
     },
     trump: {
