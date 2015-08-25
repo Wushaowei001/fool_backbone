@@ -14,7 +14,6 @@ var AppModel = Backbone.Model.extend({
         without_update_history: false,
         settings: null,
         new_game_started: false,
-        mode_cards_count: 'default',
         MAX_COUNT_CARDS: 52,
         images: {},
         awaiting_opponent_cards: [],
@@ -28,8 +27,8 @@ var AppModel = Backbone.Model.extend({
         deck_is_empty: null,
         deck_remain: null,
         spectate: null,
-        transferable: null,
-        in_round: false
+        in_round: false,
+        mode: 'default'
     },
 
     initialize: function () {
@@ -62,25 +61,30 @@ var AppModel = Backbone.Model.extend({
             this.trigger('can_step', self.changed.can_step);
         });
 
-        this.on('change:deck_is_empty', function (self) {
-            if (self.changed.deck_is_empty) {
-                var trump = this.getTrump();
-                var trump_mapping = this.getProperty('trump_mapping');
-                if (trump_mapping && trump_mapping[trump]) {
-                    trump = trump_mapping[trump];
+        this.on('change:deck_is_empty', function () {
+            console.log(this.get('deck_is_empty'));
+            if (this.get('deck_is_empty') != null) {
+                if (this.get('deck_is_empty') === true) {
+                    var trump = this.getTrump();
+                    var trump_mapping = this.getProperty('trump_mapping');
+                    if (trump_mapping && trump_mapping[trump]) {
+                        trump = trump_mapping[trump];
+                    }
+                    this.trigger('deck_is_empty', trump);
                 }
-                this.trigger('deck_is_empty', trump);
+                else {
+                    this.trigger('deck_is_not_empty');
+                }
             }
-            else
-                this.trigger('deck_is_not_empty');
-
         });
         this.on('change:deck_remain', function (self) {
             this.trigger('update_deck_remain', self.changed.deck_remain);
-            if (this.get('deck_remain') > 0)
-                this.set('deck_is_empty', false);
-            else
-                this.set('deck_is_empty', true);
+            if (this.get('deck_remain') != null) {
+                if (this.get('deck_remain') > 0)
+                    this.set('deck_is_empty', false);
+                else
+                    this.set('deck_is_empty', true);
+            }
         });
         this.on('change:my_name', function (self) {
             this.trigger('my_name_changed', self.changed.my_name);
@@ -90,11 +94,8 @@ var AppModel = Backbone.Model.extend({
                 this.trigger('join_spectate', self.changed.spectate);
             else {
                 this.trigger('leave_spectate');
-                this.trigger('change_mode_cards_count', this.get('mode_cards_count'));
+                this.trigger('change_mode', this.get('mode'));
             }
-        });
-        this.on('change:mode_cards_count', function (self) {
-            this.trigger('change_mode_cards_count', self.changed.mode_cards_count);
         });
         this.on('change:history', function (self) {
             if (this.get('history')) {
@@ -126,6 +127,9 @@ var AppModel = Backbone.Model.extend({
             if (this.get('opponent')) {
                 this.trigger('new_opponent');
             }
+        });
+        this.on('change:mode', function () {
+            this.trigger('change_mode', this.get('mode'));
         });
     },
 
@@ -231,11 +235,11 @@ var AppModel = Backbone.Model.extend({
         var old_game = this.get('new_game_started');
         return (Date.now() - old_game > 1000);
     },
-    calculateCardsForPile: function (remainsInDeck) {
+    calculateCardsForPile: function () {
         var count_all_cards = Config.decks[client.currentMode].count;
         var cards_on_hands = this.get('human').getCards().length + this.get('opponent').getCards().length;
         var cards_on_table = this.get('table').getCountCards() + this.get('table').getCountCardsOver();
-        return count_all_cards - (cards_on_hands + cards_on_table + remainsInDeck);
+        return count_all_cards - (cards_on_hands + cards_on_table + this.get('deck_remain'));
     },
     changeProperty: function (setting) {
         var value = setting.value;
@@ -287,7 +291,7 @@ var AppModel = Backbone.Model.extend({
         this.get('stage').draw();
     },
     deckIsEmpty: function () {
-        return this.get('deck_remain') == 0 || this.get('deck_is_empty');
+        return this.get('deck_remain') === 0 || this.get('deck_is_empty');
 //        return this.get('game_with_comp') ? this.get('game_with_comp').deckIsEmpty() : this.get('deck_is_empty');
     },
     destroyKonvaById: function (id) {
@@ -379,8 +383,9 @@ var AppModel = Backbone.Model.extend({
     },
     getMinCardValue: function () {
         var value;
-        switch (this.get('mode_cards_count')) {
+        switch (this.get('mode')) {
             case 'default':
+            case 'transferable':
                 value = 6;
                 break;
             case 'deck_52':
@@ -400,6 +405,12 @@ var AppModel = Backbone.Model.extend({
     },
     getProperty: function (property) {
         return this.get('settings').get(property);
+    },
+    isFirstHand: function () {
+        return this.calculateCardsForPile() <= 0;
+    },
+    isTransfarable: function () {
+        return this.get('mode') == 'transferable';
     },
     initStage: function () {
         var area = this.get('game_area');
@@ -752,7 +763,7 @@ var AppModel = Backbone.Model.extend({
         var trump_val = this.getTrumpValue();
         var already_on_table = this.get('stage').findOne('#' + trump_val) != undefined;
         if (this.deckIsEmpty()) {
-            this.set('deck_is_empty', true);
+//            this.set('deck_is_empty', true);
 
             var trump = this.getTrump();
             this.get('Trump').destroy();
@@ -763,16 +774,15 @@ var AppModel = Backbone.Model.extend({
             this.trigger('show_trump', trump);
             return false;
         }
-        else {
-            this.set('deck_is_empty', false);
-        }
+//        else {
+//            this.set('deck_is_empty', false);
+//        }
         var card = this.getImageById(trump_val).clone({
             x: Config.trump.x,
             y: App.getDeckCoords().y + 15,
             id: trump_val,
             rotation: 90
         });
-        console.log(card);
         if (!already_on_table) {
             this.get('MyCards').add(card);
             this.get('Trump').add(card);
@@ -873,7 +883,7 @@ var AppModel = Backbone.Model.extend({
         this.set('without_update_history', true);
         human.setCanStep(true);
         // calculate cards for render pile
-        var count = this.calculateCardsForPile(game_with_comp.remainsInDeck());
+        var count = this.calculateCardsForPile();
         this.renderFictionPile(count);
         this.set('without_update_history', false);
         this.trigger('renderFromInternalHistory',
@@ -1000,7 +1010,6 @@ var AppModel = Backbone.Model.extend({
                 deck_is_empty: null,
                 deck_remain: null,
                 spectate: null,
-                transferable: null,
                 history: null,
                 not_my_story: false,
                 game_with_comp: null
@@ -1059,13 +1068,14 @@ var AppModel = Backbone.Model.extend({
             this.setTrump(lastCard);
             this.applyTrumMapping();
             this.set('opponent', new Computer(Config.opponent));
-            this.renderTrump();
+
 
             this.get('game_with_comp').history.disablePrev();
             this.get('game_with_comp').history.disableNext();
 
             this.get('game_with_comp').addCards(true, function () {
 //                this.trigger('update_deck_remain');
+                this.renderTrump();
                 var comp_step_first = this.get('game_with_comp').ifComputerStepFirst();
                 this.trigger('comp_step_first', comp_step_first);
                 this.get('human').setCanStep(!comp_step_first);

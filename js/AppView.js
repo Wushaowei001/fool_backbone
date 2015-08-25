@@ -73,7 +73,7 @@ var AppView = Backbone.View.extend({
 
         this.listenTo(App, 'start', this.onStart);
         this.listenTo(App, 'default_screen', this.showDefaultScreen);
-        this.listenTo(App, 'change_mode_cards_count', function (mode) {
+        this.listenTo(App, 'change_mode', function (mode) {
             this.changeModeCardsCount(mode);
         });
         this.listenTo(App, 'comp_step_first', function (first) {

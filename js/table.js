@@ -51,17 +51,29 @@ var Table = function () {
 
     this.getCardForBeat = function () {
         var all_cards = this.all_cards.cards;
-        var card = null;
+//        var card = null;
         for (var i in all_cards) {
             if (!all_cards[i].over)
-                card = all_cards[i];
+                return all_cards[i];
+//                card = all_cards[i];
         }
-        return card;
+        return false;
     };
 
     this.getCardForBeatID = function () {
         var card = this.getCardForBeat();
         return card ? card.id : false;
+    };
+
+    this.getCardsForBeat = function () {
+        var result = [];
+        var cards = this.all_cards.cards;
+        for (var i in cards) {
+            if (!cards[i].over) {
+                result.push(cards[i].id);
+            }
+        }
+        return result.length ? result : false;
     };
 
     this.addCard = function (id, bottom_player) {
@@ -80,6 +92,15 @@ var Table = function () {
             }
         }
 
+        this.render();
+    };
+
+    this.addTransferCard = function (id) {
+        this.all_cards.cards.push({
+            id: id,
+            over: ''
+        });
+        this.human_attack = !this.human_attack;
         this.render();
     };
 
@@ -367,6 +388,10 @@ var Table = function () {
             cards.concat(this.getCardsForThrow());
         }
         App.updateCardImages(cards);
+    };
+
+    this.possibleTransfer = function () {
+        return !this.getCountCardsOver();
     };
 
 };

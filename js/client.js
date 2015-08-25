@@ -2,7 +2,7 @@ LogicGame.init(onInit);
 
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
-    var mode = 'real';
+    var mode = 'local';
     window.client = new Client({
         https: Config.client[mode].https,
         domain: Config.client[mode].domain,
@@ -153,7 +153,7 @@ function onInit() {
         App.setTrump(data.inviteData.trumpVal);
         var round_start = function () {
 
-            App.set('mode_cards_count', data.inviteData.mode);
+            App.set('mode', data.inviteData.mode);
 
             App.applyTrumMapping();
             App.start(false, function () {

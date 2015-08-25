@@ -85,7 +85,7 @@ $(function () {
 
     $('.game_with_comp #default').on('click', function () {
         if (App.canStart()) {
-            App.set('mode_cards_count', 'default');
+            App.set('mode', 'default');
             client.setMode('default');
         }
         if (App.get('game_with_comp')) {
@@ -94,7 +94,7 @@ $(function () {
     });
     $('.game_with_comp #deck_52').on('click', function () {
         if (App.canStart()) {
-            App.set('mode_cards_count', 'deck_52');
+            App.set('mode', 'deck_52');
             client.setMode('deck_52');
         }
         if (App.get('game_with_comp')) {
@@ -103,9 +103,8 @@ $(function () {
     });
     $('.game_with_comp #transferable').on('click', function () {
         if (App.canStart()) {
-            App.set('mode_cards_count', 'transferable');
+            App.set('mode', 'transferable');
             client.setMode('transferable');
-            App.set('transferable', true);
         }
         if (App.get('game_with_comp')) {
             App.start(true);

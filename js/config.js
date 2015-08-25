@@ -81,7 +81,8 @@ var Config = {
             first_line: 207,
             second_line: 337
         },
-        max_count_cards: 6
+        max_count_cards: 6,
+        max_count_cards_in_first_hand: 5
     },
     card_stroke_color: 'black',
     timer: {

@@ -281,59 +281,65 @@ var Player = Backbone.Model.extend({
             tween.play();
         }
     },
-    _getMinTrump: function () {
+    _getMinTrump: function (forbidden_ids) {
         var min_trump = '';
         var trump = App.getTrump();
         for (var i in this.getCards()) {
             if (this.getCards()[i][0] == trump) {
-                var current_val = +this.getCards()[i].split(trump)[1];
-                if (!min_trump) {
-                    min_trump = this.getCards()[i];
+                var current_card = this.getCards()[i];
+                var current_val = +current_card.slice(1);
+                if (!min_trump && !_.contains(forbidden_ids, current_card)) {
+                    min_trump = current_card;
                 }
                 else {
-                    if (+min_trump.split(trump)[1] > current_val)
-                        min_trump = this.getCards()[i];
+                    if (+min_trump.slice(1) > current_val && !_.contains(forbidden_ids, current_card))
+                        min_trump = current_card;
                 }
             }
         }
         return min_trump;
     },
-    _getMinCard: function (card) {
+    _getMinCard: function (card, forbidden_ids) {
         var min = '';
+        var current_card;
         if (!card) {
             for (var i in this.getCards()) {
+                current_card = this.getCards()[i];
                 if (!min) {
-                    if (this.getCards()[i][0] != App.getTrump()) {
-                        min = this.getCards()[i];
+                    if (current_card[0] != App.getTrump()) {
+                        min = current_card;
                     }
                 }
-                var current = +this.getCards()[i].substring(1);
+                var current = +current_card.substring(1);
                 var min_val = +min.substring(1);
-                if (current < min_val && this.getCards()[i][0] != App.getTrump())
-                    min = this.getCards()[i];
+                if (current < min_val && current_card[0] != App.getTrump())
+                    min = current_card;
             }
             if (!min)
                 min = this._getMinTrump();
         }
         else {
             var suit = card[0];
-            var card_val = +card.split(suit)[1];
+            var card_val = +card.slice(1);
             for (var i in this.getCards()) {
-                if (this.getCards()[i][0] == suit) {
-                    var current_val = +this.getCards()[i].split(suit)[1];
+                current_card = this.getCards()[i];
+                if (current_card[0] == suit) {
+                    var current_val = +current_card.slice(1);
 
                     if (!min) {
-                        if (current_val > card_val)
-                            min = this.getCards()[i];
+                        if (current_val > card_val && !_.contains(forbidden_ids, current_card)) {
+                            min = current_card;
+                        }
                     }
                     else {
-                        if (current_val > card_val && current_val < +min.split(suit)[1])
-                            min = this.getCards()[i];
+                        if (current_val > card_val && current_val < +min.slice(1) && !_.contains(forbidden_ids, current_card)) {
+                            min = current_card;
+                        }
                     }
                 }
             }
             if (!min && suit != App.getTrump()) {
-                min = this._getMinTrump();
+                min = this._getMinTrump(forbidden_ids);
             }
         }
         return min;
@@ -371,6 +377,12 @@ var Player = Backbone.Model.extend({
     _getCardForThrow: function () {
         var cards = this._getCardsForThrow();
         return cards.length ? cards[0] : null;
+    },
+    _getCardsEquals: function (id) {
+        var result = this.get('_cards').filter(function (value) {
+            return this._cardValuesEquals(id, value);
+        }.bind(this));
+        return result.length ? result : false;
     },
     _activateLastTakenCards: function (cards) {
         if (this.get('TakenCardsLayer')) {
