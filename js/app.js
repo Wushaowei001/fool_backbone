@@ -407,7 +407,8 @@ var AppModel = Backbone.Model.extend({
         return this.get('settings').get(property);
     },
     isFirstHand: function () {
-        return this.calculateCardsForPile() <= 0;
+        var cards_in_deck = Config.decks[client.currentMode].count;
+        return this.get('deck_remain') + Config.player.MAX_COUNT_CARDS * 2 == cards_in_deck;
     },
     isTransfarable: function () {
         return this.get('mode') == 'transferable';
