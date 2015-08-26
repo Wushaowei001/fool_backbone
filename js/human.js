@@ -56,11 +56,12 @@ var Human = Player.extend({
         if (!this._isMyCard(id))
             return false;
         var table = App.get('table');
+        var opponent = App.get('opponent');
         var count_cards_on_table = table.getCountCards() + table.getCountCardsForThrow();
         if (table.human_attack) {
-            if (count_cards_on_table == App.get('human').get('MAX_COUNT_CARDS'))
+            if (count_cards_on_table == this.get('MAX_COUNT_CARDS'))
                 return false;
-            if (!App.get('game_with_comp') && App.get('opponent').countCards() == table.getCountCardsNotYetBeatenWithThrow())
+            if (!App.get('game_with_comp') && opponent.getCountCards() == table.getCountCardsNotYetBeatenWithThrow())
                 return false;
 
         }
@@ -73,7 +74,7 @@ var Human = Player.extend({
 
         var card_val = +id.slice(1);
         if (card_on_table) {
-            return App.get('human').isCardCanCoverCardOnTable(id) && this.canStep();
+            return this.isCardCanCoverCardOnTable(id) && this.canStep();
         }
         else {
             if (cards_on_table) {
@@ -89,8 +90,9 @@ var Human = Player.extend({
     canThrowCard: function (card) {
         if (App.get('game_with_comp'))
             return false;
+        var table = App.get('table');
         if (table.human_attack) {
-            var cards = App.get('table').getCards();
+            var cards = table.getCards();
             for (var i in cards) {
                 if (cards[i].slice(1) == card.slice(1))
                     return true;
@@ -126,7 +128,10 @@ var Human = Player.extend({
                 var allow_transfer = opponent.getCountCards() >= table.getCardsForBeat().length + 1;
                 if (allow_transfer) {
                     var card_on_table = table.getCardForBeatID();
+                    var cards_for_throw = table.getCardsForThrow();
                     var my_cards = this.getCards();
+                    if (cards_for_throw)
+                        my_cards = my_cards.concat(cards_for_throw);
                     for (var i in my_cards) {
                         if (this.cardValuesEquals(card_on_table, my_cards[i]))
                             return true;
@@ -164,64 +169,64 @@ var Human = Player.extend({
                 App.trigger('can_put_to_pile');
         }
         if (table.getCards() && !App.get('view_only') && !App.get('without_animation')) {
-            if (!table.getCardForBeat() && !table.getCardsForThrow() && !this.getCardsForThrow() ||
-                opponent.getCountCards() <= 0 ||
-                (App.isFirstHand() && table.getCountCards() == Config.table.max_count_cards_in_first_hand)) {
-                this.setCanStep(false); // because user can step before add to pile
-                App.trigger('beaten');
-                App.safeTimeOutAction(800, function () {
-                    table.addToPile();
-                    App.safeTimeOutAction(1000, function () {
-                        if (!game_with_comp) {
-                            App.trigger('human:addToPile');
-                        }
-                        else {
-                            game_with_comp.addCards(false, function () {
-//                                App.trigger('update_deck_remain');
-                            });
-                            if (!App.get('view_only')) {
-
-                                App.safeTimeOutAction(800, function () {
-                                    Util.sequentialActions.add(function () {
-                                        opponent.step();
-                                    }, 400);
-
-                                });
-                            }
-                        }
-                    });
-                });
-                return;
-            }
-            else {
-                var can_transfer = false;
-                var can_not_beat = false;
-                if (App.isTransfarable()) {
-                    can_transfer = this.canTransfer();
-                    var cards_for_beat = table.getCardsForBeat();
-                    var forbidden_ids = [];
-                    var id;
-                    for (var i in cards_for_beat) {
-                        id = this.getMinCard(cards_for_beat[i], forbidden_ids);
-                        if (id)
-                            forbidden_ids.push(id);
-                        else
-                            can_not_beat = true;
-                    }
-                }
-                else {
-                    if (table.getCardForBeat() && !table.human_attack && !this.getMinCard(table.getCardForBeatID()))
-                        can_not_beat = true;
-                }
-                if (can_not_beat && !can_transfer) {
-                    this.unBindCards();
-                    App.trigger('nothing_to_beat');
-                    if (!App.get('view_only'))
+            if (!table.getCardForBeat()) {
+                if (!table.getCardsForThrow() && !this.getCardsForThrow() ||
+                    opponent.getCountCards() <= 0 ||
+                    (App.isFirstHand() && table.getCountCards() == Config.table.max_count_cards_in_first_hand)) {
+                    this.setCanStep(false); // because user can step before add to pile
+                    App.trigger('beaten');
+                    App.safeTimeOutAction(800, function () {
+                        table.addToPile();
                         App.safeTimeOutAction(1000, function () {
-                            App.humanTakeCards();
+                            if (!game_with_comp) {
+                                App.trigger('human:addToPile');
+                            }
+                            else {
+                                game_with_comp.addCards(false, function () {
+//                                App.trigger('update_deck_remain');
+                                });
+                                if (!App.get('view_only')) {
+
+                                    App.safeTimeOutAction(800, function () {
+                                        Util.sequentialActions.add(function () {
+                                            opponent.step();
+                                        }, 400);
+
+                                    });
+                                }
+                            }
                         });
+                    });
                     return;
                 }
+            }
+            var can_transfer = false;
+            var can_not_beat = false;
+            if (App.isTransfarable()) {
+                can_transfer = this.canTransfer();
+                var cards_for_beat = table.getCardsForBeat();
+                var forbidden_ids = [];
+                var id;
+                for (var i in cards_for_beat) {
+                    id = this.getMinCard(cards_for_beat[i], forbidden_ids);
+                    if (id)
+                        forbidden_ids.push(id);
+                    else
+                        can_not_beat = true;
+                }
+            }
+            else {
+                if (table.getCardForBeat() && !table.human_attack && !this.getMinCard(table.getCardForBeatID()))
+                    can_not_beat = true;
+            }
+            if (can_not_beat && !can_transfer) {
+                this.unBindCards();
+                App.trigger('nothing_to_beat');
+                if (!App.get('view_only'))
+                    App.safeTimeOutAction(1000, function () {
+                        App.humanTakeCards();
+                    });
+                return;
             }
         }
         if (game_with_comp && !App.get('without_update_history')) {
@@ -261,11 +266,6 @@ var Human = Player.extend({
             if (!this.canStartStep(id))
                 return false;
             var last_card = this.noCards();
-            if (this.canTransferByCard(id)) {
-                this.transferCard(id);
-                this.setCanStep(false);
-                return;
-            }
             if (!App.get('game_with_comp')) {
                 if (!this.canStep() && !App.get('spectate')) {
                     this.removeCard(id);
@@ -278,6 +278,11 @@ var Human = Player.extend({
                 });
             }
             else {
+                if (this.canTransferByCard(id)) {
+                    this.transferCard(id);
+                    this.setCanStep(false);
+                    return;
+                }
                 this.step(id);
             }
         }.bind(this));

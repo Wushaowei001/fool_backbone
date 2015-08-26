@@ -1,0 +1,18 @@
+html, body {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+}
+
+.bspAuxBtn {
+    display: none;
+}
+
+.gameZona {
+    margin-left: 0 !important;
+}
+
+.lg-vkgroup{
+    right: 25px !important;
+    margin-top: 25px !important;
+}

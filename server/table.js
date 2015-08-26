@@ -27,8 +27,9 @@ module.exports = function () {
         }
     };
 
-    this.addTransferableCard = function (id) {
+    this.addTransferableCard = function (id, userId) {
         this.state.cards.push({id: id, over: ''});
+        this.state.attacker = userId;
     };
 
     this.addCards = function (ids, userId) {
@@ -50,5 +51,38 @@ module.exports = function () {
             cards: this.state.cards.slice(''),
             attacker: this.state.attacker
         }
+    };
+
+    this.getCardsOver = function () {
+        var all_cards = this.state.cards;
+        var cards = [];
+        all_cards.map(function (card) {
+            if (card.over)
+                cards.push(card.over);
+        });
+        return cards;
+    };
+
+    this.getCardForBeat = function () {
+        var all_cards = this.state.cards;
+        for (var i in all_cards) {
+            if (!all_cards[i].over)
+                return all_cards[i].id;
+        }
+        return false;
+    };
+
+    this.getCountCardsOver = function () {
+        var cards = this.getCardsOver();
+        return cards ? cards.length : 0;
+    };
+
+    this.possibleTransfer = function (id) {
+        if (id) {
+            var card_for_beat = this.getCardForBeat();
+            if (card_for_beat && card_for_beat.slice(1) != id.slice(1))
+                return false;
+        }
+        return card_for_beat && !this.getCountCardsOver();
     };
 };

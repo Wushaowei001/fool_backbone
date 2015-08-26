@@ -51,11 +51,9 @@ var Table = function () {
 
     this.getCardForBeat = function () {
         var all_cards = this.all_cards.cards;
-//        var card = null;
         for (var i in all_cards) {
             if (!all_cards[i].over)
                 return all_cards[i];
-//                card = all_cards[i];
         }
         return false;
     };
@@ -317,9 +315,6 @@ var Table = function () {
 
     this.shiftCardForThrow = function () {
         var id = this.all_cards.cards_for_throw.length ? this.all_cards.cards_for_throw.shift() : false;
-        if (id) {
-            this.all_cards.cards.push({id: id, over: ''});
-        }
         return id;
     };
     this.clearTable = function () {
@@ -393,5 +388,9 @@ var Table = function () {
     this.possibleTransfer = function () {
         return !this.getCountCardsOver();
     };
+
+    this.toggleAttacker = function () {
+        this.human_attack = !this.human_attack;
+    }
 
 };

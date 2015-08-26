@@ -128,7 +128,7 @@ var Opponent = Player.extend({
         return this._super('_needCards');
     },
 
-    countCards: function () {
+    getCountCards: function () {
         return this.getCards().length;
     },
 
@@ -161,5 +161,9 @@ var Opponent = Player.extend({
 
     destroyCards: function () {
         this._super('_destroyCards');
+    },
+    transferCard: function (id) {
+        this.removeCard(id);
+        App.get('table').addTransferCard(id);
     }
 });

@@ -64,18 +64,18 @@ module.exports = {
             return room.players[0];
     },
     switchPlayer: function (room, user, turn) {
+        if (room.app.table.getCardForBeat()
+            && room.app.table.getState().attacker == room.getOpponent(user).userId) {
+            return user;
+        }
         if (turn.switch) {
             if (room.players[0] == user) return room.players[1];
             else return room.players[0];
         }
     },
     doTurn: function (room, user, turn) {
-        var opponent = room.players[0] == user ? room.players[1] : room.players[0];
         if (typeof turn.result != 'undefined') {
             turn.result = false;
-//            room.app.end();
-//            user.cards = null;
-//            opponent.cards = null;
             return turn;
         }
         if (turn.turn_type == 'addToPile') {
@@ -88,9 +88,6 @@ module.exports = {
         if (turn.turn_type == 'takeCards') {
             user.foolPlayer.addCards(turn.cards, user.userId);
             room.app.table.clear();
-//            for (var i in turn.cards) {
-//                user.cards.push(turn.cards[i]);
-//            }
         }
         else {
             if (turn.cards) {
@@ -100,18 +97,19 @@ module.exports = {
                 }
                 user.foolPlayer.removeCards(turn.cards);
                 room.app.table.addCards(turn.cards, user.userId);
-//                for (var i in turn.cards) {
-//                    user.cards.pop();
-//                }
             }
             else {
                 if (!user.foolPlayer.hasCard(turn.card)) {
                     return false;
                 }
                 user.foolPlayer.removeCard(turn.card);
-                room.app.table.addCard(turn.card, user.userId);
+                if (room.app.table.possibleTransfer(turn.card)) {
+                    room.app.table.addTransferableCard(turn.card, user.userId);
+                    turn.turn_type = 'transfer';
+                }
+                else
+                    room.app.table.addCard(turn.card, user.userId);
             }
-//            user.cards.pop();
         }
         if (room.app.deck.isEmpty()) {
             if (user.foolPlayer.getCountCards() == 0) {
@@ -149,8 +147,6 @@ module.exports = {
             }
             var need_cards = user.foolPlayer.getCountCardsNeeded();
             if (need_cards > 0) {
-//                if (!user.cards)
-//                    user.cards = [];
                 var cards = room.app.deck.getCards(need_cards);
                 var deckIsEmpty = false;
                 var onlyTrumpRemain = false;
@@ -163,9 +159,6 @@ module.exports = {
                 if (cards && cards.length)
                     user.foolPlayer.addCards(cards);
 
-//                for (var i in cards) {
-//                    user.cards.push(cards[i]);
-//                }
                 data.push({
                     target: user,
                     event: {
@@ -228,8 +221,8 @@ module.exports = {
     },
 
     initGame: function (room) {
-        room.app = new App();
         var mode = room.mode;
+        room.app = new App();
         room.app.createDeck();
         room.app.setMode(mode);
         room.app.iniDeck();
@@ -238,9 +231,7 @@ module.exports = {
         room.inviteData.trumpVal = room.app.getTrump();
         for (var i in room.players) {
             room.players[i].foolPlayer = room.app.initPlayer();
-//            room.players[i].cards = null;
         }
-
         return {
             inviteData: room.inviteData
         }

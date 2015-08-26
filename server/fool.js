@@ -3,27 +3,27 @@ var Player = require('./player');
 var Table = require('./table');
 
 module.exports = function () {
-    var deck, trump;
+    var deck, trump, mode;
 
-    var setTrump = function () {
+    this.setTrump = function () {
         var index = deck.cards.length - 1;
         trump = deck.cards[index];
     };
 
-    var getTrump = function () {
+    this.getTrump = function () {
         return trump;
     };
-    var getMinTrump = function (cards) {
+    this.getMinTrump = function (cards) {
         var min_trump = '';
-        var trump = getTrump();
+        var trump = this.getTrump();
         for (var i in cards) {
             if (cards[i][0] == trump) {
-                var current_val = +cards[i].split(trump)[1];
+                var current_val = +cards[i].slice(1);
                 if (!min_trump) {
                     min_trump = cards[i];
                 }
                 else {
-                    if (+min_trump.split(trump)[1] > current_val)
+                    if (+min_trump.slice(1) > current_val)
                         min_trump = cards[i];
                 }
             }
@@ -31,57 +31,49 @@ module.exports = function () {
         return min_trump;
     };
 
-    var setMode = function (mode) {
-        switch (mode) {
+    this.setMode = function (m) {
+        mode = m;
+        switch (m) {
             case 'default':
             case 'transferable':
-                setDeckCount(36);
+                this.setDeckCount(36);
                 break;
             case 'deck_52':
-                setDeckCount(52);
+                this.setDeckCount(52);
                 break;
         }
     };
 
-    var createDeck = function () {
+    this.createDeck = function () {
         deck = new Deck();
     };
 
-    var iniDeck = function () {
+    this.iniDeck = function () {
         deck.init();
-        setTrump();
+        this.setTrump();
     };
 
-    var setDeckCount = function (count) {
+    this.setDeckCount = function (count) {
         deck.setCountCards(count);
     };
 
-    var getDeck = function () {
+    this.getDeck = function () {
         return deck;
     };
 
-    var end = function () {
+    this.end = function () {
         deck = null;
     };
 
-    var initPlayer = function () {
+    this.initPlayer = function () {
         return new Player();
     };
 
-    var initTable = function () {
+    this.initTable = function () {
         return new Table();
     };
 
-    return {
-        getTrump: getTrump,
-        trump: trump,
-        getMinTrump: getMinTrump,
-        end: end,
-        getDeck: getDeck,
-        setMode: setMode,
-        iniDeck: iniDeck,
-        createDeck: createDeck,
-        initPlayer: initPlayer,
-        initTable: initTable
+    this.isTransfarable = function () {
+        return mode == 'transferable';
     };
 };
