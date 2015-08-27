@@ -102,8 +102,10 @@ module.exports = {
                 if (!user.foolPlayer.hasCard(turn.card)) {
                     return false;
                 }
+                if (!room.app.isTransferable() && !room.app.table.possibleAddCard(turn.card, room.app.getTrump()[0]))
+                    return false;
                 user.foolPlayer.removeCard(turn.card);
-                if (!room.app.isFirstHand() && room.app.table.possibleTransfer(turn.card)) {
+                if (room.app.isTransferable() && !room.app.isFirstHand() && room.app.table.possibleTransfer(turn.card)) {
                     room.app.table.addTransferableCard(turn.card, user.userId);
                     turn.turn_type = 'transfer';
                 }

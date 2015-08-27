@@ -53,6 +53,10 @@ module.exports = function () {
         }
     };
 
+    this.getCards = function () {
+        return this.state.cards.slice('');
+    };
+
     this.getCardsOver = function () {
         var all_cards = this.state.cards;
         var cards = [];
@@ -75,6 +79,22 @@ module.exports = function () {
     this.getCountCardsOver = function () {
         var cards = this.getCardsOver();
         return cards ? cards.length : 0;
+    };
+
+    this.possibleAddCard = function (id, trump) {
+        var card_for_beat = this.getCardForBeat();
+        var cards_on_table = this.getCards();
+        if (!card_for_beat && cards_on_table.length < 6)
+            return true;
+        if (card_for_beat) {
+            if (id[0] == card_for_beat[0]) {
+                if (+id.slice(1) > +card_for_beat.slice(1))
+                    return true;
+            }
+            else {
+                return id[0] == trump && card_for_beat[0] != trump;
+            }
+        }
     };
 
     this.possibleTransfer = function (id) {

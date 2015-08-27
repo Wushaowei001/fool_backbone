@@ -114,7 +114,7 @@ var Computer = Player.extend({
             var id = '';
             var can_not_beat = false;
             if (card_on_table) {
-                if (App.isTransfarable() && !App.isFirstHand()) {
+                if (App.isTransferable() && !App.isFirstHand()) {
                     // attempt to transfer
                     var cards_for_transfer = this.getCardsEquals(card_on_table);
                     if (table.possibleTransfer() && cards_for_transfer) {
@@ -197,7 +197,7 @@ var Computer = Player.extend({
                         this.trigger('win');
                         return false;
                     }
-                    if (App.isTransfarable() && table.getCardForBeatID() && table.human_attack) {
+                    if (App.isTransferable() && table.getCardForBeatID() && table.human_attack) {
                         // beat next card
                         this.step();
                     }

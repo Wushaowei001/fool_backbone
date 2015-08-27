@@ -102,7 +102,7 @@ var Human = Player.extend({
         return false;
     },
     canTransferByCard: function (id) {
-        if (!App.isTransfarable() || !this.canStep() || App.isFirstHand())
+        if (!App.isTransferable() || !this.canStep() || App.isFirstHand())
             return false;
         var table = App.get('table');
         var opponent = App.get('opponent');
@@ -121,7 +121,7 @@ var Human = Player.extend({
         return false;
     },
     canTransfer: function () {
-        if (App.isTransfarable() && !App.isFirstHand()) {
+        if (App.isTransferable() && !App.isFirstHand()) {
             var table = App.get('table');
             var opponent = App.get('opponent');
             if (table.possibleTransfer()) {
@@ -202,7 +202,7 @@ var Human = Player.extend({
             }
             var can_transfer = false;
             var can_not_beat = false;
-            if (App.isTransfarable()) {
+            if (App.isTransferable()) {
                 can_transfer = this.canTransfer();
                 var cards_for_beat = table.getCardsForBeat();
                 var forbidden_ids = [];
@@ -399,7 +399,7 @@ var Human = Player.extend({
 
         App.turnSound();
 
-        if (App.isTransfarable() && table.getCardForBeatID() && !table.human_attack) {
+        if (App.isTransferable() && table.getCardForBeatID() && !table.human_attack) {
             this.setCanStep(true);
             return;
         }

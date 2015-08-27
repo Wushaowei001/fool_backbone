@@ -2,7 +2,7 @@ LogicGame.init(onInit);
 
 function onInit() {
     var settingsTemplate = getSettingsTemplate();
-    var mode = 'local';
+    var mode = 'real';
     window.client = new Client({
         https: Config.client[mode].https,
         domain: Config.client[mode].domain,
@@ -151,6 +151,8 @@ function onInit() {
             return;
         }
         App.setTrump(data.inviteData.trumpVal);
+        if (data.inviteData.mode == 'transferable')
+            App.set('mode', 'transferable');
         var round_start = function () {
 
             App.set('mode', data.inviteData.mode);
@@ -173,19 +175,7 @@ function onInit() {
                 App.start(false, function () {
                     init_name_ratings_and_score();
                 });
-//                App.reset();
-//                App.set({
-//                    human: new Human(Config.human),
-//                    opponent: new Opponent(Config.opponent)
-//                })
             }
-//            App.set('game_load', true);
-            return false;
-            setTimeout(function () {
-                if (!App.get('opponent')) {
-                    round_start();
-                }
-            }, 2000);
         }
         else
             round_start();
@@ -520,61 +510,12 @@ function onInit() {
         var score = JSON.parse(game.score);
         var mode = game.mode;
         App.set({
-            score: score[+App.get('opponentId')] + ':' + score[+App.get('humanId')],
+            score: score[+App.get('humanId')] + ':' + score[+App.get('opponentId')],
             my_rating: game.userData[App.get('humanId')][mode].rank,
             opponent_rating: game.userData[App.get('opponentId')][mode].rank
         });
         App.renderFromHistory(game.history, true);
         App.trigger('history_load_end', historyResult);
-
-        return false;
-        if (!App.get('game_with_comp'))
-            return false;
-        App.reset();
-        App.opponent = new Opponent(Config.player);
-        $('#repControls').show();
-        $('#tbLeaveReview').show();
-        $('#tbPrev').hide();
-        $('#tbNext').hide();
-        $('.controlPanel .game_with_comp td').each(function () {
-            if ($(this).attr('id') != 'tbLeaveReview')
-                $(this).addClass('disable');
-        });
-        App.setTrump(game.initData.inviteData.trumpVal);
-        App.history = new History(game.history);
-        App.history.enablePrev = function () {
-            $('#prev_spectate_game').css('opacity', '1').
-                removeClass('disable');
-        };
-        App.history.disablePrev = function () {
-            $('#prev_spectate_game').css('opacity', '0.6').
-                addClass('disable');
-        };
-        App.history.enableNext = function () {
-            $('#next_spectate_game').css('opacity', '1').
-                removeClass('disable');
-        };
-        App.history.disableNext = function () {
-            $('#next_spectate_game').css('opacity', '0.6').
-                addClass('disable');
-        };
-        App.history.disablePlay = function () {
-            $('#pause_spectate_game').removeClass('playing');
-        };
-
-        App.history.reset = function () {
-            App.MyCards.destroy();
-            App.MyCards = new Konva.Layer();
-            App.stage.add(App.MyCards);
-            App.human = new Human(Config.player);
-            App.opponent = new Opponent(Config.player);
-            App.table.clearTable();
-            App.history.disablePrev();
-        };
-        App.game_with_comp = true;
-        App.view_only = true;
-
-        console.log('main;', 'history game loaded, game:', game);
     });
 
     client.gameManager.on('game_load', function (game) {

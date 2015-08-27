@@ -97,14 +97,14 @@ var AppModel = Backbone.Model.extend({
                 this.trigger('change_mode', this.get('mode'));
             }
         });
-        this.on('change:history', function (self) {
+        this.on('change:history', function () {
             if (this.get('history')) {
-                this.listenTo(this.get('history'), 'data_from_history', function (state) {
-                    if (state) {
+                this.listenTo(this.get('history'), 'data_from_history', function (data) {
+                    if (data && data.state) {
                         this.clearCardsLayer();
-                        this.renderFromState(state, true);
+                        this.renderFromState(data.state, true, data.fast_move);
                     }
-                    console.log(state);
+                    console.log(data.state);
                 }.bind(this));
             }
             else {
@@ -236,7 +236,7 @@ var AppModel = Backbone.Model.extend({
         return (Date.now() - old_game > 1000);
     },
     calculateCardsForPile: function () {
-        var count_all_cards = Config.decks[client.currentMode].count;
+        var count_all_cards = Config.decks[this.get('mode')].count;
         var cards_on_hands = this.get('human').getCards().length + this.get('opponent').getCards().length;
         var cards_on_table = this.get('table').getCountCards() + this.get('table').getCountCardsOver();
         return count_all_cards - (cards_on_hands + cards_on_table + this.get('deck_remain'));
@@ -407,10 +407,10 @@ var AppModel = Backbone.Model.extend({
         return this.get('settings').get(property);
     },
     isFirstHand: function () {
-        var cards_in_deck = Config.decks[client.currentMode].count;
+        var cards_in_deck = Config.decks[this.get('mode')].count;
         return this.get('deck_remain') + Config.player.MAX_COUNT_CARDS * 2 == cards_in_deck;
     },
-    isTransfarable: function () {
+    isTransferable: function () {
         return this.get('mode') == 'transferable';
     },
     initStage: function () {
@@ -441,6 +441,7 @@ var AppModel = Backbone.Model.extend({
         var history_list = [];
         var table_state = {};
         var deck_remain;
+        var turn_type;
         table_state.human_attack = false;
         var player;
 
@@ -451,12 +452,14 @@ var AppModel = Backbone.Model.extend({
                 deck_remain: deck_remain,
                 human_cards: Util.cloner.clone(human.getCards()),
                 opponent_cards: Util.cloner.clone(opponent.getCards()),
-                table_state: Util.cloner.clone(table_state)
+                table_state: Util.cloner.clone(table_state),
+                turn_type: turn_type
             };
             history_list.push(obj);
         }.bind(this);
 
         for (var i in history) {
+            turn_type = null;
             if (history[i].event) {
                 var event = history[i].event;
                 if (event.type == 'addCards') {
@@ -492,6 +495,8 @@ var AppModel = Backbone.Model.extend({
             }
             if (history[i].turn) {
                 var turn = history[i].turn;
+                if (turn.turn_type && !this.get('spectate'))
+                    turn_type = turn.turn_type;
                 var is_my_turn = history[i].user.userId == humanId;
                 table_state = turn.state.table_state;
 //                var me_attack = turn.state.table_state.attacker == humanId;
@@ -500,10 +505,11 @@ var AppModel = Backbone.Model.extend({
                 player = is_my_turn ? human : opponent;
                 prefix = player.get('prefix_for_cards');
                 if (turn.turn_type == 'takeCards') {
-                    if (App.get('spectate')) {
+                    if (this.get('spectate')) {
                         player.addCards(turn.cards.length, prefix, true);
                     }
                     else {
+                        turn_type = 'takeCards';
                         if (is_my_turn)
                             human.setCards(human.getCards().concat(turn.cards));
                         else {
@@ -895,10 +901,16 @@ var AppModel = Backbone.Model.extend({
     renderFromHistory: function (history, without_animation) {
         this.initGameStartTime(); // if user play with computer
         this.initHistory(history);
-        var firstState = this.get('history').getFirstItem();
-        this.renderFromState(firstState, without_animation);
+        var state;
+        if (this.get('spectate')) {
+            state = this.get('history').getLastItem();
+        }
+        else {
+            state = this.get('history').getFirstItem();
+        }
+        this.renderFromState(state, without_animation);
     },
-    renderFromState: function (state, without_animation) {
+    renderFromState: function (state, without_animation, fast_move) {
         if (state.deck_remain != undefined) {
             App.set('deck_remain', state.deck_remain);
         }
@@ -912,6 +924,22 @@ var AppModel = Backbone.Model.extend({
         if (state.opponent_cards) {
             App.get('opponent').setCards(state.opponent_cards);
         }
+        if (state.turn_type && !fast_move) {
+            switch (state.turn_type) {
+                case 'takeCards':
+                    this.trigger('history:taken');
+                    break;
+                case 'throw':
+                    this.trigger('history:threw');
+                    break;
+                case 'addToPile':
+                    this.trigger('history:addToPile');
+                    break;
+                case 'transfer':
+                    this.trigger('history:transfer');
+                    break;
+            }
+        }
         App.renderDeck();
         App.renderTrump();
         var human = this.get('human');
@@ -924,7 +952,7 @@ var AppModel = Backbone.Model.extend({
         table.render();
 
         // calculate cards for render pile
-        var count = this.calculateCardsForPile(this.get('deck_remain'));
+        var count = this.calculateCardsForPile();
         this.renderFictionPile(count);
     },
     renderFictionPile: function (count_cards) {
@@ -1102,14 +1130,14 @@ var AppModel = Backbone.Model.extend({
         return true;
     },
     startSpectate: function (user1, user2, mode) {
-        App.reset();
+        this.reset();
         this.initGameStartTime();
         this.set('spectate', mode);
-        App.set('human', new Opponent(Config.bottom_opponent));
-        App.set('opponent', new Opponent(Config.opponent));
+        this.set('human', new Opponent(Config.bottom_opponent));
+        this.set('opponent', new Opponent(Config.opponent));
         this.setUsersId(user1.userId, user2.userId);
-        App.set('my_name', user1.userName);
-        App.set('opponent_name', user2.userName);
+        this.set('my_name', user1.userName);
+        this.set('opponent_name', user2.userName);
     },
     Throw: function (obj) {
         this.trigger('human:throw', obj);

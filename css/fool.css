@@ -82,7 +82,7 @@ body {
     font-size: 11pt;
 }
 
-#buttons #end_throw{
+#buttons #end_throw {
     width: 113px;
 }
 
@@ -275,7 +275,7 @@ body {
     position: relative;
 }
 
-#beaten, #opponent_take_cards, #threw, #nothing_to_beat, #taken {
+#beaten, #opponent_take_cards, #threw, #nothing_to_beat, #taken, #transfer {
     position: absolute;
     top: 211px;
     color: #EEEEEE;
@@ -285,9 +285,9 @@ body {
     width: 219px;
 }
 
-#beaten.spectate, #threw.spectate, #taken.spectate {
-    top: 0;
-}
+/*#beaten.spectate, #threw.spectate, #taken.spectate, #transfer.spectate {*/
+    /*top: 0;*/
+/*}*/
 
 #can_throw, #timer_for_throw {
     position: absolute;

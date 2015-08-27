@@ -43,6 +43,7 @@ var AppView = Backbone.View.extend({
         this.$nothingToBeat = this.$('#nothing_to_beat');
         this.$takeCards = this.$('#take_cards');
         this.$taken = this.$('#taken');
+        this.$transfer = this.$('#transfer');
         this.$putToPile = this.$('#put_tu_pile');
         this.$endThrow = this.$('#end_throw');
         this.$nameAndRating = this.$('.name_and_rating');
@@ -91,11 +92,14 @@ var AppView = Backbone.View.extend({
         });
         this.listenTo(App, 'nothing_to_beat', this.onNothingToBeat);
         this.listenTo(App, 'threw', this.onThrew);
-        this.listenTo(App, 'spectate:threw', function () {
+        this.listenTo(App, 'spectate:threw history:threw', function () {
             this.onThrew('spectate');
         });
-        this.listenTo(App, 'spectate:taken', function () {
+        this.listenTo(App, 'spectate:taken history:taken', function () {
             this.onTaken('spectate');
+        });
+        this.listenTo(App, 'spectate:transfer history:transfer', function () {
+            this.onTransfer('spectate');
         });
         this.listenTo(App, 'end_game', this.onEndGame);
         this.listenTo(App, 'deck_is_not_empty', this.hideTrumpValueOnDeck);
@@ -390,7 +394,7 @@ var AppView = Backbone.View.extend({
     onNextDown: function () {
         this.moveForwardTimeOutId = setTimeout(function () {
             this.moveForwardInterval = setInterval(function () {
-                App.get('history').moveForward();
+                App.get('history').moveForward(true);
             }.bind(this), Config.interval_actions.moveForwardInterval.interval);
         }.bind(this), Config.interval_actions.moveForwardInterval.timeout);
     },
@@ -526,6 +530,15 @@ var AppView = Backbone.View.extend({
         this.$taken.fadeOut(300, function () {
             if (css_class)
                 this.$taken.removeClass(css_class);
+        }.bind(this));
+    },
+    onTransfer: function (css_class) {
+        if (css_class)
+            this.$transfer.addClass(css_class);
+        this.$transfer.fadeIn('fast');
+        this.$transfer.fadeOut(600, function () {
+            if (css_class)
+                this.$transfer.removeClass(css_class);
         }.bind(this));
     },
     onMoveBack: function () {

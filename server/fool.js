@@ -2,8 +2,6 @@ var Deck = require('./deck.js');
 var Player = require('./player');
 var Table = require('./table');
 
-var deck, trump, mode;
-
 var Config = {
     modes: {
         default: {
@@ -22,6 +20,8 @@ var Config = {
 };
 
 module.exports = function () {
+
+    var deck, trump, mode;
 
     this.setTrump = function () {
         var index = deck.cards.length - 1;
@@ -91,7 +91,7 @@ module.exports = function () {
         return new Table();
     };
 
-    this.isTransfarable = function () {
+    this.isTransferable = function () {
         return mode == 'transferable';
     };
 

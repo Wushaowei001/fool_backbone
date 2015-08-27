@@ -2,7 +2,8 @@ var History = Backbone.Model.extend({
     defaults: {
         list: [],
         index: 0,
-        min_index: 1
+        min_index: 1,
+        fast_move: false
     },
     initialize: function (opt) {
         this.set('list', opt.list);
@@ -18,7 +19,11 @@ var History = Backbone.Model.extend({
             if (index == length - 1) {
                 this.trigger('cursor_at_the_end');
             }
-            this.trigger('data_from_history', this.get('list')[index]);
+            this.trigger('data_from_history', {
+                    state: this.get('list')[index],
+                    fast_move: this.get('fast_move')
+                }
+            );
         }.bind(this));
         this.on('destroy', function () {
             this.off();
@@ -28,18 +33,28 @@ var History = Backbone.Model.extend({
             }
         });
     },
-    moveBack: function () {
+    moveBack: function (fast_move) {
         var index = this.get('index');
         if (index > this.get('min_index')) {
             index--;
+            if (fast_move != undefined) {
+                this.set('fast_move', fast_move);
+            }
+            else
+                this.set('fast_move', false);
             this.set('index', index);
         }
         return this;
     },
-    moveForward: function () {
+    moveForward: function (fast_move) {
         var index = this.get('index');
         if (index < this.get('list').length - 1) {
             index++;
+            if (fast_move != undefined) {
+                this.set('fast_move', fast_move);
+            }
+            else
+                this.set('fast_move', false);
             this.set('index', index);
         }
         return this;
