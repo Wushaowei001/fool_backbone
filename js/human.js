@@ -230,7 +230,6 @@ var Human = Player.extend({
             }
         }
         if (game_with_comp && !App.get('without_update_history')) {
-            console.log('UPDATE HISTORY!!!');
             game_with_comp.history.update_history();
             App.set('without_update_history', false);
         }

@@ -82,6 +82,10 @@ body {
     font-size: 11pt;
 }
 
+#buttons #end_throw{
+    width: 113px;
+}
+
 #buttons > #cancel_throw {
     width: 111px;
 }

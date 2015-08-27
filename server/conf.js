@@ -15,7 +15,7 @@ module.exports = {
     mode: 'develop', // set developing mode, db isn't required
     penalties: true,
     gameModes: ['default', 'deck_52', 'transferable'], // game modes, with different history, ratings, games, default is one mode ['default']
-    modesAlias: {'default': '36 карт', 'deck_52': '52 карты'},
+    modesAlias: {'default': '36 карт', 'deck_52': '52 карты', 'transferable': 'Переводной'},
     enableIpGames: false,
     mongo: {
         host: '192.168.250.40', port: '27001'

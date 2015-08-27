@@ -2,8 +2,26 @@ var Deck = require('./deck.js');
 var Player = require('./player');
 var Table = require('./table');
 
+var deck, trump, mode;
+
+var Config = {
+    modes: {
+        default: {
+            cards_in_deck: 36,
+            cards_in_hand: 6
+        },
+        transferable: {
+            cards_in_deck: 36,
+            cards_in_hand: 6
+        },
+        deck_52: {
+            cards_in_deck: 52,
+            cards_in_hand: 6
+        }
+    }
+};
+
 module.exports = function () {
-    var deck, trump, mode;
 
     this.setTrump = function () {
         var index = deck.cards.length - 1;
@@ -36,10 +54,10 @@ module.exports = function () {
         switch (m) {
             case 'default':
             case 'transferable':
-                this.setDeckCount(36);
+                this.setDeckCount(Config.modes.default.cards_in_deck);
                 break;
             case 'deck_52':
-                this.setDeckCount(52);
+                this.setDeckCount(Config.modes.deck_52.cards_in_deck);
                 break;
         }
     };
@@ -75,5 +93,14 @@ module.exports = function () {
 
     this.isTransfarable = function () {
         return mode == 'transferable';
+    };
+
+    this.isFirstHand = function () {
+        var deck = this.getDeck();
+        if (deck) {
+            var deck_remain = deck.cardsRemain();
+            return Config.modes[mode].cards_in_deck == Config.modes[mode].cards_in_hand * 2 + deck_remain;
+        }
+        return false;
     };
 };

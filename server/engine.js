@@ -103,7 +103,7 @@ module.exports = {
                     return false;
                 }
                 user.foolPlayer.removeCard(turn.card);
-                if (room.app.table.possibleTransfer(turn.card)) {
+                if (!room.app.isFirstHand() && room.app.table.possibleTransfer(turn.card)) {
                     room.app.table.addTransferableCard(turn.card, user.userId);
                     turn.turn_type = 'transfer';
                 }
