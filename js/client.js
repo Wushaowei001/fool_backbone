@@ -270,10 +270,23 @@ function onInit() {
         var table = App.get('table');
 
         if (your_turn) {
-            if (human)
-                human.setCanStep(true);
+            if (human) {
+                if (last_turn && (last_turn.turn_type == 'addToPile' || last_turn.turn_type == 'takeCards')) {
+                    var needed_count_cards = Config.player.MAX_COUNT_CARDS;
+                    var unbind;
+                    // запрещаем ходить если игроку еще не выдали все карты
+                    // (разрешим в евенте по факту выдачи)
+                    if ((human.getCountCards() < needed_count_cards || opponent.getCountCards < needed_count_cards)
+                        && !App.deckIsEmpty()) {
+                        unbind = true;
+                        human.unBindCards();
+                    }
+                }
+                human.setCanStep(true, unbind);
+            }
 
             var cards_for_throw_on_table, cards_for_throw;
+
 
             if (last_turn && last_turn.turn_type == 'takeCards') {
                 if (last_turn.allow_throw) {
@@ -375,24 +388,28 @@ function onInit() {
     });
 
     client.gameManager.on('event', function (data) {
+        var human = App.get('human');
+        var opponent = App.get('opponent');
         if (data.event.type == 'addCards') {
             if (data.event.cards) {
                 if (App.get('spectate')) {
                     if (data.event.for == App.get('humanId'))
-                        App.get('human').addCards(data.event.cards, 'bottom');
+                        human.addCards(data.event.cards, 'bottom');
                     if (data.event.for == App.get('opponentId'))
-                        App.get('opponent').addCards(data.event.cards, 'top');
+                        opponent.addCards(data.event.cards, 'top');
                 }
                 else {
                     if (data.event.target && data.event.target.isPlayer)
                         Util.sequentialActions.add(function () {
-                            App.get('human').addCards(data.event.cards, true);
+                            human.addCards(data.event.cards, true);
+                            human.bindCards();
                         }, 500);
                 }
             }
             if (data.event.opponent_cards) {
                 Util.sequentialActions.add(function () {
-                    App.get('opponent').addCards(data.event.opponent_cards);
+                    opponent.addCards(data.event.opponent_cards);
+                    human.bindCards();
                 }, 500);
             }
             if (data.event.deckIsEmpty) {
@@ -407,8 +424,8 @@ function onInit() {
                 App.set('deck_remain', data.event.cardsRemain);
                 App.renderTrump();
             }
-            if (App.get('human'))
-                App.get('human').renderCards();
+            if (human)
+                human.renderCards();
         }
     });
 

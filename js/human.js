@@ -2,7 +2,7 @@ var Human = Player.extend({
     defaults: {
         _cards: [],
         tweens: [],
-        can_step: false,
+        can_step: null,
         cards_need_up: []
     },
     initialize: function (options) {
@@ -16,6 +16,11 @@ var Human = Player.extend({
         this.on('cards_added take_cards', function (without_animation, from_deck) {
             this.renderCards(without_animation, from_deck);
         }.bind(this));
+        this.on('change:can_step', function () {
+            if (this.get('can_step') == null)
+                return;
+            this.trigger('can_step', this.get('can_step'));
+        });
         this.on('change', function (p) {
             console.log(p.changed);
         });
@@ -35,20 +40,18 @@ var Human = Player.extend({
     setCards: function (cards) {
         this._super('setCards', cards);
     },
-    setCanStep: function (can) {
-        App.set('can_step', can);
-//        this.set('can_step', can);
+    setCanStep: function (can, unbind) {
+        this.set('can_step', can);
         console.log('setCanStep: ' + can);
         if (can) {
-            this.beforeMyStep();
+            this.beforeMyStep(unbind);
         }
     },
     cardValuesEquals: function (id1, id2) {
         return +id1.slice(1) == +id2.slice(1);
     },
     canStep: function () {
-        return App.get('can_step') && !App.get('spectate');
-//        return this.get('can_step');
+        return this.get('can_step') && !App.get('spectate');
     },
     canStartStep: function (id) {
         if (!id)
@@ -155,20 +158,20 @@ var Human = Player.extend({
             this.unBindCardEvents(card);
         }
     },
-    beforeMyStep: function () {
-        if (!App.get('view_only') && this.noCards()) {
+    beforeMyStep: function (unbind) {
+        if (this.noCards()) {
             return;
         }
         var table = App.get('table');
         var game_with_comp = App.get('game_with_comp');
         var opponent = App.get('opponent');
-        if (table.getCardForBeat() && !App.get('view_only') && !table.human_attack)
+        if (table.getCardForBeat() && !table.human_attack)
             App.trigger('can_take_cards');
         else {
-            if (table.getCards() && !App.get('view_only'))
+            if (table.getCards())
                 App.trigger('can_put_to_pile');
         }
-        if (table.getCards() && !App.get('view_only') && !App.get('without_animation')) {
+        if (table.getCards() && !App.get('without_animation')) {
             if (!table.getCardForBeat()) {
                 if (!table.getCardsForThrow() && !this.getCardsForThrow() ||
                     opponent.getCountCards() <= 0 ||
@@ -185,15 +188,11 @@ var Human = Player.extend({
                                 game_with_comp.addCards(false, function () {
 //                                App.trigger('update_deck_remain');
                                 });
-                                if (!App.get('view_only')) {
-
-                                    App.safeTimeOutAction(800, function () {
-                                        Util.sequentialActions.add(function () {
-                                            opponent.step();
-                                        }, 400);
-
-                                    });
-                                }
+                                App.safeTimeOutAction(800, function () {
+                                    Util.sequentialActions.add(function () {
+                                        opponent.step();
+                                    }, 400);
+                                });
                             }
                         });
                     });
@@ -222,10 +221,9 @@ var Human = Player.extend({
             if (can_not_beat && !can_transfer) {
                 this.unBindCards();
                 App.trigger('nothing_to_beat');
-                if (!App.get('view_only'))
-                    App.safeTimeOutAction(1000, function () {
-                        App.humanTakeCards();
-                    });
+                App.safeTimeOutAction(1000, function () {
+                    App.humanTakeCards();
+                });
                 return;
             }
         }
@@ -233,7 +231,8 @@ var Human = Player.extend({
             game_with_comp.history.update_history();
             App.set('without_update_history', false);
         }
-        this.bindCards();
+        if (!unbind)
+            this.bindCards();
     },
     bindCards: function () {
         this.unBindCards();
@@ -321,15 +320,12 @@ var Human = Player.extend({
 //            this.cards_need_up.push(id);
 //        }
 
-        if (!App.get('without_animation') && (!App.get('view_only'))) {
+        if (!App.get('without_animation')) {
             setTimeout(function () {
                 App.addCardSound();
             }, 300);
         }
-
-        if (!App.get('view_only')) {
-            this.bindCardEvents(card, id);
-        }
+        this.bindCardEvents(card, id);
     },
     addCards: function (new_cards, need_turn, callback) {
         var up_new_cards = this.getCards().length ? true : false;

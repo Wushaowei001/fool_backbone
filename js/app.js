@@ -9,7 +9,6 @@ var AppModel = Backbone.Model.extend({
         sequence: ['d', 'c', 'h', 's'],
         wait_when_can_throw: 3000,
         history: [],
-        view_only: false,
         without_animation: false,
         without_update_history: false,
         settings: null,
@@ -23,7 +22,6 @@ var AppModel = Backbone.Model.extend({
         opponent_name: null,
         my_rating: null,
         opponent_rating: null,
-        can_step: null,
         deck_is_empty: null,
         deck_remain: null,
         spectate: null,
@@ -55,12 +53,6 @@ var AppModel = Backbone.Model.extend({
         this.on('change:opponent_rating', function (self) {
             this.trigger('opponent_rating_changed', self.changed.opponent_rating);
         });
-        this.on('change:can_step', function (self) {
-            if (this.get('can_step') == null)
-                return;
-            this.trigger('can_step', self.changed.can_step);
-        });
-
         this.on('change:deck_is_empty', function () {
             console.log(this.get('deck_is_empty'));
             if (this.get('deck_is_empty') != null) {
@@ -201,7 +193,7 @@ var AppModel = Backbone.Model.extend({
     },
     humanTakeCards: function (threw, allow_throw) {
         this.trigger('human_take_cards');
-        if (this.get('game_with_comp') && this.get('history') && !this.get('without_animation') && !this.get('view_only')) {
+        if (this.get('game_with_comp') && this.get('history') && !this.get('without_animation')) {
 //        App.game_with_comp.update_history();
         }
         if (threw) {
@@ -223,11 +215,9 @@ var AppModel = Backbone.Model.extend({
                 this.get('game_with_comp').addCards(true, function () {
 //                    this.trigger('update_deck_remain');
                 }.bind(this));
-                if (!this.get('view_only')) {
-                    this.safeTimeOutAction(800, function () {
-                        this.get('opponent').step();
-                    }.bind(this));
-                }
+                this.safeTimeOutAction(800, function () {
+                    this.get('opponent').step();
+                }.bind(this));
             }
         }.bind(this));
     },
@@ -666,7 +656,7 @@ var AppModel = Backbone.Model.extend({
                     }.bind(this));
                 }
                 this.get('human').setCanStep(false);
-                if (this.get('game_with_comp') && !this.get('view_only')) {
+                if (this.get('game_with_comp')) {
                     this.safeTimeOutAction(800, function () {
                         this.get('opponent').step();
                     }.bind(this));
@@ -999,11 +989,13 @@ var AppModel = Backbone.Model.extend({
     },
 
     reset: function () {
+        console.log(Util.sequentialActions);
+        Util.sequentialActions.reset();
+        console.log(Util.sequentialActions);
         this.destroyStage();
         this.initStage();
         this.set({
             empty_deck: false,
-            view_only: false,
             history: null
         });
         this.renderTrump.trump = null;
@@ -1035,7 +1027,6 @@ var AppModel = Backbone.Model.extend({
                 opponent_name: null,
                 my_rating: null,
                 opponent_rating: null,
-                can_step: null,
                 deck_is_empty: null,
                 deck_remain: null,
                 spectate: null,

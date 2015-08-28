@@ -57,6 +57,9 @@ var Util = {
                     this.go();
                 }.bind(this), this.list[0].timeout)
             }
+        },
+        reset: function () {
+            this.list = [];
         }
     },
     cloner: {

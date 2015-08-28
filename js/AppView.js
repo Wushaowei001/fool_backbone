@@ -17,14 +17,6 @@ var AppView = Backbone.View.extend({
         'mouseleave #tbNext': 'stopMoveForward',
         'mouseup #tbNext': 'stopMoveForward',
         'click .previewClose': 'previewClose'
-//        'mousedown #history_move_back': 'onHistoryMoveBackInterval',
-//        'mouseleave #history_move_back': 'onHistoryMoveBackStop',
-//        'mouseup #history_move_back': 'onHistoryMoveBackStop',
-//        'click #history_play_stop': 'onHistoryPlayStop',
-//        'click #history_move_forward': 'onHistoryMoveForward',
-//        'mousedown #history_move_forward': 'onHistoryMoveForwardInterval',
-//        'mouseleave #history_move_forward': 'onHistoryMoveForwardStop',
-//        'mouseup #history_move_forward': 'onHistoryMoveForwardStop'
     },
     moveBackTimeOutId: null,
     moveForwardTimeOutId: null,
@@ -126,14 +118,6 @@ var AppView = Backbone.View.extend({
         this.listenTo(App, 'opponent_rating_changed', function (rating) {
             this.showOpponentRating(rating);
         });
-        this.listenTo(App, 'can_step', function (can) {
-            if (can == null)
-                return;
-            if (can)
-                this.beforeMyStep();
-            else
-                this.beforeOpponentStep();
-        });
         this.listenTo(App, 'deck_is_empty show_trump', function (trump) {
             this.showTrumpValueOnDeck(trump)
         });
@@ -143,8 +127,6 @@ var AppView = Backbone.View.extend({
             this.onRenderFromHistory(human_attack, table_not_empty);
         });
         this.listenTo(App, 'table:addToPile', this.onAddToPile);
-//        this.listenTo(App, 'table:renderLastPile', this.hideTooltips);
-//        this.listenTo(App, 'renderLastTakenCards', this.hideTooltips);
         this.listenTo(App, 'load_images_start', function () {
             this.blockUI();
         });
@@ -201,6 +183,14 @@ var AppView = Backbone.View.extend({
                 }
                 else
                     this.$MyCountCards.text('');
+            });
+            this.listenTo(App.get('human'), 'can_step', function (can) {
+                if (can == null)
+                    return;
+                if (can)
+                    this.beforeMyStep();
+                else
+                    this.beforeOpponentStep();
             });
         });
         this.listenTo(App, 'new_opponent', function () {
@@ -376,7 +366,7 @@ var AppView = Backbone.View.extend({
     onPrevDown: function () {
         this.moveBackTimeOutId = setTimeout(function () {
             this.moveBackInterval = setInterval(function () {
-                App.get('history').moveBack();
+                App.get('history').moveBack(true);
             }.bind(this), Config.interval_actions.moveBackInterval.interval);
         }.bind(this), Config.interval_actions.moveBackInterval.timeout);
     },
@@ -426,22 +416,6 @@ var AppView = Backbone.View.extend({
         if (!this.$historyMoveBack.hasClass('disable')) {
             this.$historyMoveForward.removeClass('disable');
             this.$historyPlayStop.removeClass('disable');
-//            this.listenTo(App.get('history'), 'cursor_at_the_beginning', function () {
-//                this.$historyMoveBack.addClass('disable');
-//                this.$historyMoveForward.removeClass('disable');
-//                this.$historyPlayStop.removeClass('disable');
-//            }.bind(this));
-//            this.listenTo(App.get('history'), 'cursor_at_the_end', function () {
-//                this.$historyMoveForward.addClass('disable');
-//                this.$historyPlayStop.addClass('disable');
-//                this.$historyMoveBack.removeClass('disable');
-//            }.bind(this));
-//            this.listenTo(App.get('history'), 'play_history_stop', function () {
-//                this.$historyPlayStop.removeClass('playing');
-//            }.bind(this));
-//            this.listenTo(App.get('history'), 'play_history_tick', function () {
-//                this.$historyMoveBack.removeClass('disable');
-//            }.bind(this));
             App.get('history').moveBack().stop();
         }
     },
